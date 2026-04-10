@@ -7,23 +7,33 @@
 }
 
 :root {
-  /* Colors */
-  --bg-primary: #F5F2EE;
-  --bg-secondary: #EAE6E1;
-  --text-primary: #2A2520;
-  --text-secondary: #5C554D;
-  --copper-light: #D4956A;
-  --copper: #C26D45;
-  --copper-dark: #8B4A2D;
-  --white: #FAFAF8;
+  /* Soft Minimalist Palette */
+  --bg-primary: #EDEAE6;
+  --bg-secondary: #E4E0DB;
+  --bg-card: #F5F1EC;
+  --text-primary: #2A0D28;
+  --text-secondary: #6B4069;
+  --accent: #2A0D28;
+  --accent-light: #4D2A4B;
+  --white: #FFFFFF;
+
+  /* Legacy aliases for components still referencing copper */
+  --copper-light: #999999;
+  --copper: #2A0D28;
+  --copper-dark: #000000;
 
   /* Fonts */
-  --font-heading: 'Cormorant Garamond', Georgia, serif;
-  --font-body: 'Outfit', -apple-system, sans-serif;
+  --font-heading: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+  --font-body: 'Inter', -apple-system, sans-serif;
 
   /* Spacing */
-  --section-padding: clamp(4rem, 10vw, 8rem);
-  --container-width: min(90%, 1200px);
+  --section-padding: clamp(5rem, 12vw, 10rem);
+  --container-width: min(88%, 1100px);
+
+  /* Radii */
+  --radius-card: 24px;
+  --radius-pill: 100px;
+  --radius-section: 48px;
 }
 
 html {
@@ -33,7 +43,7 @@ html {
 
 body {
   font-family: var(--font-body);
-  font-weight: 300;
+  font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: var(--bg-primary);
@@ -54,8 +64,8 @@ img {
 
 h1, h2, h3, h4 {
   font-family: var(--font-heading);
-  font-weight: 300;
-  line-height: 1.2;
+  font-weight: 600;
+  line-height: 1.15;
 }
 
 section {
@@ -68,27 +78,46 @@ section {
 }
 
 .section-title {
-  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-size: clamp(2rem, 5vw, 3rem);
   color: var(--text-primary);
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
+  font-weight: 700;
 }
 
 .section-subtitle {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 3px;
-  color: var(--copper);
+  color: var(--text-secondary);
   margin-bottom: 0.5rem;
-  font-weight: 400;
+  font-weight: 500;
 }
 
 .copper-text {
-  color: var(--copper);
+  color: var(--text-secondary);
 }
 
 .divider {
-  width: 60px;
-  height: 1px;
-  background: linear-gradient(90deg, var(--copper-light), var(--copper-dark));
-  margin: 2rem 0;
+  width: 40px;
+  height: 3px;
+  background: var(--accent);
+  margin: 1.5rem 0;
+  border-radius: var(--radius-pill);
+}
+
+/* Soft section transitions */
+.about {
+  position: relative;
+  background: var(--bg-card);
+  border-radius: var(--radius-section) var(--radius-section) 0 0;
+}
+
+.works {
+  position: relative;
+}
+
+.footer {
+  background: var(--accent);
+  color: var(--white);
+  border-radius: var(--radius-section) var(--radius-section) 0 0;
 }

@@ -5,35 +5,118 @@
   justify-content: center;
   position: relative;
   padding-top: 80px;
+  overflow: hidden;
+}
+
+.hero__bg-logo {
+  position: absolute;
+  right: 5%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: clamp(280px, 35vw, 500px);
+  height: auto;
+  color: var(--text-secondary);
+  opacity: 0.03;
+  pointer-events: none;
 }
 
 .hero__content {
   max-width: 700px;
+  position: relative;
+  z-index: 1;
 }
 
 .hero__greeting {
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  color: var(--copper);
-  margin-bottom: 1.5rem;
-  font-weight: 400;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.hero__copper-letter {
+  background: linear-gradient(135deg, #D4956A, #C26D45, #8B4A2D);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 600;
 }
 
 .hero__title {
-  font-size: clamp(3rem, 8vw, 5.5rem);
-  font-weight: 300;
-  line-height: 1.1;
+  font-size: clamp(3rem, 8vw, 5rem);
+  font-weight: 800;
+  line-height: 1.05;
   margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+}
+
+/* KO with strikethrough */
+.hero__ko-group {
+  position: relative;
+  display: inline-block;
+}
+
+.hero__ko-text {
+  font-size: inherit;
+  font-weight: inherit;
   color: var(--text-primary);
 }
 
+.hero__strikethrough {
+  position: absolute;
+  left: -4%;
+  right: -4%;
+  top: 50%;
+  height: 4px;
+  background: var(--text-primary);
+  transform-origin: left center;
+  border-radius: 2px;
+}
+
+/* OK logo inline */
+.hero__ok-logo {
+  display: inline-flex;
+  align-items: center;
+  overflow: visible;
+}
+
+.hero__ok-logo svg {
+  height: 1.4em;
+  width: auto;
+  overflow: visible;
+}
+
+/* Checkmark */
+.hero__check {
+  display: inline-flex;
+  align-items: center;
+}
+
+.hero__check svg {
+  height: 0.7em;
+  width: auto;
+}
+
 .hero__subtitle {
-  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-size: clamp(1rem, 2vw, 1.15rem);
   color: var(--text-secondary);
-  max-width: 480px;
-  margin-bottom: 2.5rem;
+  max-width: 520px;
+  margin-bottom: 0.75rem;
   line-height: 1.7;
+  font-weight: 400;
+  white-space: pre-line;
+}
+
+.hero__trustline {
+  font-size: clamp(0.85rem, 1.5vw, 0.95rem);
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: 2.5rem;
+  letter-spacing: 0.3px;
 }
 
 .hero__actions {
@@ -43,35 +126,35 @@
 
 .btn {
   display: inline-block;
-  padding: 0.75rem 2rem;
-  font-size: 0.875rem;
+  padding: 0.85rem 2.2rem;
+  font-size: 0.82rem;
   font-family: var(--font-body);
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  font-weight: 400;
+  letter-spacing: 0.5px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
+  border-radius: var(--radius-pill);
 }
 
 .btn--primary {
-  background: var(--copper);
+  background: var(--accent);
   color: var(--white);
-  border: 1px solid var(--copper);
+  border: 2px solid var(--accent);
 }
 
 .btn--primary:hover {
-  background: var(--copper-dark);
-  border-color: var(--copper-dark);
+  background: transparent;
+  color: var(--accent);
 }
 
 .btn--outline {
   background: transparent;
-  color: var(--copper);
-  border: 1px solid var(--copper);
+  color: var(--accent);
+  border: 2px solid var(--accent);
 }
 
 .btn--outline:hover {
-  background: var(--copper);
+  background: var(--accent);
   color: var(--white);
 }
 
@@ -84,12 +167,7 @@
 
 .hero__scroll-line {
   width: 1px;
-  height: 60px;
-  background: linear-gradient(to bottom, var(--copper), transparent);
-  animation: scrollPulse 2s ease-in-out infinite;
-}
-
-@keyframes scrollPulse {
-  0%, 100% { opacity: 0.3; transform: scaleY(0.6); }
-  50% { opacity: 1; transform: scaleY(1); }
+  height: 50px;
+  background: linear-gradient(to bottom, var(--text-secondary), transparent);
+  opacity: 0.2;
 }

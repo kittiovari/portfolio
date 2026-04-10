@@ -1,18 +1,25 @@
 import { motion } from 'framer-motion'
+import { useTranslation } from '../i18n/LanguageContext.jsx'
 import './About.css'
 
 const skills = [
   'UX Research',
+  'User Interviews',
   'Wireframing',
   'Prototyping',
   'UI Design',
-  'Design Systems',
   'Usability Testing',
+  'Information Architecture',
+  'Persona Building',
+  'User Journey Mapping',
+  'Design Systems',
 ]
 
-const tools = ['Figma', 'Adobe XD', 'Photoshop', 'Illustrator', 'Miro', 'Framer']
+const tools = ['Figma', 'Miro', 'Hotjar', 'Notion', 'Tally', 'Adobe Photoshop', 'Adobe Illustrator', 'Adobe InDesign']
 
 function About() {
+  const t = useTranslation()
+
   return (
     <section id="about" className="about">
       <div className="container">
@@ -22,9 +29,9 @@ function About() {
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.8 }}
         >
-          <p className="section-subtitle">Rólam</p>
+          <p className="section-subtitle">{t.about.label}</p>
           <h2 className="section-title">
-            Szeretem a <span className="copper-text">részleteket</span>
+            {t.about.title} <span className="copper-text">{t.about.titleHighlight}</span>
           </h2>
           <div className="divider" />
         </motion.div>
@@ -37,15 +44,26 @@ function About() {
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <p>
-              UX/UI designerként hiszek abban, hogy a jó design láthatatlan
-              — egyszerűen működik. Célom, hogy felhasználóközpontú,
-              esztétikus és funkcionális digitális termékeket hozzak létre.
-            </p>
-            <p>
-              Minden projektnél a felhasználói igények megértéséből indulok ki,
-              és az empátia vezérel a kutatástól a végső vizuális megoldásig.
-            </p>
+            <p>{t.about.text1}</p>
+            <p>{t.about.text2}</p>
+            <p>{t.about.text3}</p>
+
+            <h3>{t.about.strengthsTitle}</h3>
+            <ul className="about__strengths">
+              {t.about.strengths.map((s) => (
+                <li key={s}>{s}</li>
+              ))}
+            </ul>
+
+            <h3>{t.about.languagesTitle}</h3>
+            <div className="about__languages">
+              {t.about.languages.map((lang) => (
+                <div key={lang.name} className="about__language">
+                  <span className="about__language-name">{lang.name}</span>
+                  <span className="about__language-level">{lang.level}</span>
+                </div>
+              ))}
+            </div>
           </motion.div>
 
           <motion.div
@@ -55,19 +73,13 @@ function About() {
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <h3>Szakterületek</h3>
+            <h3>{t.about.skillsTitle}</h3>
             <div className="about__tags">
               {skills.map((skill) => (
                 <span key={skill} className="about__tag">{skill}</span>
               ))}
             </div>
 
-            <h3>Eszközök</h3>
-            <div className="about__tags">
-              {tools.map((tool) => (
-                <span key={tool} className="about__tag about__tag--tool">{tool}</span>
-              ))}
-            </div>
           </motion.div>
         </div>
       </div>

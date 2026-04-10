@@ -1,0 +1,140 @@
+.orbit {
+  padding: 2rem 0 1rem;
+  overflow: hidden;
+}
+
+.orbit__header {
+  text-align: center;
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 1rem;
+}
+
+.orbit__space {
+  position: relative;
+  width: var(--container-width);
+  margin: 0 auto;
+  height: 420px;
+}
+
+/* Each bubble floats independently with unique timing */
+.orbit__float {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-align: center;
+  padding: 8px;
+  color: var(--text-secondary);
+  opacity: 0.18;
+  animation: drift var(--drift-dur) cubic-bezier(0.45, 0, 0.55, 1) infinite alternate var(--drift-delay);
+  transition: opacity 1.2s cubic-bezier(0.45, 0, 0.55, 1), transform 1.2s cubic-bezier(0.45, 0, 0.55, 1), color 1.2s cubic-bezier(0.45, 0, 0.55, 1);
+}
+
+.orbit__float--employer {
+  opacity: 0.55;
+}
+
+/* When any item is hovered, others dim */
+.orbit__float--dimmed {
+  opacity: 0.08 !important;
+}
+
+.orbit__float:hover {
+  opacity: 1 !important;
+  transform: scale(1.35) !important;
+  color: #C26D45 !important;
+}
+
+/* Unique drift paths per item using nth-child */
+.orbit__float:nth-child(1)  { --drift-dur: 14s; --drift-delay: 0s; animation-name: driftA; }
+.orbit__float:nth-child(2)  { --drift-dur: 16s; --drift-delay: -3s; animation-name: driftB; }
+.orbit__float:nth-child(3)  { --drift-dur: 13s; --drift-delay: -7s; animation-name: driftC; }
+.orbit__float:nth-child(4)  { --drift-dur: 18s; --drift-delay: -2s; animation-name: driftD; }
+.orbit__float:nth-child(5)  { --drift-dur: 15s; --drift-delay: -5s; animation-name: driftA; }
+.orbit__float:nth-child(6)  { --drift-dur: 17s; --drift-delay: -8s; animation-name: driftC; }
+.orbit__float:nth-child(7)  { --drift-dur: 14s; --drift-delay: -1s; animation-name: driftB; }
+.orbit__float:nth-child(8)  { --drift-dur: 16s; --drift-delay: -6s; animation-name: driftD; }
+.orbit__float:nth-child(9)  { --drift-dur: 19s; --drift-delay: -4s; animation-name: driftA; }
+.orbit__float:nth-child(10) { --drift-dur: 15s; --drift-delay: -9s; animation-name: driftC; }
+.orbit__float:nth-child(11) { --drift-dur: 17s; --drift-delay: -2s; animation-name: driftB; }
+.orbit__float:nth-child(12) { --drift-dur: 13s; --drift-delay: -7s; animation-name: driftD; }
+
+/* Icon and text inherit color */
+.orbit__icon {
+  width: 20px;
+  height: 20px;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orbit__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.orbit__text {
+  font-family: var(--font-heading);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: inherit;
+  line-height: 1.2;
+}
+
+/* Four unique organic drift paths — slow, wide, fluid */
+@keyframes driftA {
+  0%   { transform: translate(0, 0) scale(1); }
+  25%  { transform: translate(8px, -14px) scale(1.03); }
+  50%  { transform: translate(-4px, -20px) scale(1); }
+  75%  { transform: translate(12px, -8px) scale(1.02); }
+  100% { transform: translate(-6px, -16px) scale(1.04); }
+}
+
+@keyframes driftB {
+  0%   { transform: translate(0, 0) scale(1.02); }
+  25%  { transform: translate(-10px, 8px) scale(1); }
+  50%  { transform: translate(6px, 16px) scale(1.03); }
+  75%  { transform: translate(-14px, 4px) scale(1.01); }
+  100% { transform: translate(4px, 12px) scale(1); }
+}
+
+@keyframes driftC {
+  0%   { transform: translate(0, 0) scale(1); }
+  25%  { transform: translate(14px, 6px) scale(1.02); }
+  50%  { transform: translate(8px, -10px) scale(1.04); }
+  75%  { transform: translate(-6px, -4px) scale(1); }
+  100% { transform: translate(10px, -14px) scale(1.03); }
+}
+
+@keyframes driftD {
+  0%   { transform: translate(0, 0) scale(1.03); }
+  25%  { transform: translate(-8px, -12px) scale(1); }
+  50%  { transform: translate(-14px, 6px) scale(1.02); }
+  75%  { transform: translate(4px, 14px) scale(1.04); }
+  100% { transform: translate(-10px, -6px) scale(1); }
+}
+
+@media (max-width: 768px) {
+  .orbit__space {
+    height: 320px;
+  }
+
+  .orbit__icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .orbit__text {
+    font-size: 0.48rem;
+  }
+}

@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { useTranslation } from '../i18n/LanguageContext.jsx'
 import './Contact.css'
 
 function Contact() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' })
+  const t = useTranslation()
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -24,9 +26,9 @@ function Contact() {
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.8 }}
         >
-          <p className="section-subtitle">Kapcsolat</p>
+          <p className="section-subtitle">{t.contact.label}</p>
           <h2 className="section-title">
-            Dolgozzunk <span className="copper-text">együtt</span>
+            {t.contact.title} <span className="copper-text">{t.contact.titleHighlight}</span>
           </h2>
           <div className="divider" />
         </motion.div>
@@ -39,19 +41,13 @@ function Contact() {
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <p>
-              Van egy ötleted vagy projekted? Szívesen meghallgatom!
-              Írj nekem, és hamarosan válaszolok.
-            </p>
+            <p>{t.contact.text}</p>
             <div className="contact__links">
-              <a href="mailto:hello@example.com" className="contact__link">
-                hello@example.com
+              <a href="mailto:kitti.ovari@gmail.com" className="contact__link">
+                kitti.ovari@gmail.com
               </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="contact__link">
+              <a href="https://linkedin.com/in/kitti-h-ovari" target="_blank" rel="noopener noreferrer" className="contact__link">
                 LinkedIn
-              </a>
-              <a href="https://behance.net" target="_blank" rel="noopener noreferrer" className="contact__link">
-                Behance
               </a>
             </div>
           </motion.div>
@@ -65,39 +61,42 @@ function Contact() {
             transition={{ duration: 0.6, delay: 0.4 }}
           >
             <div className="contact__field">
-              <label htmlFor="name">Név</label>
+              <label htmlFor="name">{t.contact.nameLabel}</label>
               <input
                 type="text"
                 id="name"
                 name="name"
+                placeholder={t.contact.namePlaceholder}
                 value={formData.name}
                 onChange={handleChange}
                 required
               />
             </div>
             <div className="contact__field">
-              <label htmlFor="email">Email</label>
+              <label htmlFor="email">{t.contact.emailLabel}</label>
               <input
                 type="email"
                 id="email"
                 name="email"
+                placeholder={t.contact.emailPlaceholder}
                 value={formData.email}
                 onChange={handleChange}
                 required
               />
             </div>
             <div className="contact__field">
-              <label htmlFor="message">Üzenet</label>
+              <label htmlFor="message">{t.contact.messageLabel}</label>
               <textarea
                 id="message"
                 name="message"
                 rows="5"
+                placeholder={t.contact.messagePlaceholder}
                 value={formData.message}
                 onChange={handleChange}
                 required
               />
             </div>
-            <button type="submit" className="btn btn--primary">Küldés</button>
+            <button type="submit" className="btn btn--primary">{t.contact.send}</button>
           </motion.form>
         </div>
       </div>

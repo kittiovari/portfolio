@@ -6,7 +6,19 @@
       "Bash(npm init:*)",
       "Bash(npm install:*)",
       "Bash(npm run:*)",
-      "Bash(gh repo:*)"
+      "Bash(gh repo:*)",
+      "mcp__Claude_Preview__preview_start",
+      "mcp__Figma__get_metadata",
+      "mcp__Figma__get_screenshot",
+      "WebSearch",
+      "WebFetch(domain:www.codeescrowcloud.com)",
+      "Bash(cp \"/c/Users/kitti/Downloads/Chantblaster/chantblaster.svg\" \"/c/Users/kitti/OneDrive/Dokumentumok/Github/portfolio/public/logos/chantblaster.svg\")",
+      "Bash(cp \"/c/Users/kitti/Downloads/moodmeup.svg\" \"/c/Users/kitti/OneDrive/Dokumentumok/Github/portfolio/public/logos/moodmeup.svg\")",
+      "Bash(cp \"/c/Users/kitti/Downloads/booked4us.svg\" \"/c/Users/kitti/OneDrive/Dokumentumok/Github/portfolio/public/logos/booked4us.svg\")",
+      "Bash(cp \"/c/Users/kitti/Downloads/aimee2.svg\" \"/c/Users/kitti/OneDrive/Dokumentumok/Github/portfolio/public/logos/aimee.svg\")",
+      "Bash(cp \"/c/Users/kitti/Downloads/Winefo_horizontal_Mixie 1.svg\" \"/c/Users/kitti/OneDrive/Dokumentumok/Github/portfolio/public/logos/winefo.svg\")",
+      "Bash(cp \"/c/Users/kitti/Downloads/cEC.svg\" \"/c/Users/kitti/OneDrive/Dokumentumok/Github/portfolio/public/logos/cec.svg\")",
+      "Bash(cp \"/c/Users/kitti/Downloads/DI insurtech.svg\" \"/c/Users/kitti/OneDrive/Dokumentumok/Github/portfolio/public/logos/di-insurtech.svg\")"
     ]
   }
 }

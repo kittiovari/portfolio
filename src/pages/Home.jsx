@@ -1,8 +1,9 @@
 import Navbar from '../components/Navbar.jsx'
 import Hero from '../components/Hero.jsx'
+import SectionDivider from '../components/SectionDivider.jsx'
 import About from '../components/About.jsx'
+import OrbitLogos from '../components/OrbitLogos.jsx'
 import Works from '../components/Works.jsx'
-import Contact from '../components/Contact.jsx'
 import Footer from '../components/Footer.jsx'
 
 function Home() {
@@ -10,9 +11,12 @@ function Home() {
     <>
       <Navbar />
       <Hero />
+      <SectionDivider />
       <About />
+      <OrbitLogos />
+      <SectionDivider />
       <Works />
-      <Contact />
+      <SectionDivider />
       <Footer />
     </>
   )
