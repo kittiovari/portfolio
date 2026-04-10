@@ -1,0 +1,95 @@
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  padding-top: 80px;
+}
+
+.hero__content {
+  max-width: 700px;
+}
+
+.hero__greeting {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--copper);
+  margin-bottom: 1.5rem;
+  font-weight: 400;
+}
+
+.hero__title {
+  font-size: clamp(3rem, 8vw, 5.5rem);
+  font-weight: 300;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+}
+
+.hero__subtitle {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  color: var(--text-secondary);
+  max-width: 480px;
+  margin-bottom: 2.5rem;
+  line-height: 1.7;
+}
+
+.hero__actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.75rem 2rem;
+  font-size: 0.875rem;
+  font-family: var(--font-body);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn--primary {
+  background: var(--copper);
+  color: var(--white);
+  border: 1px solid var(--copper);
+}
+
+.btn--primary:hover {
+  background: var(--copper-dark);
+  border-color: var(--copper-dark);
+}
+
+.btn--outline {
+  background: transparent;
+  color: var(--copper);
+  border: 1px solid var(--copper);
+}
+
+.btn--outline:hover {
+  background: var(--copper);
+  color: var(--white);
+}
+
+.hero__scroll-indicator {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.hero__scroll-line {
+  width: 1px;
+  height: 60px;
+  background: linear-gradient(to bottom, var(--copper), transparent);
+  animation: scrollPulse 2s ease-in-out infinite;
+}
+
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.3; transform: scaleY(0.6); }
+  50% { opacity: 1; transform: scaleY(1); }
+}

@@ -1,0 +1,56 @@
+.about {
+  background: var(--bg-secondary);
+}
+
+.about__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  margin-top: 3rem;
+}
+
+.about__text p {
+  color: var(--text-secondary);
+  margin-bottom: 1.25rem;
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+
+.about__skills h3 {
+  font-size: 1.1rem;
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  font-weight: 400;
+}
+
+.about__skills h3:not(:first-child) {
+  margin-top: 2rem;
+}
+
+.about__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.about__tag {
+  padding: 0.4rem 1rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+  border: 1px solid var(--copper-light);
+  color: var(--copper-dark);
+  background: transparent;
+}
+
+.about__tag--tool {
+  border-color: var(--text-secondary);
+  color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+  .about__grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
