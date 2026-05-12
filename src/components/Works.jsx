@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation, useLanguage } from '../i18n/LanguageContext.jsx'
+import { useTheme } from '../i18n/ThemeContext.jsx'
 import Wireframe from './Wireframe.jsx'
 import './Works.css'
 
@@ -30,7 +31,7 @@ const projectLogos = {
   presales: <img src="/logos/danubius.svg" alt="Danubius IT" style={{ filter: 'brightness(0)' }} />,
 }
 
-function ProjectImage({ id }) {
+function ProjectImage({ id, isDark }) {
   if (id === 'cig') {
     return (
       <div className="works__card-preview">
@@ -57,12 +58,20 @@ function ProjectImage({ id }) {
       </div>
     )
   }
+  if (id === 'moodmeup') {
+    return (
+      <div className="works__card-preview">
+        <img src={isDark ? '/images/moodmeup_dark.webp' : '/images/moodmeup.webp'} alt="MoodMeUp app screens" className="works__preview-full" />
+      </div>
+    )
+  }
   return <Wireframe projectId={id} />
 }
 
 function Works() {
   const t = useTranslation()
   const { language } = useLanguage()
+  const { isDark } = useTheme()
   const [current, setCurrent] = useState(0)
   const [direction, setDirection] = useState(0)
 
@@ -138,7 +147,7 @@ function Works() {
                 transition={{ duration: 0.5, ease: [0.45, 0, 0.55, 1] }}
               >
                 <div className="carousel__image">
-                  <ProjectImage id={p.id} />
+                  <ProjectImage id={p.id} isDark={isDark} />
                 </div>
                 <div className="carousel__info">
                   <div className="carousel__logo">

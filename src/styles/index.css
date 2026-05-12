@@ -36,6 +36,21 @@
   --radius-section: 48px;
 }
 
+/* === DARK MODE === */
+[data-theme="dark"] {
+  --bg-primary: #1A1620;
+  --bg-secondary: #1E1B25;
+  --bg-card: #26202E;
+  --text-primary: #F0EBE5;
+  --text-secondary: #B87AB4;
+  --accent: #F0EBE5;
+  --accent-light: #D4B8CF;
+  --white: #F0EBE5;
+  --copper-light: #B87AB4;
+  --copper: #D4956A;
+  --copper-dark: #B8733F;
+}
+
 html {
   font-size: 16px;
   scroll-behavior: smooth;

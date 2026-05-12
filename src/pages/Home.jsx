@@ -1,9 +1,11 @@
 import Navbar from '../components/Navbar.jsx'
 import Hero from '../components/Hero.jsx'
-import SectionDivider from '../components/SectionDivider.jsx'
+import PositioningStrip from '../components/PositioningStrip.jsx'
 import About from '../components/About.jsx'
 import OrbitLogos from '../components/OrbitLogos.jsx'
 import Works from '../components/Works.jsx'
+import Thinking from '../components/Thinking.jsx'
+import Values from '../components/Values.jsx'
 import Footer from '../components/Footer.jsx'
 
 function Home() {
@@ -11,12 +13,12 @@ function Home() {
     <>
       <Navbar />
       <Hero />
-      <SectionDivider />
+      <PositioningStrip />
       <About />
       <OrbitLogos />
-      <SectionDivider />
       <Works />
-      <SectionDivider />
+      <Thinking />
+      <Values />
       <Footer />
     </>
   )

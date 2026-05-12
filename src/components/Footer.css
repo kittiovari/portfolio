@@ -79,6 +79,10 @@
   margin-top: 2rem;
 }
 
+[data-theme="dark"] .footer {
+  background: #241E2C;
+}
+
 @media (max-width: 768px) {
   .footer__links {
     flex-direction: column;

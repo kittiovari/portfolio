@@ -207,9 +207,19 @@ const projectWireframeMap = {
 
 function Wireframe({ projectId }) {
   const type = projectWireframeMap[projectId] || 'saas'
+  const phone = (
+    <>
+      <div className="wireframe__notch" />
+      <div className="wireframe__screen">{wireframes[type]}</div>
+      <div className="wireframe__home-indicator" />
+    </>
+  )
   return (
     <div className="wireframe">
-      {wireframes[type]}
+      <div className="wireframe__duo">
+        <div className="wireframe__phone wireframe__phone--back">{phone}</div>
+        <div className="wireframe__phone wireframe__phone--front">{phone}</div>
+      </div>
     </div>
   )
 }

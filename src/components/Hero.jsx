@@ -1,9 +1,14 @@
 import { motion } from 'framer-motion'
 import { useTranslation } from '../i18n/LanguageContext.jsx'
+import { useTheme } from '../i18n/ThemeContext.jsx'
 import './Hero.css'
 
 function Hero() {
   const t = useTranslation()
+  const { isDark } = useTheme()
+  const logoColors = isDark
+    ? { c1: '#E8C870', c2: '#D4A030', c3: '#B88020' }
+    : { c1: '#D4956A', c2: '#C26D45', c3: '#8B4A2D' }
 
   return (
     <section id="hero" className="hero">
@@ -50,9 +55,9 @@ function Hero() {
             <svg viewBox="-6 46 210 200" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <linearGradient id="copper-hero" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#D4956A"/>
-                  <stop offset="45%" stopColor="#C26D45"/>
-                  <stop offset="100%" stopColor="#8B4A2D"/>
+                  <stop offset="0%" stopColor={logoColors.c1}/>
+                  <stop offset="45%" stopColor={logoColors.c2}/>
+                  <stop offset="100%" stopColor={logoColors.c3}/>
                 </linearGradient>
               </defs>
               <path d="M 58 58 C 90 58, 114 84, 114 120 C 114 156, 90 182, 58 182 C 26 182, 2 156, 2 120 C 2 84, 26 58, 58 58 Z" stroke="url(#copper-hero)" strokeWidth="8" fill="none"/>
@@ -72,9 +77,9 @@ function Hero() {
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <linearGradient id="copper-check" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#D4956A"/>
-                  <stop offset="45%" stopColor="#C26D45"/>
-                  <stop offset="100%" stopColor="#8B4A2D"/>
+                  <stop offset="0%" stopColor={logoColors.c1}/>
+                  <stop offset="45%" stopColor={logoColors.c2}/>
+                  <stop offset="100%" stopColor={logoColors.c3}/>
                 </linearGradient>
               </defs>
               <motion.path
@@ -91,14 +96,15 @@ function Hero() {
           </motion.span>
         </div>
 
-        <motion.p
+        <motion.div
           className="hero__subtitle"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 2.8 }}
         >
-          {t.hero.subtitle}
-        </motion.p>
+          <p>{t.hero.subtitle}</p>
+          {t.hero.subtitle2 && <p>{t.hero.subtitle2}</p>}
+        </motion.div>
 
         <motion.p
           className="hero__trustline"
