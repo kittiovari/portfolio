@@ -1,6 +1,6 @@
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useTranslation } from '../i18n/LanguageContext.jsx'
-import Flag from './Flag.jsx'
 import './About.css'
 
 function About() {
@@ -10,10 +10,10 @@ function About() {
     <section id="about" className="about">
       <div className="container">
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, x: 50 }}
+          whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
         >
           <p className="section-subtitle">{t.about.label}</p>
           <h2 className="section-title about__title">
@@ -22,46 +22,21 @@ function About() {
           <div className="divider" />
         </motion.div>
 
-        <div className="about__grid">
-          <motion.div
-            className="about__text"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <p>{t.about.text1}</p>
-            <p>{t.about.text2}</p>
-            <p>{t.about.text3}</p>
-            {t.about.text4 && <p>{t.about.text4}</p>}
+        <motion.div
+          className="about__body"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          <p>{t.about.text}</p>
 
-            <h3>{t.about.languagesTitle}</h3>
-            <div className="about__languages">
-              {t.about.languages.map((lang) => (
-                <div key={lang.name} className="about__language">
-                  <span className="about__language-flag"><Flag code={lang.code} /></span>
-                  <span className="about__language-name">{lang.name}</span>
-                  <span className="about__language-level">{lang.level}</span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          <motion.div
-            className="about__focus"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <h3>{t.about.focusTitle}</h3>
-            <div className="about__tags">
-              {t.about.focus.map((item) => (
-                <span key={item} className="about__tag">{item}</span>
-              ))}
-            </div>
-          </motion.div>
-        </div>
+          <div className="about__cv-link">
+            <Link to="/cv" className="about__cv-cta">
+              {t.about.cvCta} →
+            </Link>
+          </div>
+        </motion.div>
       </div>
     </section>
   )

@@ -35,9 +35,10 @@
 }
 
 .positioning__body {
-  font-size: 0.88rem;
-  color: var(--text-secondary);
-  line-height: 1.75;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  opacity: 0.68;
+  line-height: 1.8;
   font-weight: 400;
 }
 

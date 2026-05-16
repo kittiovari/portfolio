@@ -22,8 +22,8 @@ function Footer() {
 
         <p className="footer__tagline">
           {language === 'hu'
-            ? 'Van egy projekted? Beszéljünk.'
-            : 'Have a project? Let\'s talk.'}
+            ? 'Segíthetek? Így megtalálsz:'
+            : 'Can I help? Find me here:'}
         </p>
 
         <div className="footer__links">
@@ -43,6 +43,8 @@ function Footer() {
             /kitti-h-ovari
           </a>
         </div>
+
+        <p className="footer__closing">{t.footer.closing}</p>
 
         <p className="footer__copyright">
           &copy; {new Date().getFullYear()} {t.footer.rights}

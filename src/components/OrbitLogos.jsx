@@ -73,18 +73,18 @@ const icons = {
 }
 
 const partners = [
-  { text: 'Appartman', x: 5, y: 8, s: 72, employer: true, icon: 'appartman' },
-  { text: 'Mixie', x: 78, y: 65, s: 60, icon: 'mixie' },
-  { text: 'Winefo', x: 88, y: 28, s: 58, icon: 'winefo' },
-  { text: 'UNIQA', x: 42, y: 5, s: 70, icon: 'uniqa' },
-  { text: 'Booked4us', x: 28, y: 52, s: 60, icon: 'booked4us' },
-  { text: 'Chantblaster', x: 75, y: 4, s: 62, icon: 'chantblaster' },
-  { text: 'Code Escrow\nCloud', x: 60, y: 55, s: 62, icon: 'codeescrow' },
-  { text: 'MoodMeUp', x: 2, y: 55, s: 58, icon: 'moodmeup' },
-  { text: 'CIB Bank', x: 18, y: 22, s: 76, employer: true, icon: 'cib' },
-  { text: 'Danubius IT\nSolutions', x: 55, y: 25, s: 82, employer: true, icon: 'danubius' },
-  { text: 'AlphaVet', x: 38, y: 68, s: 58, icon: 'alphavet' },
-  { text: 'CIG Pannónia', x: 12, y: 40, s: 80, employer: true, icon: 'cig' },
+  { text: 'Appartman', x: 8, y: 10, s: 88, employer: true, icon: 'appartman' },
+  { text: 'Mixie', x: 72, y: 60, s: 60, icon: 'mixie' },
+  { text: 'Winefo', x: 80, y: 22, s: 58, icon: 'winefo' },
+  { text: 'UNIQA', x: 42, y: 6, s: 70, icon: 'uniqa' },
+  { text: 'Booked4us', x: 26, y: 55, s: 60, icon: 'booked4us' },
+  { text: 'Chantblaster', x: 68, y: 5, s: 62, icon: 'chantblaster' },
+  { text: 'Code Escrow\nCloud', x: 57, y: 56, s: 62, icon: 'codeescrow' },
+  { text: 'MoodMeUp', x: 10, y: 52, s: 58, icon: 'moodmeup' },
+  { text: 'CIB Bank', x: 20, y: 24, s: 80, employer: true, icon: 'cib' },
+  { text: 'Danubius IT\nSolutions', x: 50, y: 26, s: 96, employer: true, icon: 'danubius' },
+  { text: 'AlphaVet', x: 36, y: 68, s: 58, icon: 'alphavet' },
+  { text: 'CIG Pannónia', x: 14, y: 38, s: 84, employer: true, icon: 'cig' },
 ]
 
 function OrbitLogos() {
@@ -94,7 +94,7 @@ function OrbitLogos() {
   return (
     <section className="orbit">
       <div className="orbit__header">
-        {language === 'hu' ? 'Akikkel dolgoztam' : 'Clients & partners'}
+        {language === 'hu' ? 'Velük dolgoztam már' : 'Clients & partners'}
       </div>
       <div className="orbit__space">
         {partners.map((item, i) => (

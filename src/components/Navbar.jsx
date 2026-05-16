@@ -40,6 +40,7 @@ function Navbar() {
         {/* Desktop nav */}
         <div className="navbar__right navbar__right--desktop">
           <ul className="navbar__links">
+            <li><a href="#thinking">{t.nav.thinking}</a></li>
             <li><a href="#about">{t.nav.about}</a></li>
             <li><a href="#works">{t.nav.works}</a></li>
             <li><a href="#footer" className="navbar__cta">{t.nav.contact}</a></li>
@@ -86,6 +87,7 @@ function Navbar() {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3, ease: [0.45, 0, 0.55, 1] }}
           >
+            <a href="#thinking" onClick={closeMenu}>{t.nav.thinking}</a>
             <a href="#about" onClick={closeMenu}>{t.nav.about}</a>
             <a href="#works" onClick={closeMenu}>{t.nav.works}</a>
             <a href="#footer" onClick={closeMenu}>{t.nav.contact}</a>
