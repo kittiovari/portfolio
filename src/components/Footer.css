@@ -90,6 +90,10 @@
   background: #241E2C;
 }
 
+.footer .copper-text {
+  color: #D4A030;
+}
+
 @media (max-width: 768px) {
   .footer__links {
     flex-direction: column;

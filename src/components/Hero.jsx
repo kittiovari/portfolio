@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { useTranslation } from '../i18n/LanguageContext.jsx'
 import { useTheme } from '../i18n/ThemeContext.jsx'
 import './Hero.css'
@@ -122,7 +123,7 @@ function Hero() {
             transition={{ duration: 0.6, delay: 3.4 }}
           >
             <a href="#works" className="btn btn--primary">{t.hero.cta1}</a>
-            <a href="#footer" className="btn btn--outline">{t.hero.cta2}</a>
+            <a href="/cv-view.html" target="_blank" rel="noopener noreferrer" className="btn btn--outline">{t.hero.cta2}</a>
           </motion.div>
         </div>
 
@@ -134,7 +135,7 @@ function Hero() {
         >
           <div className="hero__portrait-frame">
             <div className="hero__portrait-accent" />
-            <img src="/images/me.webp" alt="H. Óvári Kitti" className="hero__portrait-img" />
+            <img src="/images/me.png" alt="H. Óvári Kitti" className="hero__portrait-img" />
           </div>
         </motion.div>
       </div>

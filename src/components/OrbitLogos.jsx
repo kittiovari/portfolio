@@ -94,7 +94,7 @@ function OrbitLogos() {
   return (
     <section className="orbit">
       <div className="orbit__header">
-        {language === 'hu' ? 'Velük dolgoztam már' : 'Clients & partners'}
+        {language === 'hu' ? 'Kikkel dolgoztam már együtt?' : 'Clients & partners'}
       </div>
       <div className="orbit__space">
         {partners.map((item, i) => (

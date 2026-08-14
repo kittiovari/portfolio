@@ -22,7 +22,7 @@ function Footer() {
 
         <p className="footer__tagline">
           {language === 'hu'
-            ? 'Segíthetek? Így megtalálsz:'
+            ? <>Dolgozzunk <span className="copper-text">együtt!</span></>
             : 'Can I help? Find me here:'}
         </p>
 

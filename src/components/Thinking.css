@@ -96,6 +96,17 @@
   padding-top: 0.25rem;
 }
 
+.thinking .copper-text,
+.thinking__card-body strong.copper-text {
+  color: #C26D45;
+  font-weight: 600;
+}
+
+[data-theme="dark"] .thinking .copper-text,
+[data-theme="dark"] .thinking__card-body strong.copper-text {
+  color: #D4A030;
+}
+
 @media (max-width: 900px) {
   .thinking__grid {
     grid-template-columns: 1fr;

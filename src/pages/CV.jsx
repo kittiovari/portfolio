@@ -11,6 +11,11 @@ function CV() {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => { window.scrollTo(0, 0) }, [])
+  useEffect(() => {
+    const prev = document.title
+    document.title = 'Horváthné Óvári Kitti – CV 2026'
+    return () => { document.title = prev }
+  }, [])
 
   const copyEmail = (e) => {
     e.preventDefault()
@@ -51,7 +56,10 @@ function CV() {
               </svg>
             )}
           </button>
-          <a href="/CV.pdf" download="CV_Ovari_Kitti.pdf" className="cv__print-btn">
+          <a href="/CV.pdf" target="_blank" rel="noopener noreferrer" className="cv__print-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '1em', height: '1em', marginRight: '0.45em', verticalAlign: 'middle', flexShrink: 0 }}>
+              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
             {cv.download}
           </a>
         </div>
@@ -62,10 +70,10 @@ function CV() {
         {/* ── Bal oldalsáv ── */}
         <aside className="cv__sidebar">
           <div className="cv__photo-wrap">
-            <img src="/images/me.webp" alt="H. Óvári Kitti" className="cv__photo" />
+            <img src="/images/me.png" alt="Horváthné Óvári Kitti" className="cv__photo" />
           </div>
 
-          <h1 className="cv__name">H. Óvári Kitti</h1>
+          <h1 className="cv__name">Horváthné Óvári Kitti</h1>
           <p className="cv__role">{cv.role}</p>
           <p className="cv__intro">{cv.intro}</p>
 

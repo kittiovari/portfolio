@@ -15,7 +15,6 @@ function About() {
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
         >
-          <p className="section-subtitle">{t.about.label}</p>
           <h2 className="section-title about__title">
             {t.about.title} <span className="copper-text">{t.about.titleHighlight}</span>
           </h2>
@@ -29,13 +28,8 @@ function About() {
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <p>{t.about.text}</p>
+          <p dangerouslySetInnerHTML={{ __html: t.about.text }} />
 
-          <div className="about__cv-link">
-            <Link to="/cv" className="about__cv-cta">
-              {t.about.cvCta} →
-            </Link>
-          </div>
         </motion.div>
       </div>
     </section>

@@ -14,9 +14,8 @@ function Thinking() {
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
         >
-          <p className="section-subtitle">{t.thinking.label}</p>
           <h2 className="section-title">
-            {t.thinking.title} <span className="copper-text">{t.thinking.titleHighlight}</span>
+            <span className="copper-text">{t.thinking.title}</span> {t.thinking.titleHighlight}
           </h2>
           <div className="divider" />
         </motion.div>
@@ -33,7 +32,7 @@ function Thinking() {
             >
               <div className="thinking__card-img" aria-hidden="true" />
               <h3 className="thinking__card-topic">{card.topic}</h3>
-              <p className="thinking__card-body">{card.body}</p>
+              <p className="thinking__card-body" dangerouslySetInnerHTML={{ __html: card.body }} />
             </motion.div>
           ))}
         </div>
