@@ -1,182 +1,450 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation, useLanguage } from '../i18n/LanguageContext.jsx'
-import { useTheme } from '../i18n/ThemeContext.jsx'
-import Wireframe from './Wireframe.jsx'
 import './Works.css'
 
-const sw = '1.2'
-const sp = { fill: 'none', stroke: 'currentColor', strokeWidth: sw, strokeLinecap: 'round', strokeLinejoin: 'round' }
-
-const projectLogos = {
-  cig: <img src="/logos/cig.svg" alt="CIG Pannónia" />,
-  cib: <img src="/logos/cib.svg" alt="CIB Bank" />,
-  gombarat: (
-    <span className="works__logo-circle" style={{ background: '#2A0D28' }}>
-      <img src="/logos/gombarat.svg" alt="GomBarát" style={{ filter: 'brightness(0) invert(1)', height: '70%' }} />
-    </span>
-  ),
-  uniqa: <img src="/logos/uniqa.svg" alt="UNIQA" />,
-  aimee: <img src="/logos/aimee.svg" alt="AImee" />,
-  alphavet: <span className="works__logo-dual"><img src="/logos/cig.svg" alt="CIG Pannónia" /><img src="/logos/allatorvosod.svg" alt="allatorvosod.hu" /></span>,
-  appartman: <img src="/logos/appartman.svg" alt="Appartman" />,
-  mixie: <img src="/logos/mixie.svg" alt="Mixie" />,
-  winefo: <img src="/logos/winefo.svg" alt="Winefo" />,
-  chantblaster: <img src="/logos/chantblaster.svg" alt="Chantblaster" />,
-  cec: <img src="/logos/cec.svg" alt="Code Escrow Cloud" />,
-  moodmeup: <img src="/logos/moodmeup.svg" alt="MoodMeUp" />,
-  'di-insurtech': <img src="/logos/di-insurtech.svg" alt="DI InsurTech" />,
-  b4us: <img src="/logos/booked4us.svg" alt="Booked4us" />,
-  audit: <svg viewBox="0 0 24 24" {...sp}><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>,
-  presales: <img src="/logos/danubius.svg" alt="Danubius IT" style={{ filter: 'brightness(0)' }} />,
+const projectMockups = {
+  cig:      ['/images/CIG.png'],
+  cib:      ['/images/CIB.png'],
+  uniqa:    ['/images/Uniqa.png'],
+  alphavet: ['/images/allatorvosod.webp'],
+  gombarat: ['/images/Gombarat.png'],
+  aimee:    ['/images/aimee.webp'],
+  appartman:['/images/appartman.webp'],
+  winefo:   ['/images/winefo.webp'],
 }
 
-function ProjectImage({ id, isDark }) {
-  if (id === 'cig') {
+const mockupBg = {
+  cib:      'linear-gradient(160deg, #2b2b2b 0%, #1e1e1e 50%, #141414 100%)',
+  uniqa:    'linear-gradient(135deg, #0d2a22 0%, #16133a 55%, #1c0e3a 100%)',
+  gombarat: 'linear-gradient(160deg, #0d1f0c 0%, #07130a 45%, #040d06 75%, #020805 100%)',
+  aimee:    'linear-gradient(135deg, #0e2420 0%, #1e1a08 55%, #120d04 100%)',
+  alphavet: 'linear-gradient(135deg, #0a1a2e 0%, #0d1624 55%, #060d14 100%)',
+  appartman:'linear-gradient(135deg, #1a0d2e 0%, #160a28 50%, #0d061a 100%)',
+  winefo:   'linear-gradient(135deg, #2a0a18 0%, #1e0a2a 55%, #130720 100%)',
+}
+
+const infoBg = {
+  cib:      'rgba(10, 10, 10, 0.72)',
+  uniqa:    'rgba(10, 8, 22, 0.72)',
+  gombarat: 'rgba(2, 8, 4, 0.72)',
+  aimee:    'rgba(8, 14, 10, 0.72)',
+  alphavet: 'rgba(6, 12, 20, 0.72)',
+  appartman:'rgba(12, 6, 22, 0.72)',
+  winefo:   'rgba(18, 6, 16, 0.72)',
+}
+
+const projectVideos = {
+  winefo: {
+    hu: 'https://www.youtube.com/watch?v=sdUCwPSTlyc',
+    en: 'https://www.youtube.com/watch?v=tebOZ8lc9tA',
+  },
+}
+
+const accentColor = {
+  // cig: default purple, no override
+  cib:      '#6fa8c8',
+  uniqa:    '#7dc4b4',
+  gombarat: '#6ec47a',
+  aimee:    '#c4a85a',
+  alphavet: '#5aaed4',
+  appartman:'#9b7fd4',
+  winefo:   '#c47fa8',
+}
+
+const projectLogos = {
+  cig:         <img src="/logos/cig.svg"          alt="CIG Pannónia"    className="logo logo--color-dark" />,
+  cib:         <img src="/logos/cib.svg"          alt="CIB Bank"        className="logo logo--mono-dark" />,
+  gombarat:    <img src="/logos/gombarat.svg"        alt="GomBarát"        className="logo logo--on-dark" />,
+  uniqa:       <img src="/logos/uniqa.svg"        alt="UNIQA"           className="logo logo--mono-dark" />,
+  aimee:       <img src="/logos/aimee.svg"        alt="AImee" />,
+  alphavet: (
+    <span className="works__tile-logo-dual">
+      <img src="/logos/cig.svg"          alt="CIG Pannónia"  className="logo logo--color-dark" />
+      <img src="/logos/allatorvosod.svg" alt="allatorvosod.hu" className="logo logo--color-dark" />
+    </span>
+  ),
+  appartman:   <img src="/logos/appartman.svg"    alt="Appartman" />,
+  mixie:       <img src="/logos/mixie.svg"        alt="Mixie" />,
+  winefo:      <img src="/logos/winefo.svg"       alt="Winefo"          className="logo logo--mono-dark" />,
+  chantblaster:<img src="/logos/chantblaster.svg" alt="Chantblaster" />,
+  cec:         <img src="/logos/cec.svg"          alt="Code Escrow Cloud" className="logo logo--color-dark" />,
+  moodmeup:    <img src="/logos/moodmeup.svg"     alt="MoodMeUp"        className="logo logo--color-dark" />,
+  'di-insurtech': <img src="/logos/di-insurtech.svg" alt="DI InsurTech" className="logo logo--color-dark" />,
+  b4us:        <img src="/logos/booked4us.svg"    alt="Booked4us"       className="logo logo--color-dark" />,
+  presales:    <img src="/logos/danubius.svg"     alt="Danubius IT"     className="logo logo--on-dark" />,
+}
+
+function MockupArea({ id }) {
+  const images = projectMockups[id]
+  const [active, setActive] = useState(0)
+  const bg = mockupBg[id]
+  const { language } = useLanguage()
+  const videoUrls = projectVideos[id]
+  const video = videoUrls ? (language === 'hu' ? videoUrls.hu : videoUrls.en) : null
+
+  useEffect(() => { setActive(0) }, [id])
+
+  if (!images) {
     return (
-      <div className="works__card-preview">
-        <img src="/images/cig-mobile.svg" alt="CIG mobile" className="works__preview-bg" />
-        <img src="/images/cig-desktop.svg" alt="CIG desktop" className="works__preview-fg" />
+      <div className="works-modal__mockup works-modal__mockup--empty">
+        <span className="works-modal__mockup-label">Mockup</span>
       </div>
     )
   }
-  if (id === 'alphavet') {
-    return (
-      <div className="works__card-preview">
-        <img src="/images/alphavet-1.svg" alt="AlphaVet 1" className="works__preview-bg" />
-        <img src="/images/alphavet-2.svg" alt="AlphaVet 2" className="works__preview-fg" />
-      </div>
-    )
-  }
-  if (id === 'gombarat') {
-    return (
-      <div className="works__card-preview works__card-preview--dark works__card-preview--multi">
-        <img src="/images/gombarat-home.png" alt="Kezdőlap" />
-        <img src="/images/gombarat-menu.png" alt="Menü" />
-        <img src="/images/gombarat-list.png" alt="Gombatár" />
-        <img src="/images/gombarat-experts.png" alt="Szakellenőrök" />
-      </div>
-    )
-  }
-  if (id === 'moodmeup') {
-    return (
-      <div className="works__card-preview">
-        <img src={isDark ? '/images/moodmeup_dark.webp' : '/images/moodmeup.webp'} alt="MoodMeUp app screens" className="works__preview-full" />
-      </div>
-    )
-  }
-  return <Wireframe projectId={id} />
+
+  return (
+    <div className="works-modal__mockup works-modal__mockup--media" style={bg ? { background: bg } : undefined}>
+      <AnimatePresence mode="wait">
+        <motion.img
+          key={images[active]}
+          src={images[active]}
+          alt=""
+          className="works-modal__mockup-img"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25 }}
+        />
+      </AnimatePresence>
+      {images.length > 1 && (
+        <div className="works-modal__mockup-dots">
+          {images.map((_, i) => (
+            <button
+              key={i}
+              className={`works-modal__mockup-dot${i === active ? ' works-modal__mockup-dot--active' : ''}`}
+              onClick={() => setActive(i)}
+              aria-label={`Kép ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ProjectModal({ projects, index, onClose, onPrev, onNext }) {
+  const p = projects[index]
+  const hasPrev = index > 0
+  const hasNext = index < projects.length - 1
+  const { language } = useLanguage()
+  const isHu = language === 'hu'
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = '' }
+  }, [])
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === 'Escape') onClose()
+      if (e.key === 'ArrowLeft' && hasPrev) onPrev()
+      if (e.key === 'ArrowRight' && hasNext) onNext()
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onClose, onPrev, onNext, hasPrev, hasNext])
+
+  return (
+    <motion.div
+      className="works-modal"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="works-modal__dialog"
+        initial={{ opacity: 0, scale: 1.03 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 1.03 }}
+        transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close */}
+        <button className="works-modal__close" onClick={onClose} aria-label="Bezárás">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+
+        {/* Navigation */}
+        {hasPrev && (
+          <button className="works-modal__nav works-modal__nav--prev" onClick={onPrev} aria-label="Előző projekt">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M15 18l-6-6 6-6"/>
+            </svg>
+          </button>
+        )}
+        {hasNext && (
+          <button className="works-modal__nav works-modal__nav--next" onClick={onNext} aria-label="Következő projekt">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </button>
+        )}
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={p.id}
+            className="works-modal__content"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.1 }}
+          >
+            {/* Left half: mockup slides from left */}
+            <motion.div
+              className="works-modal__half"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.28, delay: 0.05, ease: [0.4, 0, 0.2, 1] }}
+            >
+              <MockupArea id={p.id} />
+            </motion.div>
+
+            {/* Right half: info slides from right */}
+            <motion.div
+              className="works-modal__half"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.28, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
+            >
+              <div className="works-modal__info" style={{
+                ...(infoBg[p.id]    ? { background: infoBg[p.id] } : {}),
+                ...(accentColor[p.id] ? { '--modal-accent': accentColor[p.id] } : {}),
+              }}>
+                <div className="works-modal__logo-row">
+                  <div className="works-modal__logo">{projectLogos[p.id]}</div>
+                  {projectVideos[p.id] && (
+                    <a
+                      href={language === 'hu' ? projectVideos[p.id].hu : projectVideos[p.id].en}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="works-modal__video-btn"
+                    >
+                      <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="13" height="13">
+                        <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.4"/>
+                        <path d="M6.5 5.5l4 2.5-4 2.5V5.5z" fill="currentColor"/>
+                      </svg>
+                      {isHu ? 'Bemutató' : 'Watch demo'}
+                    </a>
+                  )}
+                </div>
+
+                <h2 className="works-modal__title">{p.title}</h2>
+
+                <div className="works-modal__chips">
+                  {p.period && (
+                    <span className="works-modal__chip">
+                      <svg className="works-modal__chip-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" strokeWidth="1.3"/>
+                        <path d="M2 7h12" stroke="currentColor" strokeWidth="1.3"/>
+                        <path d="M5 1v3M11 1v3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                      </svg>
+                      {p.period}
+                    </span>
+                  )}
+                  {p.role && (
+                    <span className="works-modal__chip">
+                      <svg className="works-modal__chip-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.3"/>
+                        <path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                      </svg>
+                      {p.role}
+                    </span>
+                  )}
+                  {p.team && (
+                    <span className="works-modal__chip">
+                      <svg className="works-modal__chip-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <circle cx="6" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.3"/>
+                        <circle cx="11" cy="5.5" r="2" stroke="currentColor" strokeWidth="1.2"/>
+                        <path d="M1 14c0-2.761 2.239-4 5-4s5 1.239 5 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                        <path d="M11 11c1.657 0 3 .895 3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                      </svg>
+                      {p.team}
+                    </span>
+                  )}
+                </div>
+
+                {/* Merged context block (replaces separate excerpt + challenge) */}
+                {p.context
+                  ? <p className="works-modal__context">{p.context}</p>
+                  : p.excerpt && <p className="works-modal__excerpt">{p.excerpt}</p>
+                }
+
+                {/* Legacy challenge list — only shown when no context field */}
+                {!p.context && (p.challenge || p.painPoints) && (
+                  <div className="works-modal__block">
+                    <p className="works-modal__block-label">{isHu ? 'Fő kihívások (AS-IS)' : 'Key challenges'}</p>
+                    <ul className="works-modal__block-list works-modal__block-list--pain">
+                      {(Array.isArray(p.challenge ?? p.painPoints) ? (p.challenge ?? p.painPoints) : [p.challenge ?? p.painPoints]).map((item, i) => (
+                        <li key={i}>
+                          <svg className="block-list-icon" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                            <circle cx="5" cy="5" r="4" stroke="currentColor" strokeWidth="1.2"/>
+                            <path d="M5 3v2.2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                            <circle cx="5" cy="6.8" r="0.5" fill="currentColor"/>
+                          </svg>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {!p.context && !p.challenge && p.question && (
+                  <div className="works-modal__block">
+                    <p className="works-modal__block-label">{isHu ? 'Mire kerestünk választ?' : 'What were we looking for?'}</p>
+                    <ul className="works-modal__block-list works-modal__block-list--question">
+                      {(Array.isArray(p.question) ? p.question : [p.question]).map((q, i) => (
+                        <li key={i}>
+                          <svg className="block-list-icon" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                            <circle cx="5" cy="5" r="4" stroke="currentColor" strokeWidth="1.2"/>
+                            <path d="M5 3v2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                            <circle cx="5" cy="7.2" r="0.5" fill="currentColor"/>
+                          </svg>
+                          {q}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {p.achievement && (
+                  <div className="works-modal__block">
+                    <p className="works-modal__block-label works-modal__block-label--accent">
+                      {isHu ? 'Fő megoldások & eredmények' : 'Key solutions & results'}
+                    </p>
+                    <ul className="works-modal__block-list works-modal__block-list--achievement">
+                      {(Array.isArray(p.achievement) ? p.achievement : [p.achievement]).map((a, i) => {
+                        const colonIdx = a.indexOf(':')
+                        const label = colonIdx > -1 ? a.slice(0, colonIdx).trim() : null
+                        const body  = colonIdx > -1 ? a.slice(colonIdx + 1).trim() : a
+                        return (
+                          <li key={i}>
+                            <svg className="block-list-icon" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                              <circle cx="5" cy="5" r="4" stroke="currentColor" strokeWidth="1.2"/>
+                              <path d="M3 5.2l1.4 1.4 2.6-2.6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            <span className="works-modal__ach-item">
+                              {label && <span className="works-modal__ach-label">{label}</span>}
+                              <span className="works-modal__ach-body">{body}</span>
+                            </span>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  </div>
+                )}
+
+                {p.lesson && (
+                  <div className="works-modal__lesson-callout">
+                    <p className="works-modal__lesson-label">{isHu ? 'Tanulság' : 'Key takeaway'}</p>
+                    {Array.isArray(p.lesson) ? (
+                      <ul className="works-modal__block-list works-modal__block-list--achievement">
+                        {p.lesson.map((l, i) => {
+                          const colonIdx = l.indexOf(':')
+                          const label = colonIdx > -1 ? l.slice(0, colonIdx).trim() : null
+                          const body  = colonIdx > -1 ? l.slice(colonIdx + 1).trim() : l
+                          return (
+                            <li key={i}>
+                              <svg className="block-list-icon" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                                <circle cx="5" cy="5" r="4" stroke="currentColor" strokeWidth="1.2"/>
+                                <path d="M3 5.2l1.4 1.4 2.6-2.6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                              <span className="works-modal__ach-item">
+                                {label && <span className="works-modal__ach-label">{label}</span>}
+                                <span className="works-modal__ach-body">{body}</span>
+                              </span>
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    ) : (
+                      <p className="works-modal__lesson-text">{p.lesson}</p>
+                    )}
+                  </div>
+                )}
+
+                <div className="works-modal__tags">
+                  {p.tags.map((tag) => (
+                    <span key={tag} className="works-modal__tag">{tag}</span>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>
+      </motion.div>
+    </motion.div>
+  )
 }
 
 function Works() {
   const t = useTranslation()
-  const { language } = useLanguage()
-  const { isDark } = useTheme()
-  const [current, setCurrent] = useState(0)
-  const [direction, setDirection] = useState(0)
-
   const projects = t.works.projects
-  const total = projects.length
+  const [selected, setSelected] = useState(null)
 
-  const goTo = useCallback((index) => {
-    setDirection(index > current ? 1 : -1)
-    setCurrent(index)
-  }, [current])
-
-  const next = useCallback(() => {
-    setDirection(1)
-    setCurrent((c) => (c + 1) % total)
-  }, [total])
-
-  const prev = useCallback(() => {
-    setDirection(-1)
-    setCurrent((c) => (c - 1 + total) % total)
-  }, [total])
-
-  // Auto-play
-  useEffect(() => {
-    const timer = setInterval(next, 6000)
-    return () => clearInterval(timer)
-  }, [next])
-
-  const p = projects[current]
-
-  const variants = {
-    enter: (dir) => ({ x: dir > 0 ? 300 : -300, opacity: 0 }),
-    center: { x: 0, opacity: 1 },
-    exit: (dir) => ({ x: dir > 0 ? -300 : 300, opacity: 0 }),
-  }
+  const close = useCallback(() => setSelected(null), [])
+  const prev = useCallback(() => setSelected((i) => Math.max(0, i - 1)), [])
+  const next = useCallback(() => setSelected((i) => Math.min(projects.length - 1, i + 1)), [projects.length])
 
   return (
     <section id="works" className="works">
       <div className="container">
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, scale: 0.94 }}
+          whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
         >
-          <p className="section-subtitle">{t.works.label}</p>
-          <h2 className="section-title">
-            {t.works.title} <span className="copper-text">{t.works.titleHighlight}</span>
-          </h2>
+          <h2 className="section-title" dangerouslySetInnerHTML={{ __html: t.works.label }} />
           <div className="divider" />
         </motion.div>
 
-        {/* Carousel */}
-        <div className="carousel">
-          {/* Nav arrows */}
-          <button className="carousel__arrow carousel__arrow--left" onClick={prev} aria-label="Previous">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M15 18l-6-6 6-6"/></svg>
-          </button>
-          <button className="carousel__arrow carousel__arrow--right" onClick={next} aria-label="Next">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
-          </button>
-
-          {/* Main card */}
-          <div className="carousel__viewport">
-            <AnimatePresence mode="wait" custom={direction}>
-              <motion.div
-                key={p.id}
-                className="carousel__card"
-                custom={direction}
-                variants={variants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.5, ease: [0.45, 0, 0.55, 1] }}
-              >
-                <div className="carousel__image">
-                  <ProjectImage id={p.id} isDark={isDark} />
-                </div>
-                <div className="carousel__info">
-                  <div className="carousel__logo">
-                    {projectLogos[p.id]}
-                  </div>
-                  <h3>{p.title}</h3>
-                  <p className="carousel__summary">{p.summary}</p>
-                  {p.scope && <p className="carousel__scope">{p.scope}</p>}
-                  <div className="carousel__tags">
-                    {p.tags.map((tag) => <span key={tag} className="carousel__tag">{tag}</span>)}
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          {/* Bubble indicators */}
-          <div className="carousel__dots">
-            {projects.map((proj, i) => (
-              <button
-                key={proj.id}
-                className={`carousel__dot ${i === current ? 'carousel__dot--active' : ''}`}
-                onClick={() => goTo(i)}
-                aria-label={proj.title}
-              />
-            ))}
-          </div>
+        <div className="works__grid">
+          {projects.map((p, i) => (
+            <motion.div
+              key={p.id}
+              className={`works__tile ${p.featured ? 'works__tile--featured' : ''} ${p.tier === 'secondary' ? 'works__tile--secondary' : ''}`}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.5, delay: (i % 4) * 0.07 }}
+              onClick={() => setSelected(i)}
+              style={{ cursor: 'pointer' }}
+            >
+              <div className="works__tile-logo">
+                {projectLogos[p.id]}
+              </div>
+              <div className="works__tile-body">
+                <h3 className="works__tile-title">{p.title}</h3>
+                <p className="works__tile-scope">{p.excerpt || p.scope || p.context}</p>
+              </div>
+              <div className="works__tile-tags">
+                {p.tags.slice(0, 2).map((tag) => (
+                  <span key={tag} className="works__tile-tag">{tag}</span>
+                ))}
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
+
+      <AnimatePresence>
+        {selected !== null && (
+          <ProjectModal
+            projects={projects}
+            index={selected}
+            onClose={close}
+            onPrev={prev}
+            onNext={next}
+          />
+        )}
+      </AnimatePresence>
     </section>
   )
 }

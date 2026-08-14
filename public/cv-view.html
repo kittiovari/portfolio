@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>Horváthné Óvári Kitti – CV 2026</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; background: #404040; overflow: hidden; }
+    iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: none;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    iframe.visible { opacity: 1; }
+  </style>
+</head>
+<body>
+  <iframe id="pdf" src="/CV.pdf#view=FitV"></iframe>
+  <script>
+    setTimeout(function() {
+      document.getElementById('pdf').classList.add('visible');
+    }, 450);
+  </script>
+</body>
+</html>

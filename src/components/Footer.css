@@ -73,14 +73,25 @@
   opacity: 1;
 }
 
+.footer__closing {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.5px;
+  margin-top: 0.5rem;
+}
+
 .footer__copyright {
   font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.3);
-  margin-top: 2rem;
+  color: rgba(255, 255, 255, 0.25);
+  margin-top: 2.5rem;
 }
 
 [data-theme="dark"] .footer {
   background: #241E2C;
+}
+
+.footer .copper-text {
+  color: #D4A030;
 }
 
 @media (max-width: 768px) {

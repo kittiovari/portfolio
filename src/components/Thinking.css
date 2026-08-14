@@ -1,65 +1,119 @@
 .thinking {
-  background: var(--bg-secondary);
+  background: #2A0D28;
+  padding: 5rem 0;
 }
 
+[data-theme="dark"] .thinking {
+  background: #12091A;
+}
+
+/* Override global header colors for this dark section */
+.thinking .section-subtitle {
+  color: rgba(240, 235, 229, 0.45);
+}
+
+.thinking .section-title {
+  color: rgba(240, 235, 229, 0.95);
+}
+
+.thinking .copper-text {
+  color: #B87AB4;
+}
+
+[data-theme="dark"] .thinking .copper-text {
+  color: #D4956A;
+}
+
+.thinking .divider {
+  background: rgba(240, 235, 229, 0.18);
+}
+
+/* Grid */
 .thinking__grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-  margin-top: 2.5rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-top: 3.5rem;
 }
 
+/* Cards */
 .thinking__card {
-  background: var(--bg-card);
-  border-radius: var(--radius-card);
-  padding: 2rem 2rem 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 0 2rem 2rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  position: relative;
-  border: 1px solid rgba(26, 26, 26, 0.05);
-  transition: border-color 0.3s ease;
+  gap: 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  transition: background 0.22s ease, transform 0.22s ease;
 }
 
 .thinking__card:hover {
-  border-color: rgba(26, 26, 26, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-3px);
 }
 
+/* Illustration images */
+.thinking__card-img {
+  height: 160px;
+  margin: 0 -2rem 0.5rem;
+  background-size: auto 72%;
+  background-repeat: no-repeat;
+  background-position: center center;
+  flex-shrink: 0;
+}
+
+.thinking__card--1 .thinking__card-img { background-image: url('/images/thinking-1.svg'); }
+.thinking__card--2 .thinking__card-img { background-image: url('/images/thinking-2.svg'); }
+.thinking__card--3 .thinking__card-img { background-image: url('/images/thinking-3.svg'); }
+
+
 .thinking__card-number {
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 2px;
-  color: var(--text-secondary);
-  opacity: 0.4;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  color: rgba(240, 235, 229, 0.28);
   font-family: var(--font-body);
+  padding-top: 0.25rem;
 }
 
 .thinking__card-topic {
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: rgba(240, 235, 229, 1);
   font-family: var(--font-heading);
-  line-height: 1.35;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
 .thinking__card-body {
   font-size: 0.88rem;
-  color: var(--text-secondary);
-  line-height: 1.8;
+  color: rgba(240, 235, 229, 0.48);
+  line-height: 1.85;
   font-weight: 400;
+  margin-top: auto;
+  padding-top: 0.25rem;
 }
 
-[data-theme="dark"] .thinking__card {
-  background: var(--bg-card);
-  border-color: rgba(240, 235, 229, 0.06);
+.thinking .copper-text,
+.thinking__card-body strong.copper-text {
+  color: #C26D45;
+  font-weight: 600;
 }
 
-[data-theme="dark"] .thinking__card:hover {
-  border-color: rgba(240, 235, 229, 0.14);
+[data-theme="dark"] .thinking .copper-text,
+[data-theme="dark"] .thinking__card-body strong.copper-text {
+  color: #D4A030;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .thinking__grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .thinking {
+    padding: 4rem 0;
   }
 }

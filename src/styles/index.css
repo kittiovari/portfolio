@@ -64,7 +64,7 @@ body {
   background: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
-  line-height: 1.6;
+  line-height: 1.7;
 }
 
 a {
@@ -93,7 +93,7 @@ section {
 }
 
 .section-title {
-  font-size: clamp(2rem, 5vw, 3rem);
+  font-size: clamp(2.25rem, 5vw, 3.25rem);
   color: var(--text-primary);
   margin-bottom: 0.75rem;
   font-weight: 700;
