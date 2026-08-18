@@ -83,7 +83,7 @@ const partners = [
   { text: 'MoodMeUp', x: 10, y: 52, s: 58, icon: 'moodmeup' },
   { text: 'CIB Bank', x: 20, y: 24, s: 80, employer: true, icon: 'cib' },
   { text: 'Danubius IT\nSolutions', x: 50, y: 26, s: 96, employer: true, icon: 'danubius' },
-  { text: 'AlphaVet', x: 36, y: 68, s: 58, icon: 'alphavet' },
+  { text: 'Tappancs', x: 36, y: 68, s: 58, icon: 'alphavet' },
   { text: 'CIG Pannónia', x: 14, y: 38, s: 84, employer: true, icon: 'cig' },
 ]
 

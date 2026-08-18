@@ -2,9 +2,52 @@
   background: var(--bg-card);
 }
 
+.about__layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 4rem;
+  align-items: center;
+}
+
+.about__content {
+  min-width: 0;
+}
+
+.about__portrait-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.about__portrait-img {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+}
+
 .about__body {
-  max-width: 640px;
+  max-width: 580px;
   margin-top: 2.5rem;
+}
+
+@media (max-width: 860px) {
+  .about__layout {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .about__portrait-wrap {
+    order: -1;
+  }
+
+  .about__portrait-img {
+    width: 180px;
+    height: 180px;
+  }
 }
 
 .about__body p {

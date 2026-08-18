@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation, useLanguage } from '../i18n/LanguageContext.jsx'
 import './Works.css'
 
+const FEATURED_IDS = ['alphavet', 'winefo', 'appartman']
+
 const projectMockups = {
   cig:      ['/images/CIG.png'],
   cib:      ['/images/CIB.png'],
@@ -383,14 +385,58 @@ function ProjectModal({ projects, index, onClose, onPrev, onNext }) {
   )
 }
 
+function ProjectCard({ p, onClick, animDelay }) {
+  const img = projectMockups[p.id]?.[0]
+  const bg = mockupBg[p.id]
+  return (
+    <motion.div
+      className={`works__card${!img ? ' works__card--no-img' : ''}`}
+      style={bg ? { background: bg } : {}}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.5, delay: animDelay }}
+      onClick={onClick}
+    >
+      {img
+        ? <img src={img} alt={p.title} className="works__card-img" draggable={false} />
+        : (
+          <div className="works__card-placeholder">
+            <div className="works__card-logo-wrap">{projectLogos[p.id]}</div>
+          </div>
+        )
+      }
+      <div className="works__card-overlay">
+        <h3 className="works__card-title">{p.title}</h3>
+      </div>
+    </motion.div>
+  )
+}
+
 function Works() {
   const t = useTranslation()
+  const { language } = useLanguage()
   const projects = t.works.projects
   const [selected, setSelected] = useState(null)
+  const [showAll, setShowAll] = useState(false)
+
+  const featured = projects.filter(p => FEATURED_IDS.includes(p.id))
+  const others = projects.filter(p => !FEATURED_IDS.includes(p.id))
 
   const close = useCallback(() => setSelected(null), [])
   const prev = useCallback(() => setSelected((i) => Math.max(0, i - 1)), [])
   const next = useCallback(() => setSelected((i) => Math.min(projects.length - 1, i + 1)), [projects.length])
+  const openProject = useCallback((p) => setSelected(projects.indexOf(p)), [projects])
+
+  // Allow timeline component to open this modal via custom event
+  useEffect(() => {
+    const handler = (e) => {
+      const idx = projects.findIndex(p => p.id === e.detail.projectId)
+      if (idx !== -1) setSelected(idx)
+    }
+    window.addEventListener('open-project-modal', handler)
+    return () => window.removeEventListener('open-project-modal', handler)
+  }, [projects])
 
   return (
     <section id="works" className="works">
@@ -405,32 +451,39 @@ function Works() {
           <div className="divider" />
         </motion.div>
 
-        <div className="works__grid">
-          {projects.map((p, i) => (
-            <motion.div
-              key={p.id}
-              className={`works__tile ${p.featured ? 'works__tile--featured' : ''} ${p.tier === 'secondary' ? 'works__tile--secondary' : ''}`}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.5, delay: (i % 4) * 0.07 }}
-              onClick={() => setSelected(i)}
-              style={{ cursor: 'pointer' }}
-            >
-              <div className="works__tile-logo">
-                {projectLogos[p.id]}
-              </div>
-              <div className="works__tile-body">
-                <h3 className="works__tile-title">{p.title}</h3>
-                <p className="works__tile-scope">{p.excerpt || p.scope || p.context}</p>
-              </div>
-              <div className="works__tile-tags">
-                {p.tags.slice(0, 2).map((tag) => (
-                  <span key={tag} className="works__tile-tag">{tag}</span>
-                ))}
-              </div>
-            </motion.div>
+        <div className="works__cards">
+          {featured.map((p, i) => (
+            <ProjectCard key={p.id} p={p} onClick={() => openProject(p)} animDelay={i * 0.08} />
           ))}
+        </div>
+
+        <AnimatePresence>
+          {showAll && (
+            <motion.div
+              className="works__cards works__cards--more"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              transition={{ duration: 0.35 }}
+            >
+              {others.map((p, i) => (
+                <ProjectCard key={p.id} p={p} onClick={() => openProject(p)} animDelay={i * 0.05} />
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="works__toggle-wrap">
+          <motion.button
+            className="works__toggle-btn"
+            onClick={() => setShowAll(v => !v)}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            {showAll
+              ? (language === 'hu' ? 'Kevesebb mutatása' : 'Show less')
+              : (language === 'hu' ? 'Többi projekt' : 'More projects')}
+          </motion.button>
         </div>
       </div>
 
