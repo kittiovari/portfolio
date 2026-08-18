@@ -41,9 +41,13 @@ export const translations = {
     },
     about: {
       label: 'Rólam',
-      title: 'A nyelv a gondolkodás tükre,',
-      titleHighlight: 'a jó UX az értő tolmács',
-      text: '<strong>Szeretem jól érteni az embereket</strong>, megtalálni a gondolkodásmód és viselkedési minták mögöttes miértjeit, legyen a terület nyelvoktatás, pszichológia vagy épp UX research és design.',
+      title: 'Az emberi viselkedés megértéséből építek',
+      titleHighlight: 'intuitív élményeket',
+      paragraphs: [
+        'Horváthné Óvári Kitti vagyok, UX generalista. A nyelvészet és pszichológia felől érkezve mindig is az emberi gondolkodásmód és viselkedési minták mögöttes miértjei foglalkoztattak.',
+        'A munkám során erre a mélyebb megértésre építve kötöm össze az üzleti célokat a felhasználói igényekkel — a kutatástól a felülettervezésig komplex folyamatokat alakítok át letisztult, maguktól értetődő digitális élményekké.',
+      ],
+      hobbies: [],
       cvCta: 'CV',
     },
     works: {
@@ -154,12 +158,12 @@ export const translations = {
         },
         {
           id: 'alphavet',
-          title: 'Kisállat-biztosítás és kárbejelentés',
+          title: 'Tappancs biztosítás és kárbejelentés',
           category: 'insurance',
           tags: ['UX/UI Design', 'Insurtech', 'E-commerce', 'Benchmarking', 'UI Kit'],
           role: 'UX/UI Designer (Solo)',
           team: '1 fejlesztő (külsős ügynökség), partneri kontaktok (CIG & Állatorvosod.hu), 1 UX/UI Designer',
-          context: 'Új kisállat-biztosítási és kárbejelentési flow kialakítása az allatorvosod.hu felületén marketing instrukciók alapján.',
+          context: 'Új kisállat-biztosítási és kárbejelentési flow kialakítása a Tappancs felületén marketing instrukciók alapján.',
           achievement: [
             'Versenytárs-elemzés: Elemeztem a hazai és nemzetközi piacot a leggördülékenyebb minták azonosítására.',
             'Brand-rekonstrukció & Illusztrációk: Újraépítettem a márkaelemeket, UI kitet építettem és egyedi illusztrációs koncepciót alkottam.',
@@ -226,15 +230,15 @@ export const translations = {
       titleHighlight: 'dolgozom?',
       cards: [
         {
-          topic: 'Megismerem a felhasználókat és a problémákat',
+          topic: 'Megértés & Kutatás',
           body: 'Csak azok az ötletek lesznek befutók, amik <strong class="copper-text">valódi problémára válaszolnak</strong>. A feltáró kutatás ezért sosem lehet opcionális: ne feltételezésekre, hanem <strong class="copper-text">valóságra építsünk!</strong>',
         },
         {
-          topic: 'Intuitív designt építek',
+          topic: 'Tisztaság & Rendszer',
           body: 'Egy folyamat akkor szerethető, ha az <strong class="copper-text">tükrözi a user mentális modelljét</strong>, képes <strong class="copper-text">egyszerűbbé és rövidebbé tenni az eredeti útvonalat</strong>. Erre törekszem úgy, hogy közben minden felfedett fájdalom végére pontot teszek.',
         },
         {
-          topic: 'Csapatban gondolkodom, tesztelek, iterálok',
+          topic: 'Együttműködés',
           body: 'Hiszem, hogy a jó folyamatok <strong class="copper-text">az összes termékfejlesztési szereplő nézőpontját ötvözik</strong>. Szeretek a <strong class="copper-text">kreativitásnak teret engedő munkakörnyezetet teremteni</strong>. Nincs rossz ötlet, csak a ki nem mondott. 😉',
         },
       ],
@@ -308,7 +312,7 @@ export const translations = {
           cats: [
             {
               name: 'Biztosítás & pénzügy',
-              items: ['CIG Pannónia — lakás- és életbiztosítási portálcsalád, design system, rebranding', 'CIB Bank — Corporate Portal, Customer Portal, CIB Bingo', 'UNIQA / OCP — ügyfélportál redesign', 'AImee — AI ügyfélszolgálati chatbot', 'AlphaVet — kisállat-biztosítási flow', 'DI InsurTech — biztosítási termékkoncepció'],
+              items: ['CIG Pannónia — lakás- és életbiztosítási portálcsalád, design system, rebranding', 'CIB Bank — Corporate Portal, Customer Portal, CIB Bingo', 'UNIQA / OCP — ügyfélportál redesign', 'AImee — AI ügyfélszolgálati chatbot', 'Tappancs — kisállat-biztosítási flow', 'DI InsurTech — biztosítási termékkoncepció'],
             },
             {
               name: 'SaaS & startup projektek',
@@ -383,10 +387,14 @@ export const translations = {
     },
     about: {
       label: 'About',
-      title: 'Language mirrors thought,',
-      titleHighlight: 'good UX is the interpreter',
-      text: 'Understanding how people think and navigate complexity has always been close to me — whether through language teaching or digital systems. Today, I bring this perspective into UX/UI and product design.',
-      cvCta: 'Curious about my professional background?',
+      title: 'I build intuitive experiences from understanding',
+      titleHighlight: 'human behaviour',
+      paragraphs: [
+        'I\'m Kitti H. Óvári, a UX generalist. Coming from linguistics and psychology, I\'ve always been drawn to the underlying reasons behind human thinking patterns and behaviour.',
+        'In my work, I draw on this deeper understanding to connect business goals with user needs — from research to interface design, I turn complex processes into clear, self-evident digital experiences.',
+      ],
+      hobbies: [],
+      cvCta: 'CV',
     },
     works: {
       label: 'Work',
@@ -448,7 +456,7 @@ export const translations = {
         },
         { id: 'uniqa', title: 'UNIQA — Customer Portal', category: 'insurance', tags: ['UX', 'UI Design'], scope: 'Login | registration | dashboard redesign', excerpt: 'Expanding the UNIQA Online Customer Portal with login, registration, dashboard, contract view and green card flows.', question: 'How can more consistent and easier-to-complete customer flows be created within the existing customer portal?', achievement: 'As the sole designer, I supported clearer portal operations through UI kit clarification, flow design and usability testing. The work was carried out alongside existing system constraints and customer migration.', focus: 'Login · Registration · Dashboard · Contract view · Usability testing', period: '2023 September – 2024 March' },
         { id: 'aimee', title: 'AImee — AI Customer Service', category: 'insurance', tags: ['AI', 'UX Design'], scope: 'Chatbot | email categorisation | response generation', excerpt: 'AI-based customer service solution with chatbot, email categoriser, urgency detector and automatic response generator in an insurance environment.', question: 'Where does AI genuinely help in customer service, and where does human control remain important?', achievement: 'Alongside UX design, I worked on AI flow user experience, persona-based logic and the question of trust. The live solution has since expanded with additional features.', focus: 'AI flows · Chatbot · Email categorisation · Persona · Decision logic', period: '2024 August – 2025 March' },
-        { id: 'alphavet', title: 'AlphaVet — Pet Insurance', category: 'insurance', tags: ['UX', 'Insurance'], scope: 'Policy binding | claims redesign', excerpt: 'New digital pet insurance service and claims flow on allatorvosod.hu, with CIG Pannónia insurance product.', question: 'How can a new insurance process be clearly guided from policy binding to claims, even in situations where the user is uncertain or emotionally affected?', achievement: 'The UX design supported breaking down the binding and claims processes into clearer steps. The work was done based on desk research, in collaboration with an external development team.', focus: 'Policy binding · Claims · Insurance UX · Service flow', period: '2024 March + 2024 September' },
+        { id: 'alphavet', title: 'Tappancs — Pet Insurance & Claims', category: 'insurance', tags: ['UX', 'Insurance'], scope: 'Policy binding | claims redesign', excerpt: 'New digital pet insurance service and claims flow on the Tappancs platform, with CIG Pannónia insurance product.', question: 'How can a new insurance process be clearly guided from policy binding to claims, even in situations where the user is uncertain or emotionally affected?', achievement: 'The UX design supported breaking down the binding and claims processes into clearer steps. The work was done based on desk research, in collaboration with an external development team.', focus: 'Policy binding · Claims · Insurance UX · Service flow', period: '2024 March + 2024 September' },
         { id: 'appartman', title: 'Appartman — Admin Redesign', category: 'saas', tags: ['SaaS', 'UX Research'], scope: 'UX research | redesign | automations', excerpt: 'UX research and redesign of a property management system admin interface — navigation, automation, booking and pricing features.', question: 'Why is it difficult for hosts to navigate the admin interface independently, and which features remain hidden in everyday use?', achievement: 'Research showed that not only the navigation but also the product\'s role and communication needed clarification. The redesign focused on making the admin interface, automated email flows, Google integrations, and booking and pricing features easier to understand.', focus: 'UX research · Admin navigation · Automations · Booking flows · UI design', period: '2022 October – 2023 March' },
         { id: 'mixie', title: 'Mixie — B2B Lead Generator', category: 'saas', tags: ['SaaS', 'B2B'], summary: 'Slow lead generation → optimized flow → more efficient sales', scope: 'UX research | flow | UI' },
         { id: 'winefo', title: 'Winefo — EU Wine Label Compliance', category: 'saas', tags: ['SaaS', 'RegTech'], scope: 'Data structure | UI | consumer flow', excerpt: 'Digital compliance tool for wineries to support mandatory QR-code EU labelling requirements.', question: 'How can a complex, multilingual legal compliance process be transformed into a quickly understandable and error-proof digital flow?', achievement: 'I built the entire UX/UI from scratch — from data structure through consumer flows to the visual system. The live solution supports 24 EU languages and is used by wineries on multiple continents.', focus: 'Data structure · Consumer flow · UI design · RegTech · Compliance', period: '2023 July – August' },
@@ -466,15 +474,15 @@ export const translations = {
       titleHighlight: 'in my work',
       cards: [
         {
-          topic: 'A good product starts with a well-posed question',
+          topic: 'Understanding & Research',
           body: 'Research isn\'t optional — it\'s the foundation for building on reality, not on assumptions.',
         },
         {
-          topic: 'Intuitive design is rarely accidental',
+          topic: 'Clarity & System',
           body: 'Great digital experiences come from someone taking the time to truly understand how users behave.',
         },
         {
-          topic: 'Together is always better',
+          topic: 'Collaboration',
           body: 'Well-functioning digital experiences grow from shared thinking — with stakeholders, developers, designers, and of course users.',
         },
       ],
@@ -548,7 +556,7 @@ export const translations = {
           cats: [
             {
               name: 'Insurance & Finance',
-              items: ['CIG Pannónia — home & life insurance portal family, design system, rebranding', 'CIB Bank — Corporate Portal, Customer Portal, CIB Bingo', 'UNIQA / OCP — customer portal redesign', 'AImee — AI customer service chatbot', 'AlphaVet — pet insurance flow', 'DI InsurTech — insurance product concept'],
+              items: ['CIG Pannónia — home & life insurance portal family, design system, rebranding', 'CIB Bank — Corporate Portal, Customer Portal, CIB Bingo', 'UNIQA / OCP — customer portal redesign', 'AImee — AI customer service chatbot', 'Tappancs — pet insurance flow', 'DI InsurTech — insurance product concept'],
             },
             {
               name: 'SaaS & startup projects',

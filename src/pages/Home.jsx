@@ -1,18 +1,16 @@
-import Navbar from '../components/Navbar.jsx'
 import Hero from '../components/Hero.jsx'
-import About from '../components/About.jsx'
-import Thinking from '../components/Thinking.jsx'
+import AboutThinking from '../components/AboutThinking.jsx'
 import Works from '../components/Works.jsx'
+import TimelineCv from '../components/TimelineCv.jsx'
 import Footer from '../components/Footer.jsx'
 
 function Home() {
   return (
     <>
-      <Navbar />
       <Hero />
-      <About />
-      <Thinking />
+      <AboutThinking />
       <Works />
+      <TimelineCv />
       <Footer />
     </>
   )
