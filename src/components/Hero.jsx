@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { useLanguage } from '../i18n/LanguageContext.jsx'
+import { useLanguage, useTranslation } from '../i18n/LanguageContext.jsx'
 import './Hero.css'
 
 const card = (i) => ({
@@ -13,6 +13,7 @@ const card = (i) => ({
 
 function Hero() {
   const { language, setLanguage } = useLanguage()
+  const t = useTranslation()
 
   return (
     <section id="hero" className="hero">
@@ -23,7 +24,7 @@ function Hero() {
           className="bento-header"
           variants={card(0)} initial="hidden" animate="visible"
         >
-          <span className="bento-portfolio-title">PORTFOLIO</span>
+          <h1 className="bento-portfolio-title">{t.bento.title}</h1>
           <div className="hero-controls">
             <button className={`hc-lang ${language === 'hu' ? 'hc-lang--active' : ''}`} onClick={() => setLanguage('hu')}>HU</button>
             <span className="hc-divider" />
@@ -31,43 +32,43 @@ function Hero() {
           </div>
         </motion.div>
 
-        {/* ── Portrait card ── */}
-        <motion.div
-          className="bento-card bento-card--portrait"
-          variants={card(1)} initial="hidden" animate="visible"
-        >
-          <div className="bento-card__toprow">
-            <img
-              src="/images/logo-light.svg"
-              alt="H. Óvári Kitti"
-              className="bento-logo"
-            />
-            <a href="#about" className="bento-rolam">Rólam →</a>
-          </div>
-          <div className="bento-portrait-wrap">
-            <img src="/images/profile.svg" alt="H. Óvári Kitti" className="bento-portrait-img" />
-          </div>
-          <div className="bento-identity">
-            <span className="bento-greeting">Üdv,</span>
-            <strong className="bento-name">H. Óvári Kitti vagyok</strong>
-            <a href="mailto:kitti.ovari@gmail.com" className="bento-email">kitti.ovari@gmail.com</a>
-          </div>
-        </motion.div>
-
-        {/* ── 2×2 card grid ── */}
+        {/* ── Tiles: portrait + the three links ── */}
         <div className="bento-grid">
+          {/* Lead tile: portrait */}
+          <motion.div
+            className="bento-card bento-card--portrait"
+            variants={card(1)} initial="hidden" animate="visible"
+          >
+            <div className="bento-card__toprow">
+              <img
+                src="/images/logo-light.svg"
+                alt="H. Óvári Kitti"
+                className="bento-logo"
+              />
+              <a href="#about" className="bento-rolam">{t.bento.about} →</a>
+            </div>
+            <div className="bento-portrait-wrap">
+              <img src="/images/profile.svg" alt="H. Óvári Kitti" className="bento-portrait-img" />
+            </div>
+            <div className="bento-identity">
+              <span className="bento-greeting">{t.bento.greeting}</span>
+              <strong className="bento-name">{t.bento.name}</strong>
+              <a href="mailto:kitti.ovari@gmail.com" className="bento-email">kitti.ovari@gmail.com</a>
+            </div>
+          </motion.div>
+
           <motion.a href="#works" className="bento-card bento-card--works" variants={card(2)} initial="hidden" animate="visible">
-            <span className="bento-card__label">UX projektek</span>
+            <span className="bento-card__label">{t.bento.works}</span>
             <span className="bento-card__arrow">↗</span>
           </motion.a>
 
           <motion.a href="#cv" className="bento-card bento-card--cv" variants={card(3)} initial="hidden" animate="visible">
-            <span className="bento-card__label">CV / Önéletrajz</span>
+            <span className="bento-card__label">{t.bento.cv}</span>
             <span className="bento-card__arrow">↓</span>
           </motion.a>
 
           <motion.a href="#footer" className="bento-card bento-card--contact" variants={card(4)} initial="hidden" animate="visible">
-            <span className="bento-card__label">Kontakt</span>
+            <span className="bento-card__label">{t.bento.contact}</span>
             <span className="bento-card__arrow">↗</span>
           </motion.a>
         </div>

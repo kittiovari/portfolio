@@ -86,7 +86,7 @@ function TimelineCv() {
             <div className="tl-body">
               <span className="tl-period">2023. márc – 2026. máj</span>
               <h3 className="tl-title tl-title--employer">Danubius IT Solutions</h3>
-              <p className="tl-meta">{isHu ? 'UX/UI Designer' : 'UX/UI Designer'}</p>
+              <p className="tl-meta">{isHu ? 'Product designer' : 'Product designer'}</p>
 
               <div className="tl-projects">
                 {DANUBIUS_PROJECTS.map((proj, i) => (
@@ -122,7 +122,7 @@ function TimelineCv() {
             <div className="tl-body">
               <span className="tl-period">2022. okt – 2023. márc</span>
               <h3 className="tl-title tl-title--employer">Appartman PMS Technologies</h3>
-              <p className="tl-meta">{isHu ? 'Junior UX/UI Designer · Termékmenedzser' : 'Junior UX/UI Designer · Product Manager'}</p>
+              <p className="tl-meta">{isHu ? 'Product designer' : 'Product designer'}</p>
               <button className="tl-proj-link" onClick={() => openProjectModal('appartman')}>
                 {isHu ? 'Appartman projekt megtekintése' : 'View Appartman project'}
                 <svg className="tl-proj-icon" viewBox="0 0 12 12" fill="none" aria-hidden="true">

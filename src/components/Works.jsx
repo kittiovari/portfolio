@@ -241,102 +241,41 @@ function ProjectModal({ projects, index, onClose, onPrev, onNext }) {
 
                 <h2 className="works-modal__title">{p.title}</h2>
 
-                <div className="works-modal__chips">
-                  {p.period && (
-                    <span className="works-modal__chip">
-                      <svg className="works-modal__chip-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                        <rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" strokeWidth="1.3"/>
-                        <path d="M2 7h12" stroke="currentColor" strokeWidth="1.3"/>
-                        <path d="M5 1v3M11 1v3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-                      </svg>
-                      {p.period}
-                    </span>
-                  )}
-                  {p.role && (
-                    <span className="works-modal__chip">
-                      <svg className="works-modal__chip-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                        <circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.3"/>
-                        <path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-                      </svg>
-                      {p.role}
-                    </span>
-                  )}
-                  {p.team && (
-                    <span className="works-modal__chip">
-                      <svg className="works-modal__chip-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                        <circle cx="6" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.3"/>
-                        <circle cx="11" cy="5.5" r="2" stroke="currentColor" strokeWidth="1.2"/>
-                        <path d="M1 14c0-2.761 2.239-4 5-4s5 1.239 5 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-                        <path d="M11 11c1.657 0 3 .895 3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-                      </svg>
-                      {p.team}
-                    </span>
-                  )}
-                </div>
+                {/* Metaadatok: inline szöveg kapszulák helyett */}
+                {(p.period || p.role) && (
+                  <p className="works-modal__meta">
+                    {[p.period, p.role].filter(Boolean).join(' · ')}
+                  </p>
+                )}
+                {p.team && <p className="works-modal__team">{p.team}</p>}
 
-                {/* Merged context block (replaces separate excerpt + challenge) */}
-                {p.context
-                  ? <p className="works-modal__context">{p.context}</p>
-                  : p.excerpt && <p className="works-modal__excerpt">{p.excerpt}</p>
-                }
-
-                {/* Legacy challenge list — only shown when no context field */}
-                {!p.context && (p.challenge || p.painPoints) && (
-                  <div className="works-modal__block">
-                    <p className="works-modal__block-label">{isHu ? 'Fő kihívások (AS-IS)' : 'Key challenges'}</p>
-                    <ul className="works-modal__block-list works-modal__block-list--pain">
-                      {(Array.isArray(p.challenge ?? p.painPoints) ? (p.challenge ?? p.painPoints) : [p.challenge ?? p.painPoints]).map((item, i) => (
-                        <li key={i}>
-                          <svg className="block-list-icon" viewBox="0 0 10 10" fill="none" aria-hidden="true">
-                            <circle cx="5" cy="5" r="4" stroke="currentColor" strokeWidth="1.2"/>
-                            <path d="M5 3v2.2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-                            <circle cx="5" cy="6.8" r="0.5" fill="currentColor"/>
-                          </svg>
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                {(p.excerpt || p.context) && (
+                  <p className="works-modal__excerpt">{p.excerpt || p.context}</p>
                 )}
 
-                {!p.context && !p.challenge && p.question && (
-                  <div className="works-modal__block">
-                    <p className="works-modal__block-label">{isHu ? 'Mire kerestünk választ?' : 'What were we looking for?'}</p>
-                    <ul className="works-modal__block-list works-modal__block-list--question">
-                      {(Array.isArray(p.question) ? p.question : [p.question]).map((q, i) => (
-                        <li key={i}>
-                          <svg className="block-list-icon" viewBox="0 0 10 10" fill="none" aria-hidden="true">
-                            <circle cx="5" cy="5" r="4" stroke="currentColor" strokeWidth="1.2"/>
-                            <path d="M5 3v2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-                            <circle cx="5" cy="7.2" r="0.5" fill="currentColor"/>
-                          </svg>
-                          {q}
-                        </li>
-                      ))}
-                    </ul>
+                {p.question && (
+                  <div className="works-modal__section">
+                    <p className="works-modal__label">{isHu ? 'Mire kerestünk választ?' : 'What were we looking for?'}</p>
+                    {(Array.isArray(p.question) ? p.question : [p.question]).map((q, i) => (
+                      <p key={i} className="works-modal__question">{q}</p>
+                    ))}
                   </div>
                 )}
 
                 {p.achievement && (
-                  <div className="works-modal__block">
-                    <p className="works-modal__block-label works-modal__block-label--accent">
+                  <div className="works-modal__section">
+                    <p className="works-modal__label">
                       {isHu ? 'Fő megoldások & eredmények' : 'Key solutions & results'}
                     </p>
-                    <ul className="works-modal__block-list works-modal__block-list--achievement">
+                    <ul className="works-modal__items">
                       {(Array.isArray(p.achievement) ? p.achievement : [p.achievement]).map((a, i) => {
                         const colonIdx = a.indexOf(':')
                         const label = colonIdx > -1 ? a.slice(0, colonIdx).trim() : null
-                        const body  = colonIdx > -1 ? a.slice(colonIdx + 1).trim() : a
+                        const body = colonIdx > -1 ? a.slice(colonIdx + 1).trim() : a
                         return (
                           <li key={i}>
-                            <svg className="block-list-icon" viewBox="0 0 10 10" fill="none" aria-hidden="true">
-                              <circle cx="5" cy="5" r="4" stroke="currentColor" strokeWidth="1.2"/>
-                              <path d="M3 5.2l1.4 1.4 2.6-2.6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                            <span className="works-modal__ach-item">
-                              {label && <span className="works-modal__ach-label">{label}</span>}
-                              <span className="works-modal__ach-body">{body}</span>
-                            </span>
+                            {label && <span className="works-modal__item-label">{label}</span>}
+                            <span className="works-modal__item-body">{body}</span>
                           </li>
                         )
                       })}
@@ -345,31 +284,21 @@ function ProjectModal({ projects, index, onClose, onPrev, onNext }) {
                 )}
 
                 {p.lesson && (
-                  <div className="works-modal__lesson-callout">
-                    <p className="works-modal__lesson-label">{isHu ? 'Tanulság' : 'Key takeaway'}</p>
-                    {Array.isArray(p.lesson) ? (
-                      <ul className="works-modal__block-list works-modal__block-list--achievement">
-                        {p.lesson.map((l, i) => {
-                          const colonIdx = l.indexOf(':')
-                          const label = colonIdx > -1 ? l.slice(0, colonIdx).trim() : null
-                          const body  = colonIdx > -1 ? l.slice(colonIdx + 1).trim() : l
-                          return (
-                            <li key={i}>
-                              <svg className="block-list-icon" viewBox="0 0 10 10" fill="none" aria-hidden="true">
-                                <circle cx="5" cy="5" r="4" stroke="currentColor" strokeWidth="1.2"/>
-                                <path d="M3 5.2l1.4 1.4 2.6-2.6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                              </svg>
-                              <span className="works-modal__ach-item">
-                                {label && <span className="works-modal__ach-label">{label}</span>}
-                                <span className="works-modal__ach-body">{body}</span>
-                              </span>
-                            </li>
-                          )
-                        })}
-                      </ul>
-                    ) : (
-                      <p className="works-modal__lesson-text">{p.lesson}</p>
-                    )}
+                  <div className="works-modal__section works-modal__lesson">
+                    <p className="works-modal__label">{isHu ? 'Tanulság' : 'Key takeaway'}</p>
+                    <ul className="works-modal__items">
+                      {(Array.isArray(p.lesson) ? p.lesson : [p.lesson]).map((l, i) => {
+                        const colonIdx = l.indexOf(':')
+                        const label = colonIdx > -1 ? l.slice(0, colonIdx).trim() : null
+                        const body = colonIdx > -1 ? l.slice(colonIdx + 1).trim() : l
+                        return (
+                          <li key={i}>
+                            {label && <span className="works-modal__item-label">{label}</span>}
+                            <span className="works-modal__item-body">{body}</span>
+                          </li>
+                        )
+                      })}
+                    </ul>
                   </div>
                 )}
 

@@ -43,21 +43,12 @@
 }
 
 .hero__bento {
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  grid-template-rows: auto 1fr;
-  grid-template-areas:
-    "portrait header"
-    "portrait cards";
+  display: flex;
+  flex-direction: column;
   gap: 1.1rem;
-  align-items: stretch;
 }
 
-.bento-header    { grid-area: header; }
-.bento-card--portrait { grid-area: portrait; }
-.bento-grid      { grid-area: cards; }
-
-/* ── LEFT: Portrait card ── */
+/* ── Lead tile: portrait ── */
 .bento-card--portrait {
   background: var(--bento-portrait-bg);
   border-radius: var(--radius-card);
@@ -65,7 +56,7 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  min-height: 480px;
+  grid-area: portrait;
 }
 
 .bento-card__toprow {
@@ -172,13 +163,15 @@
   display: block;
 }
 
-/* ── Card grid: lead card + 2 below ── */
+/* ── Tile grid: portrait spans the left, three links fill the right ── */
 .bento-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto 1fr;
+  grid-template-columns: 300px 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  grid-template-areas:
+    "portrait works   works"
+    "portrait cv      contact";
   gap: 1.1rem;
-  flex: 1;
 }
 
 /* Base card */
@@ -215,21 +208,23 @@ a.bento-card:hover .bento-card__arrow {
   transform: translate(3px, -3px);
 }
 
-/* UX projektek — full-width lead card above CV + Kontakt */
+/* UX projektek */
 .bento-card--works {
-  grid-column: 1 / -1;
+  grid-area: works;
   background: var(--bento-works-bg);
   color: var(--bento-works-text);
 }
 
 /* CV */
 .bento-card--cv {
+  grid-area: cv;
   background: var(--bento-cv-bg);
   color: var(--bento-cv-text);
 }
 
 /* Kontakt */
 .bento-card--contact {
+  grid-area: contact;
   background: var(--bento-contact-bg);
   color: var(--bento-contact-text);
 }
@@ -264,17 +259,10 @@ a.bento-card:hover .bento-card__arrow {
 /* ── Responsive: tablet ── */
 @media (max-width: 900px) {
   .hero__bento {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-    grid-template-areas:
-      "header"
-      "portrait"
-      "cards";
     gap: 1rem;
   }
 
   .bento-card--portrait {
-    min-height: auto;
     flex-direction: row;
     align-items: center;
     gap: 1.2rem;
@@ -301,6 +289,11 @@ a.bento-card:hover .bento-card__arrow {
 
   .bento-grid {
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    grid-template-areas:
+      "portrait portrait"
+      "works    works"
+      "cv       contact";
   }
 }
 
@@ -331,6 +324,11 @@ a.bento-card:hover .bento-card__arrow {
 
   .bento-grid {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      "portrait"
+      "works"
+      "cv"
+      "contact";
   }
 
   .bento-card {

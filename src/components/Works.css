@@ -281,280 +281,190 @@
   font-family: var(--font-body);
 }
 
-/* Info panel */
+/* ── Info panel: editorial, nem dashboard ── */
 .works-modal__info {
-  padding: 1.75rem 60px 1.5rem 2rem;
+  padding: 2.25rem 3rem 2.25rem 2.5rem;
   display: flex;
   flex-direction: column;
-  gap: 14px;
   height: 100%;
   overflow-y: auto;
   scrollbar-width: none;
   background: #FFFFFF;
-  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  border-left: 1px solid rgba(0, 0, 0, 0.07);
 }
 
 .works-modal__info::-webkit-scrollbar {
   display: none;
 }
 
-.works-modal__logo {
-  height: 28px;
+/* Logó: visszafogott, nem versenyez a címmel */
+.works-modal__logo-row {
   display: flex;
   align-items: center;
-  margin-bottom: 0;
-}
-
-.works-modal__logo img {
-  height: 32px;
-  width: auto;
-  max-width: 150px;
-  object-fit: contain;
-}
-
-.works-modal__title {
-  font-family: var(--font-heading);
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  line-height: 1.25;
-  letter-spacing: -0.02em;
-}
-
-.works-modal__chips {
-  display: flex;
+  gap: 0.9rem;
   flex-wrap: wrap;
-  gap: 6px;
+  margin-bottom: 1.25rem;
 }
 
-.works-modal__chip {
-  display: inline-flex;
-  align-items: flex-start;
-  gap: 6px;
-  padding: 5px 10px;
-  border-radius: 100px;
-  font-size: 0.72rem;
-  line-height: 1.4;
-  font-family: var(--font-body);
-  background: rgba(24, 24, 27, 0.035);
-  border: 1px solid rgba(24, 24, 27, 0.12);
-  color: var(--text-secondary);
-}
-
-.works-modal__chip-icon {
-  width: 13px;
-  height: 13px;
-  flex-shrink: 0;
-  margin-top: 1px;
-  color: var(--text-secondary);
-  opacity: 0.7;
-}
-
-.works-modal__period {
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-  opacity: 0.6;
-  font-family: var(--font-body);
-  letter-spacing: 0.3px;
-}
-
-.works-modal__summary {
-  font-size: 0.9rem;
-  color: var(--text-primary);
-  line-height: 1.75;
+.works-modal__logo {
+  height: 24px;
+  display: flex;
+  align-items: center;
   opacity: 0.85;
 }
 
-.works-modal__role {
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-  font-family: var(--font-body);
-  letter-spacing: 0.2px;
-  margin-top: -0.15rem;
+.works-modal__logo img {
+  height: 26px;
+  width: auto;
+  max-width: 132px;
+  object-fit: contain;
 }
-.works-modal__block-list {
+
+.works-modal__video-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 2rem;
+  background: transparent;
+  border: 1px solid rgba(24, 24, 27, 0.14);
+  color: var(--text-secondary);
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 0.18s, color 0.18s;
+}
+.works-modal__video-btn:hover {
+  border-color: rgba(24, 24, 27, 0.32);
+  color: var(--text-primary);
+}
+
+/* Projektcím: a panel legerősebb eleme */
+.works-modal__title {
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.18;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.7rem;
+}
+
+/* Metaadatok: egyszerű inline szöveg, középpontos elválasztással */
+.works-modal__meta {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.works-modal__team {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  opacity: 0.72;
+  line-height: 1.5;
+  margin-top: 0.2rem;
+}
+
+/* Rövid leírás: bevezető bekezdés */
+.works-modal__excerpt {
+  font-size: 0.97rem;
+  font-weight: 400;
+  color: var(--text-primary);
+  opacity: 0.88;
+  line-height: 1.7;
+  margin-top: 1.35rem;
+}
+
+/* Szakaszok: térköz választja el őket, nem vonal */
+.works-modal__section {
+  margin-top: 1.85rem;
+}
+
+.works-modal__label {
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text-secondary);
+  opacity: 0.75;
+  margin-bottom: 0.65rem;
+}
+
+/* Kérdés: nincs doboz, csak hangsúlyosabb szövegsúly */
+.works-modal__question {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  opacity: 0.9;
+  line-height: 1.65;
+}
+.works-modal__question + .works-modal__question {
+  margin-top: 0.5rem;
+}
+
+/* Lista: ikon és pipa nélkül, címke saját sorban */
+.works-modal__items {
   list-style: none;
   padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.9rem;
 }
 
-.works-modal__block-list li {
-  font-size: 0.875rem;
-  color: var(--text-primary);
-  line-height: 1.45;
-  opacity: 0.88;
-  padding-left: 1.2rem;
-  position: relative;
+.works-modal__items li {
   display: flex;
-  align-items: baseline;
-  gap: 0.4rem;
+  flex-direction: column;
+  gap: 0.2rem;
 }
 
-.block-list-icon {
-  width: 11px;
-  height: 11px;
-  flex-shrink: 0;
-  margin-top: 0.22em;
-  color: var(--text-secondary);
-  opacity: 0.65;
-  align-self: flex-start;
-}
-
-.works-modal__block-list--pain .block-list-icon {
-  color: #B5780A;
-  opacity: 0.95;
-}
-
-.works-modal__block-list--question .block-list-icon {
-  color: var(--modal-accent, #5B3FA0);
-  opacity: 0.75;
-}
-
-.works-modal__block-list--achievement .block-list-icon {
-  color: #2E7D52;
-  opacity: 0.95;
-}
-.works-modal__excerpt {
-  font-size: 0.875rem;
-  font-weight: 500;
+.works-modal__item-label {
+  font-size: 0.89rem;
+  font-weight: 600;
   color: var(--text-primary);
-  line-height: 1.45;
-  opacity: 0.88;
+  line-height: 1.4;
 }
 
-.works-modal__context {
-  font-size: 0.875rem;
+.works-modal__item-body {
+  font-size: 0.89rem;
   font-weight: 400;
   color: var(--text-primary);
-  opacity: 0.8;
-  line-height: 1.65;
-}
-
-.works-modal__description {
-  font-size: 0.88rem;
-  color: var(--text-primary);
-  opacity: 0.75;
-  line-height: 1.8;
-}
-
-.works-modal__scope {
-  font-size: 0.78rem;
-  color: var(--text-secondary);
+  opacity: 0.74;
   line-height: 1.6;
-  padding-top: 0.25rem;
-  border-top: 1px solid rgba(128, 128, 128, 0.12);
 }
 
-/* Two-column row for pain points + questions */
-.works-modal__blocks-row {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  flex: 1;
-  min-height: 0;
+/* Tanulság: finom bal oldali accent vonal, nem keretezett kártya */
+.works-modal__lesson {
+  padding-left: 1.1rem;
+  border-left: 2px solid var(--modal-accent, #5B3FA0);
 }
 
-.works-modal__blocks-row--dual {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-  flex: unset;
-}
-
-.works-modal__block {
-  padding: 0.25rem 0;
-  border-top: 1px solid rgba(128, 128, 128, 0.1);
-}
-
-.works-modal__block-list--lesson .block-list-icon {
-  color: #A8781E;
-  opacity: 1;
-}
-/* Lesson callout box */
-.works-modal__lesson-callout {
-  background: rgba(212, 160, 48, 0.06);
-  border: 1px solid rgba(24, 24, 27, 0.08);
-  border-top: 2px solid rgba(196, 142, 32, 0.55);
-  padding: 12px 16px;
-  border-radius: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.works-modal__lesson-label {
-  font-size: 0.55rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-weight: 700;
-  color: #8A6414;
-  opacity: 1;
-}
-
-.works-modal__lesson-text {
-  font-size: 0.8rem;
-  line-height: 1.5;
-  color: var(--text-primary);
-  opacity: 0.9;
-  font-weight: 500;
-}
-
-.works-modal__block-list--achievement {
-  grid-template-columns: 1fr;
-}
-
-.works-modal__block-label {
-  font-size: 0.6rem;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  opacity: 0.75;
-  margin-bottom: 0.3rem;
-}
-
-.works-modal__block-label--accent {
+.works-modal__lesson .works-modal__label {
   color: var(--modal-accent, #5B3FA0);
-  opacity: 1;
-}
-.works-modal__block-text {
-  font-size: 0.86rem;
-  color: var(--text-primary);
-  line-height: 1.75;
-  opacity: 0.82;
+  opacity: 0.9;
 }
 
-.works-modal__focus {
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  padding-top: 0.5rem;
-  border-top: 1px solid rgba(128, 128, 128, 0.1);
-  opacity: 0.65;
-}
-
+/* Tagek: háttérbe húzódnak */
 .works-modal__tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem;
+  gap: 0.45rem;
   margin-top: auto;
-  padding-top: 0.5rem;
+  padding-top: 2rem;
 }
 
 .works-modal__tag {
   font-family: var(--font-body);
-  font-size: 0.58rem;
-  text-transform: uppercase;
-  letter-spacing: 0.7px;
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
   color: var(--text-secondary);
-  padding: 0.22rem 0.65rem;
-  background: rgba(24, 24, 27, 0.035);
-  border: 1px solid rgba(24, 24, 27, 0.12);
+  opacity: 0.7;
+  padding: 0.2rem 0.6rem;
+  background: transparent;
+  border: 1px solid rgba(24, 24, 27, 0.11);
   border-radius: var(--radius-pill);
-  font-weight: 500;
+  font-weight: 400;
 }
 
 /* Close button */
@@ -618,30 +528,6 @@
 .works-modal__nav--prev { left: 1.25rem; }
 .works-modal__nav--next { right: 1.25rem; }
 
-.works-modal__block-list--achievement {
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-}
-
-.works-modal__ach-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.works-modal__ach-label {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  color: var(--modal-accent, #5B3FA0);
-  line-height: 1.3;
-}
-.works-modal__ach-body {
-  font-size: 0.8rem;
-  line-height: 1.45;
-  opacity: 0.82;
-}
 /* Mobile: stack vertically, scroll allowed */
 @media (max-width: 768px) {
   .works-modal__content {
@@ -665,15 +551,19 @@
   .works-modal__info {
     height: auto;
     overflow: visible;
-    padding: 1.5rem;
+    padding: 1.75rem 1.5rem 2rem;
   }
 
-  .works-modal__blocks-row--dual {
-    grid-template-columns: 1fr;
+  .works-modal__title {
+    font-size: 1.45rem;
   }
 
-  .works-modal__block-list--achievement {
-    grid-template-columns: 1fr;
+  .works-modal__section {
+    margin-top: 1.9rem;
+  }
+
+  .works-modal__tags {
+    padding-top: 2rem;
   }
 
   .works-modal__nav--prev { left: 0.5rem; }
