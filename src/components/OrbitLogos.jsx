@@ -13,11 +13,6 @@ const icons = {
       <path d="M5 21C5 21 5 9 12 4c7 5 7 17 7 17"/><path d="M9 21v-5c0-1.5 1.3-3 3-3s3 1.5 3 3v5"/>
     </svg>
   ),
-  mixie: (
-    <svg viewBox="0 0 24 24" {...svgProps}>
-      <path d="M4 20h16M4 20V10l4-4 4 6 4-8 4 10v6"/>
-    </svg>
-  ),
   winefo: (
     <svg viewBox="0 0 24 24" {...svgProps}>
       <path d="M9 3h6v4a3 3 0 01-3 3 3 3 0 01-3-3V3z"/><path d="M12 10v5"/><path d="M8 21h8"/><path d="M12 15v6"/><path d="M5 12h14"/>
@@ -26,11 +21,6 @@ const icons = {
   uniqa: (
     <svg viewBox="0 0 24 24" {...svgProps}>
       <path d="M12 3C8 5 4 6 4 11c0 5 4 8 8 10 4-2 8-5 8-10 0-5-4-6-8-8z"/>
-    </svg>
-  ),
-  booked4us: (
-    <svg viewBox="0 0 24 24" {...svgProps}>
-      <path d="M4 8c0-2 1-3 3-3h10c2 0 3 1 3 3v10c0 2-1 3-3 3H7c-2 0-3-1-3-3z"/><path d="M8 3v3M16 3v3"/><path d="M4 10h16"/>
     </svg>
   ),
   chantblaster: (
@@ -74,10 +64,8 @@ const icons = {
 
 const partners = [
   { text: 'Appartman', x: 8, y: 10, s: 88, employer: true, icon: 'appartman' },
-  { text: 'Mixie', x: 72, y: 60, s: 60, icon: 'mixie' },
   { text: 'Winefo', x: 80, y: 22, s: 58, icon: 'winefo' },
   { text: 'UNIQA', x: 42, y: 6, s: 70, icon: 'uniqa' },
-  { text: 'Booked4us', x: 26, y: 55, s: 60, icon: 'booked4us' },
   { text: 'Chantblaster', x: 68, y: 5, s: 62, icon: 'chantblaster' },
   { text: 'Code Escrow\nCloud', x: 57, y: 56, s: 62, icon: 'codeescrow' },
   { text: 'MoodMeUp', x: 10, y: 52, s: 58, icon: 'moodmeup' },

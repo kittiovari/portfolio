@@ -12,7 +12,10 @@ const projectMockups = {
   alphavet: ['/images/allatorvosod.webp'],
   gombarat: ['/images/Gombarat.png'],
   aimee:    ['/images/aimee.webp'],
-  appartman:['/images/appartman.webp'],
+  appartman:['/images/appartman-mockup.png'],
+  moodmeup: ['/images/moodmeup-mockup.webp'],
+  chantblaster: ['/images/chantblaster-mockup.webp'],
+  cec:      ['/images/cec-mockup.webp'],
   winefo:   ['/images/winefo.webp'],
 }
 
@@ -23,6 +26,9 @@ const mockupBg = {
   aimee:    'linear-gradient(135deg, #EDF4F1 0%, #F4F0E4 55%, #F0EBDE 100%)',
   alphavet: 'linear-gradient(135deg, #E9F0F6 0%, #E8EDF4 55%, #E1E8F1 100%)',
   appartman:'linear-gradient(135deg, #F0EAF6 0%, #EDE6F4 50%, #E7DEF0 100%)',
+  moodmeup: 'linear-gradient(160deg, #F1F6EF 0%, #EAF2E8 50%, #E3EDE1 100%)',
+  chantblaster: 'linear-gradient(150deg, #F6EFEA 0%, #F2E7DF 50%, #EBDCD2 100%)',
+  cec:      'linear-gradient(140deg, #EFEDFA 0%, #E9E7F7 50%, #E1EEF2 100%)',
   winefo:   'linear-gradient(135deg, #F7E9EF 0%, #F0E8F5 55%, #EAE2F0 100%)',
 }
 
@@ -34,6 +40,9 @@ const infoBg = {
   aimee:    '#FDFCF9',
   alphavet: '#FAFCFD',
   appartman:'#FCFAFD',
+  moodmeup: '#FBFDFA',
+  chantblaster: '#FDFBF9',
+  cec:      '#FBFAFD',
   winefo:   '#FDFAFC',
 }
 
@@ -53,6 +62,9 @@ const accentColor = {
   aimee:    '#8A6A14',
   alphavet: '#1F6E96',
   appartman:'#5B3FA0',
+  moodmeup: '#3D7A3A',
+  chantblaster: '#9E4A17',
+  cec:      '#4A3FB0',
   winefo:   '#9B3F6E',
 }
 
@@ -69,14 +81,10 @@ const projectLogos = {
     </span>
   ),
   appartman:   <img src="/logos/appartman.svg"    alt="Appartman" />,
-  mixie:       <img src="/logos/mixie.svg"        alt="Mixie" />,
   winefo:      <img src="/logos/winefo.svg"       alt="Winefo"          className="logo logo--mono-dark" />,
   chantblaster:<img src="/logos/chantblaster.svg" alt="Chantblaster" />,
   cec:         <img src="/logos/cec.svg"          alt="Code Escrow Cloud" className="logo logo--color-dark" />,
   moodmeup:    <img src="/logos/moodmeup.svg"     alt="MoodMeUp"        className="logo logo--color-dark" />,
-  'di-insurtech': <img src="/logos/di-insurtech.svg" alt="DI InsurTech" className="logo logo--color-dark" />,
-  b4us:        <img src="/logos/booked4us.svg"    alt="Booked4us"       className="logo logo--color-dark" />,
-  presales:    <img src="/logos/danubius.svg"     alt="Danubius IT"     className="logo logo--on-dark" />,
 }
 
 function MockupArea({ id }) {
@@ -241,7 +249,11 @@ function ProjectModal({ projects, index, onClose, onPrev, onNext }) {
 
                 <h2 className="works-modal__title">{p.title}</h2>
 
-                {/* Metaadatok: inline szöveg kapszulák helyett */}
+                {/* A központi kérdés közvetlenül a cím alatt, label nélkül */}
+                {p.question && (Array.isArray(p.question) ? p.question : [p.question]).map((q, i) => (
+                  <p key={i} className="works-modal__question">{q}</p>
+                ))}
+
                 {(p.period || p.role) && (
                   <p className="works-modal__meta">
                     {[p.period, p.role].filter(Boolean).join(' · ')}
@@ -253,52 +265,43 @@ function ProjectModal({ projects, index, onClose, onPrev, onNext }) {
                   <p className="works-modal__excerpt">{p.excerpt || p.context}</p>
                 )}
 
-                {p.question && (
-                  <div className="works-modal__section">
-                    <p className="works-modal__label">{isHu ? 'Mire kerestünk választ?' : 'What were we looking for?'}</p>
-                    {(Array.isArray(p.question) ? p.question : [p.question]).map((q, i) => (
-                      <p key={i} className="works-modal__question">{q}</p>
-                    ))}
-                  </div>
-                )}
-
                 {p.achievement && (
                   <div className="works-modal__section">
                     <p className="works-modal__label">
-                      {isHu ? 'Fő megoldások & eredmények' : 'Key solutions & results'}
+                      {isHu ? 'Megoldások & eredmények' : 'Solutions & results'}
                     </p>
-                    <ul className="works-modal__items">
+                    <div className="works-modal__grid">
                       {(Array.isArray(p.achievement) ? p.achievement : [p.achievement]).map((a, i) => {
                         const colonIdx = a.indexOf(':')
                         const label = colonIdx > -1 ? a.slice(0, colonIdx).trim() : null
                         const body = colonIdx > -1 ? a.slice(colonIdx + 1).trim() : a
                         return (
-                          <li key={i}>
-                            {label && <span className="works-modal__item-label">{label}</span>}
-                            <span className="works-modal__item-body">{body}</span>
-                          </li>
+                          <div key={i} className="works-modal__cell">
+                            {label && <span className="works-modal__cell-label">{label}</span>}
+                            <span className="works-modal__cell-body">{body}</span>
+                          </div>
                         )
                       })}
-                    </ul>
+                    </div>
                   </div>
                 )}
 
                 {p.lesson && (
                   <div className="works-modal__section works-modal__lesson">
                     <p className="works-modal__label">{isHu ? 'Tanulság' : 'Key takeaway'}</p>
-                    <ul className="works-modal__items">
+                    <div className="works-modal__learnings">
                       {(Array.isArray(p.lesson) ? p.lesson : [p.lesson]).map((l, i) => {
                         const colonIdx = l.indexOf(':')
                         const label = colonIdx > -1 ? l.slice(0, colonIdx).trim() : null
                         const body = colonIdx > -1 ? l.slice(colonIdx + 1).trim() : l
                         return (
-                          <li key={i}>
-                            {label && <span className="works-modal__item-label">{label}</span>}
-                            <span className="works-modal__item-body">{body}</span>
-                          </li>
+                          <div key={i} className="works-modal__cell">
+                            {label && <span className="works-modal__cell-label">{label}</span>}
+                            <span className="works-modal__cell-body">{body}</span>
+                          </div>
                         )
                       })}
-                    </ul>
+                    </div>
                   </div>
                 )}
 

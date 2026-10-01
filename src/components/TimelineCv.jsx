@@ -18,10 +18,6 @@ const DANUBIUS_PROJECTS = [
   { id: 'alphavet',    hu: 'Tappancs',                period: '2024. márc – szept',    periodEn: 'Mar – Sep 2024' },
   { id: 'uniqa',       hu: 'UNIQA',                   period: '2023. szept – 2024. márc', periodEn: 'Sep 2023 – Mar 2024' },
   { id: 'winefo',      hu: 'Winefo',                  period: '2023. júl – aug',       periodEn: 'Jul – Aug 2023' },
-  { id: 'mixie',       hu: 'Mixie',                   period: null,                    periodEn: null },
-  { id: 'b4us',        hu: 'Booked4Us',               period: null,                    periodEn: null },
-  { id: 'di-insurtech',hu: 'DI InsurTech',            period: null,                    periodEn: null },
-  { id: 'presales',    hu: 'Presales konzultációk',   period: null,                    periodEn: null },
 ]
 
 function TimelineEntry({ children, delay = 0 }) {
@@ -44,7 +40,11 @@ function TimelineCv() {
   const isHu = language === 'hu'
 
   const projects = t.works.projects
-  const getProjectTitle = (id) => projects.find(p => p.id === id)?.title
+  // A timeline a rövid márkanevet mutatja; a beszédes cím a modalban jelenik meg
+  const getProjectTitle = (id) => {
+    const p = projects.find(p => p.id === id)
+    return p?.shortTitle || p?.title
+  }
 
   return (
     <section id="cv" className="tl-section">
@@ -92,24 +92,22 @@ function TimelineCv() {
                 {DANUBIUS_PROJECTS.map((proj, i) => (
                   <motion.button
                     key={proj.id}
-                    className="tl-proj-chip"
+                    className="tl-proj-item"
                     onClick={() => openProjectModal(proj.id)}
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={{ opacity: 0, y: 6 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.35, delay: 0.06 + i * 0.04 }}
-                    whileHover={{ y: -1 }}
-                    whileTap={{ scale: 0.97 }}
+                    transition={{ duration: 0.3, delay: 0.05 + i * 0.03 }}
                   >
-                    <span className="tl-chip-name">{getProjectTitle(proj.id) || proj.hu}</span>
+                    <span className="tl-proj-name">
+                      {getProjectTitle(proj.id) || proj.hu}
+                      <svg className="tl-proj-arrow" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                        <path d="M2 8L8 2M8 2H3.5M8 2v4.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </span>
                     {proj.period && (
-                      <span className="tl-chip-period">
-                        {isHu ? proj.period : proj.periodEn}
-                      </span>
+                      <span className="tl-proj-period">{isHu ? proj.period : proj.periodEn}</span>
                     )}
-                    <svg className="tl-chip-arrow" viewBox="0 0 10 10" fill="none" aria-hidden="true">
-                      <path d="M2 8L8 2M8 2H3.5M8 2v4.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
                   </motion.button>
                 ))}
               </div>
@@ -123,12 +121,17 @@ function TimelineCv() {
               <span className="tl-period">2022. okt – 2023. márc</span>
               <h3 className="tl-title tl-title--employer">Appartman PMS Technologies</h3>
               <p className="tl-meta">{isHu ? 'Product designer' : 'Product designer'}</p>
-              <button className="tl-proj-link" onClick={() => openProjectModal('appartman')}>
-                {isHu ? 'Appartman projekt megtekintése' : 'View Appartman project'}
-                <svg className="tl-proj-icon" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                  <path d="M2 10L10 2M10 2H4M10 2v6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
+              <div className="tl-projects tl-projects--single">
+                <button className="tl-proj-item" onClick={() => openProjectModal('appartman')}>
+                  <span className="tl-proj-name">
+                    {getProjectTitle('appartman') || 'Appartman'}
+                    <svg className="tl-proj-arrow" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                      <path d="M2 8L8 2M8 2H3.5M8 2v4.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </span>
+                  <span className="tl-proj-period">{isHu ? '2022. okt – 2023. márc' : 'Oct 2022 – Mar 2023'}</span>
+                </button>
+              </div>
             </div>
           </TimelineEntry>
 

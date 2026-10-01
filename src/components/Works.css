@@ -344,97 +344,103 @@
 /* Projektcím: a panel legerősebb eleme */
 .works-modal__title {
   font-family: var(--font-heading);
-  font-size: 1.75rem;
+  font-size: 1.9rem;
   font-weight: 800;
   color: var(--text-primary);
-  line-height: 1.18;
+  line-height: 1.15;
   letter-spacing: -0.025em;
-  margin-bottom: 0.7rem;
+  margin-bottom: 0.85rem;
 }
 
-/* Metaadatok: egyszerű inline szöveg, középpontos elválasztással */
+/* Központi kérdés: a cím alatt, gyengébb nála, erősebb a body-nál */
+.works-modal__question {
+  font-size: 1.18rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  opacity: 0.82;
+  line-height: 1.45;
+  letter-spacing: -0.008em;
+}
+.works-modal__question + .works-modal__question {
+  margin-top: 0.4rem;
+}
+
+/* Metaadatok: tipográfiai sor, nem UI-elem */
 .works-modal__meta {
   font-size: 0.82rem;
   color: var(--text-secondary);
   line-height: 1.5;
+  margin-top: 1.4rem;
 }
 
 .works-modal__team {
   font-size: 0.75rem;
   color: var(--text-secondary);
-  opacity: 0.72;
+  opacity: 0.68;
   line-height: 1.5;
   margin-top: 0.2rem;
 }
 
-/* Rövid leírás: bevezető bekezdés */
+/* Rövid kontextus: cím és kérdés nélkül, önmagában */
 .works-modal__excerpt {
-  font-size: 0.97rem;
+  font-size: 0.92rem;
   font-weight: 400;
   color: var(--text-primary);
-  opacity: 0.88;
-  line-height: 1.7;
-  margin-top: 1.35rem;
+  opacity: 0.78;
+  line-height: 1.65;
+  margin-top: 1.75rem;
 }
 
-/* Szakaszok: térköz választja el őket, nem vonal */
 .works-modal__section {
-  margin-top: 1.85rem;
+  margin-top: 2rem;
 }
 
 .works-modal__label {
-  font-size: 0.74rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
   color: var(--text-secondary);
-  opacity: 0.75;
-  margin-bottom: 0.65rem;
+  opacity: 0.7;
+  margin-bottom: 0.85rem;
 }
 
-/* Kérdés: nincs doboz, csak hangsúlyosabb szövegsúly */
-.works-modal__question {
+/* Megoldások: 2 oszlopos editorial grid, keret és háttér nélkül */
+.works-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 1.75rem;
+  row-gap: 1.6rem;
+  align-items: start;
+}
+
+.works-modal__learnings {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.works-modal__cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+}
+
+.works-modal__cell-label {
   font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--text-primary);
-  opacity: 0.9;
-  line-height: 1.65;
-}
-.works-modal__question + .works-modal__question {
-  margin-top: 0.5rem;
-}
-
-/* Lista: ikon és pipa nélkül, címke saját sorban */
-.works-modal__items {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-}
-
-.works-modal__items li {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.works-modal__item-label {
-  font-size: 0.89rem;
   font-weight: 600;
   color: var(--text-primary);
-  line-height: 1.4;
+  line-height: 1.35;
 }
 
-.works-modal__item-body {
-  font-size: 0.89rem;
+.works-modal__cell-body {
+  font-size: 0.95rem;
   font-weight: 400;
   color: var(--text-primary);
-  opacity: 0.74;
-  line-height: 1.6;
+  opacity: 0.7;
+  line-height: 1.55;
 }
 
-/* Tanulság: finom bal oldali accent vonal, nem keretezett kártya */
+/* Tanulság: finom accent vonal, keret és háttér nélkül */
 .works-modal__lesson {
   padding-left: 1.1rem;
   border-left: 2px solid var(--modal-accent, #5B3FA0);
@@ -442,7 +448,7 @@
 
 .works-modal__lesson .works-modal__label {
   color: var(--modal-accent, #5B3FA0);
-  opacity: 0.9;
+  opacity: 0.85;
 }
 
 /* Tagek: háttérbe húzódnak */
@@ -559,7 +565,16 @@
   }
 
   .works-modal__section {
-    margin-top: 1.9rem;
+    margin-top: 1.75rem;
+  }
+
+  .works-modal__grid {
+    grid-template-columns: 1fr;
+    row-gap: 1.25rem;
+  }
+
+  .works-modal__question {
+    font-size: 1.05rem;
   }
 
   .works-modal__tags {
