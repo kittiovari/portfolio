@@ -148,9 +148,9 @@
   align-items: stretch;
   justify-content: stretch;
   padding: 0;
-  background: rgba(10, 8, 12, 0.6);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  background: rgba(8, 5, 12, 0.94);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
 }
 
 .works-modal__dialog {
@@ -303,10 +303,8 @@
   height: 100%;
   overflow-y: auto;
   scrollbar-width: none;
-  background: rgba(12, 6, 28, 0.62);
-  backdrop-filter: blur(24px) saturate(1.6);
-  -webkit-backdrop-filter: blur(24px) saturate(1.6);
-  border-left: 1px solid rgba(180, 120, 220, 0.12);
+  background: #0d0720;
+  border-left: 1px solid rgba(180, 120, 220, 0.16);
 }
 
 .works-modal__info::-webkit-scrollbar {
@@ -684,7 +682,7 @@
 
 /* Dark mode */
 [data-theme="dark"] .works-modal {
-  background: rgba(6, 4, 10, 0.65);
+  background: rgba(6, 4, 10, 0.95);
 }
 
 [data-theme="dark"] .works-modal__dialog {

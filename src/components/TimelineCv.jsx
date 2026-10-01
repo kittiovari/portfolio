@@ -80,23 +80,6 @@ function TimelineCv() {
 
         <div className="tl-track">
 
-          {/* GomBarát — pet project */}
-          <TimelineEntry delay={0}>
-            <div className="tl-dot tl-dot--project" />
-            <div className="tl-body">
-              <span className="tl-period">2026. márc – 2026. jún</span>
-              <h3 className="tl-title">
-                <button className="tl-proj-btn" onClick={() => openProjectModal('gombarat')}>
-                  GomBarát
-                  <svg className="tl-proj-icon" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                    <path d="M2 10L10 2M10 2H4M10 2v6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </button>
-              </h3>
-              <p className="tl-meta">{isHu ? 'Solo pet-projekt · Gombaazonosító mobil webapp' : 'Solo pet-project · Mushroom ID mobile app'}</p>
-            </div>
-          </TimelineEntry>
-
           {/* Danubius IT Solutions */}
           <TimelineEntry delay={0.04}>
             <div className="tl-dot tl-dot--employer" />
@@ -171,16 +154,15 @@ function TimelineCv() {
               <span className="tl-period">2020 – 2022</span>
               <h3 className="tl-title">{isHu ? 'Angoltanár' : 'English Teacher'}</h3>
               <p className="tl-meta">Dunakeszi Széchenyi István Általános Iskola</p>
-            </div>
-          </TimelineEntry>
 
-          {/* Önkéntes webfejlesztés */}
-          <TimelineEntry delay={0.18}>
-            <div className="tl-dot" />
-            <div className="tl-body">
-              <span className="tl-period">2021</span>
-              <h3 className="tl-title">{isHu ? 'Iskolai weboldal — önkéntes' : 'School website — volunteer'}</h3>
-              <p className="tl-meta">{isHu ? 'Dunakeszi Széchenyi István Általános Iskola' : 'Dunakeszi Széchenyi Primary School'}</p>
+              <ul className="tl-sub-list">
+                <li>
+                  <span className="tl-sub-year">2021</span>
+                  <span className="tl-sub-body">
+                    <span className="tl-sub-title">{isHu ? 'Iskolai weboldal — önkéntes' : 'School website — volunteer'}</span>
+                  </span>
+                </li>
+              </ul>
             </div>
           </TimelineEntry>
 
@@ -201,36 +183,23 @@ function TimelineCv() {
               <span className="tl-period">2014 – 2020</span>
               <h3 className="tl-title">Eötvös Loránd Tudományegyetem (ELTE)</h3>
               <p className="tl-meta">{isHu ? 'Középiskolai angol és spanyol nyelv és kultúra tanára — mesterdiploma' : 'MA — Secondary school teacher of English and Spanish language & culture'}</p>
-            </div>
-          </TimelineEntry>
 
-          {/* Eötvös József Collegium */}
-          <TimelineEntry delay={0.28}>
-            <div className="tl-dot tl-dot--edu" />
-            <div className="tl-body">
-              <span className="tl-period">2015 – 2020</span>
-              <h3 className="tl-title">Eötvös József Collegium</h3>
-              <p className="tl-meta">{isHu ? 'Szakkollégium · spanyol és angol-amerikai műhelyek' : 'Academic college · Spanish and Anglo-American workshops'}</p>
-            </div>
-          </TimelineEntry>
-
-          {/* Universidad de Córdoba */}
-          <TimelineEntry delay={0.32}>
-            <div className="tl-dot tl-dot--edu" />
-            <div className="tl-body">
-              <span className="tl-period">2018</span>
-              <h3 className="tl-title">Universidad de Córdoba</h3>
-              <p className="tl-meta">Erasmus+ {isHu ? 'ösztöndíj' : 'scholarship'}</p>
-            </div>
-          </TimelineEntry>
-
-          {/* Kecskeméti Kodály */}
-          <TimelineEntry delay={0.36}>
-            <div className="tl-dot tl-dot--edu" />
-            <div className="tl-body">
-              <span className="tl-period">1999 – 2012</span>
-              <h3 className="tl-title">Kecskeméti Kodály Zoltán Ének-zenei Általános Iskola, Gimnázium, Szakgimnázium és Alapfokú Művészeti Iskola</h3>
-              <p className="tl-meta">{isHu ? 'Általános Iskola & Gimnázium' : 'Primary School & Secondary School'}</p>
+              <ul className="tl-sub-list">
+                <li>
+                  <span className="tl-sub-year">2015 – 2020</span>
+                  <span className="tl-sub-body">
+                    <span className="tl-sub-title">Eötvös József Collegium</span>
+                    <span className="tl-sub-meta">{isHu ? 'Szakkollégium · spanyol és angol-amerikai műhelyek' : 'Academic college · Spanish and Anglo-American workshops'}</span>
+                  </span>
+                </li>
+                <li>
+                  <span className="tl-sub-year">2018</span>
+                  <span className="tl-sub-body">
+                    <span className="tl-sub-title">Universidad de Córdoba</span>
+                    <span className="tl-sub-meta">Erasmus+ {isHu ? 'ösztöndíj' : 'scholarship'}</span>
+                  </span>
+                </li>
+              </ul>
             </div>
           </TimelineEntry>
 

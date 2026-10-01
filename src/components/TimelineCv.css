@@ -291,6 +291,56 @@
   min-width: 2.2rem;
 }
 
+/* Nested sub-entries (e.g. Collegium & Erasmus under ELTE) */
+.tl-sub-list {
+  list-style: none;
+  padding: 0 0 0 0.85rem;
+  margin: 0.7rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  border-left: 1px solid rgba(128, 128, 128, 0.22);
+}
+
+.tl-sub-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.tl-sub-year {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: var(--text-secondary);
+  opacity: 0.5;
+  min-width: 5.2rem;
+  flex-shrink: 0;
+}
+
+.tl-sub-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.tl-sub-title {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.tl-sub-meta {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+[data-theme="dark"] .tl-sub-list {
+  border-left-color: rgba(240, 235, 229, 0.14);
+}
+
 /* Dark mode */
 [data-theme="dark"] .tl-proj-chip {
   border-color: rgba(240, 235, 229, 0.1);
@@ -321,5 +371,10 @@
 
   .tl-proj-chip {
     padding: 0.38rem 0.7rem 0.38rem 0.6rem;
+  }
+
+  .tl-sub-list li {
+    flex-direction: column;
+    gap: 0.15rem;
   }
 }

@@ -26,14 +26,15 @@ const mockupBg = {
   winefo:   'linear-gradient(135deg, #2a0a18 0%, #1e0a2a 55%, #130720 100%)',
 }
 
+// Opaque backgrounds — the info panel must never let page content show through.
 const infoBg = {
-  cib:      'rgba(10, 10, 10, 0.72)',
-  uniqa:    'rgba(10, 8, 22, 0.72)',
-  gombarat: 'rgba(2, 8, 4, 0.72)',
-  aimee:    'rgba(8, 14, 10, 0.72)',
-  alphavet: 'rgba(6, 12, 20, 0.72)',
-  appartman:'rgba(12, 6, 22, 0.72)',
-  winefo:   'rgba(18, 6, 16, 0.72)',
+  cib:      '#0a0a0a',
+  uniqa:    '#0a0816',
+  gombarat: '#020804',
+  aimee:    '#080e0a',
+  alphavet: '#060c14',
+  appartman:'#0c0616',
+  winefo:   '#120610',
 }
 
 const projectVideos = {
