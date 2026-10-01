@@ -2,11 +2,6 @@
   background: #2A0D28;
   padding: 5rem 0;
 }
-
-[data-theme="dark"] .thinking {
-  background: #12091A;
-}
-
 /* Override global header colors for this dark section */
 .thinking .section-subtitle {
   color: rgba(240, 235, 229, 0.45);
@@ -19,11 +14,6 @@
 .thinking .copper-text {
   color: #B87AB4;
 }
-
-[data-theme="dark"] .thinking .copper-text {
-  color: #D4956A;
-}
-
 .thinking .divider {
   background: rgba(240, 235, 229, 0.18);
 }
@@ -68,7 +58,6 @@
 .thinking__card--2 .thinking__card-img { background-image: url('/images/thinking-2.svg'); }
 .thinking__card--3 .thinking__card-img { background-image: url('/images/thinking-3.svg'); }
 
-
 .thinking__card-number {
   font-size: 0.58rem;
   font-weight: 700;
@@ -101,12 +90,6 @@
   color: #C26D45;
   font-weight: 600;
 }
-
-[data-theme="dark"] .thinking .copper-text,
-[data-theme="dark"] .thinking__card-body strong.copper-text {
-  color: #D4A030;
-}
-
 @media (max-width: 900px) {
   .thinking__grid {
     grid-template-columns: 1fr;

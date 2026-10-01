@@ -41,11 +41,6 @@
   line-height: 1.8;
   font-weight: 400;
 }
-
-[data-theme="dark"] .positioning {
-  border-color: rgba(240, 235, 229, 0.06);
-}
-
 @media (max-width: 768px) {
   .positioning__grid {
     grid-template-columns: 1fr;

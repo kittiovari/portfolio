@@ -336,21 +336,6 @@
   color: var(--text-secondary);
   line-height: 1.4;
 }
-
-[data-theme="dark"] .tl-sub-list {
-  border-left-color: rgba(240, 235, 229, 0.14);
-}
-
-/* Dark mode */
-[data-theme="dark"] .tl-proj-chip {
-  border-color: rgba(240, 235, 229, 0.1);
-}
-
-[data-theme="dark"] .tl-proj-chip:hover {
-  border-color: rgba(240, 235, 229, 0.22);
-  background: rgba(240, 235, 229, 0.05);
-}
-
 /* Responsive */
 @media (max-width: 768px) {
   .tl-track {

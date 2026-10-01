@@ -31,11 +31,6 @@
   line-height: 1.85;
   font-weight: 400;
 }
-
-[data-theme="dark"] .values__item {
-  border-top-color: rgba(240, 235, 229, 0.1);
-}
-
 @media (max-width: 768px) {
   .values__grid {
     grid-template-columns: 1fr;

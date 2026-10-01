@@ -58,7 +58,6 @@
   line-height: 1.9;
 }
 
-
 .about__cv-link {
   margin-top: 2rem;
 }
@@ -82,8 +81,4 @@
   background: var(--text-primary);
   color: var(--bg-primary);
   border-color: var(--text-primary);
-}
-
-[data-theme="dark"] .about__cv-cta {
-  border-color: rgba(240, 235, 229, 0.22);
 }

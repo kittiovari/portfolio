@@ -42,29 +42,6 @@
   background: color-mix(in srgb, var(--text-primary) 20%, transparent);
 }
 
-.hc-sep {
-  width: 1px;
-  height: 14px;
-  background: color-mix(in srgb, var(--text-primary) 14%, transparent);
-  margin: 0 0.1rem;
-}
-
-.hc-theme {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  padding: 0.1rem;
-  transition: color 0.15s;
-}
-.hc-theme:hover { color: var(--text-primary); }
-.hc-theme svg {
-  width: 14px;
-  height: 14px;
-}
-
 .hero__bento {
   display: grid;
   grid-template-columns: 300px 1fr;
@@ -195,11 +172,11 @@
   display: block;
 }
 
-/* ── 2×2 card grid ── */
+/* ── Card grid: lead card + 2 below ── */
 .bento-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
+  grid-template-rows: auto 1fr;
   gap: 1.1rem;
   flex: 1;
 }
@@ -238,52 +215,11 @@ a.bento-card:hover .bento-card__arrow {
   transform: translate(3px, -3px);
 }
 
-/* UX projektek */
+/* UX projektek — full-width lead card above CV + Kontakt */
 .bento-card--works {
+  grid-column: 1 / -1;
   background: var(--bento-works-bg);
   color: var(--bento-works-text);
-}
-
-/* Stats */
-.bento-card--stats {
-  background: var(--bento-stats-bg);
-  color: var(--text-primary);
-  cursor: default;
-}
-.bento-stat-row {
-  display: flex;
-  align-items: baseline;
-  gap: 0.35rem;
-}
-.bento-stat-num {
-  font-family: var(--font-heading);
-  font-size: clamp(2.5rem, 4vw, 3.5rem);
-  font-weight: 800;
-  line-height: 1;
-  color: var(--bento-stat-num-color, var(--text-primary));
-}
-.bento-stat-unit {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  letter-spacing: 0.03em;
-}
-.bento-stat-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  margin-top: 0.5rem;
-}
-.bento-stat-list li {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-  line-height: 1.4;
-}
-.bento-stat-list li::before {
-  content: '• ';
-  opacity: 0.45;
 }
 
 /* CV */
@@ -319,38 +255,12 @@ a.bento-card:hover .bento-card__arrow {
   --bento-works-bg: #E5EEE9;
   --bento-works-text: #18181B;
 
-  --bento-stats-bg: #E4E0DB;
-
   --bento-cv-bg: #F3F2EE;
   --bento-cv-text: #18181B;
 
   --bento-contact-bg: #F5F1EC;
   --bento-contact-text: #18181B;
 }
-
-[data-theme="dark"] {
-  --bento-portrait-bg: #1D1B28;
-
-  --bento-works-bg: #122019;
-  --bento-works-text: #9ECFB2;
-
-  --bento-stats-bg: #161C14;
-  --bento-stat-num-color: #E9B84A;
-
-  --bento-cv-bg: #F3F2EE;
-  --bento-cv-text: #18181B;
-
-  --bento-contact-bg: #18181B;
-  --bento-contact-text: #F0EBE5;
-}
-
-[data-theme="dark"] .bento-card--portrait,
-[data-theme="dark"] .bento-card--works,
-[data-theme="dark"] .bento-card--stats,
-[data-theme="dark"] .bento-card--contact {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
 /* ── Responsive: tablet ── */
 @media (max-width: 900px) {
   .hero__bento {

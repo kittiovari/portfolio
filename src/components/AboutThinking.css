@@ -3,11 +3,6 @@
   padding: 6rem 0;
   position: relative;
 }
-
-[data-theme="dark"] .about-thinking {
-  background: #12091A;
-}
-
 .about-thinking__anchor {
   position: absolute;
   top: 0;

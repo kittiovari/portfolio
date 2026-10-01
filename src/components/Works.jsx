@@ -17,24 +17,24 @@ const projectMockups = {
 }
 
 const mockupBg = {
-  cib:      'linear-gradient(160deg, #2b2b2b 0%, #1e1e1e 50%, #141414 100%)',
-  uniqa:    'linear-gradient(135deg, #0d2a22 0%, #16133a 55%, #1c0e3a 100%)',
-  gombarat: 'linear-gradient(160deg, #0d1f0c 0%, #07130a 45%, #040d06 75%, #020805 100%)',
-  aimee:    'linear-gradient(135deg, #0e2420 0%, #1e1a08 55%, #120d04 100%)',
-  alphavet: 'linear-gradient(135deg, #0a1a2e 0%, #0d1624 55%, #060d14 100%)',
-  appartman:'linear-gradient(135deg, #1a0d2e 0%, #160a28 50%, #0d061a 100%)',
-  winefo:   'linear-gradient(135deg, #2a0a18 0%, #1e0a2a 55%, #130720 100%)',
+  cib:      'linear-gradient(160deg, #F4F4F5 0%, #ECECEE 50%, #E3E3E6 100%)',
+  uniqa:    'linear-gradient(135deg, #EAF3F0 0%, #ECEAF5 55%, #EAE6F3 100%)',
+  gombarat: 'linear-gradient(160deg, #EDF4EC 0%, #E6F0E6 50%, #DFEADF 100%)',
+  aimee:    'linear-gradient(135deg, #EDF4F1 0%, #F4F0E4 55%, #F0EBDE 100%)',
+  alphavet: 'linear-gradient(135deg, #E9F0F6 0%, #E8EDF4 55%, #E1E8F1 100%)',
+  appartman:'linear-gradient(135deg, #F0EAF6 0%, #EDE6F4 50%, #E7DEF0 100%)',
+  winefo:   'linear-gradient(135deg, #F7E9EF 0%, #F0E8F5 55%, #EAE2F0 100%)',
 }
 
-// Opaque backgrounds — the info panel must never let page content show through.
+// Light tint per project — keeps each project's hue without hurting contrast.
 const infoBg = {
-  cib:      '#0a0a0a',
-  uniqa:    '#0a0816',
-  gombarat: '#020804',
-  aimee:    '#080e0a',
-  alphavet: '#060c14',
-  appartman:'#0c0616',
-  winefo:   '#120610',
+  cib:      '#FCFCFD',
+  uniqa:    '#FBFCFC',
+  gombarat: '#FBFDFB',
+  aimee:    '#FDFCF9',
+  alphavet: '#FAFCFD',
+  appartman:'#FCFAFD',
+  winefo:   '#FDFAFC',
 }
 
 const projectVideos = {
@@ -44,15 +44,16 @@ const projectVideos = {
   },
 }
 
+// Accents darkened for legibility on the light panel.
 const accentColor = {
   // cig: default purple, no override
-  cib:      '#6fa8c8',
-  uniqa:    '#7dc4b4',
-  gombarat: '#6ec47a',
-  aimee:    '#c4a85a',
-  alphavet: '#5aaed4',
-  appartman:'#9b7fd4',
-  winefo:   '#c47fa8',
+  cib:      '#2F6E8F',
+  uniqa:    '#2B7D6B',
+  gombarat: '#2E7D3C',
+  aimee:    '#8A6A14',
+  alphavet: '#1F6E96',
+  appartman:'#5B3FA0',
+  winefo:   '#9B3F6E',
 }
 
 const projectLogos = {

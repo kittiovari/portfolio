@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
-import { useTheme } from '../i18n/ThemeContext.jsx'
 import './Hero.css'
 
 const card = (i) => ({
@@ -12,33 +11,8 @@ const card = (i) => ({
   },
 })
 
-function SunIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="5"/>
-      <line x1="12" y1="1" x2="12" y2="3"/>
-      <line x1="12" y1="21" x2="12" y2="23"/>
-      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-      <line x1="1" y1="12" x2="3" y2="12"/>
-      <line x1="21" y1="12" x2="23" y2="12"/>
-      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-    </svg>
-  )
-}
-
-function MoonIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-    </svg>
-  )
-}
-
 function Hero() {
   const { language, setLanguage } = useLanguage()
-  const { isDark, toggle } = useTheme()
 
   return (
     <section id="hero" className="hero">
@@ -54,10 +28,6 @@ function Hero() {
             <button className={`hc-lang ${language === 'hu' ? 'hc-lang--active' : ''}`} onClick={() => setLanguage('hu')}>HU</button>
             <span className="hc-divider" />
             <button className={`hc-lang ${language === 'en' ? 'hc-lang--active' : ''}`} onClick={() => setLanguage('en')}>EN</button>
-            <span className="hc-sep" />
-            <button className="hc-theme" onClick={toggle} aria-label={isDark ? 'Világos mód' : 'Sötét mód'}>
-              {isDark ? <SunIcon /> : <MoonIcon />}
-            </button>
           </div>
         </motion.div>
 
@@ -68,7 +38,7 @@ function Hero() {
         >
           <div className="bento-card__toprow">
             <img
-              src={isDark ? '/images/logo-dark.svg' : '/images/logo-light.svg'}
+              src="/images/logo-light.svg"
               alt="H. Óvári Kitti"
               className="bento-logo"
             />
@@ -91,24 +61,12 @@ function Hero() {
             <span className="bento-card__arrow">↗</span>
           </motion.a>
 
-          <motion.div className="bento-card bento-card--stats" variants={card(3)} initial="hidden" animate="visible">
-            <div className="bento-stat-row">
-              <span className="bento-stat-num">5+</span>
-              <span className="bento-stat-unit">Kiemelt projekt</span>
-            </div>
-            <ul className="bento-stat-list">
-              <li>Insurtech &amp; Banki platformok</li>
-              <li>AI complaint management</li>
-              <li>E-commerce &amp; PropTech</li>
-            </ul>
-          </motion.div>
-
-          <motion.a href="#cv" className="bento-card bento-card--cv" variants={card(4)} initial="hidden" animate="visible">
+          <motion.a href="#cv" className="bento-card bento-card--cv" variants={card(3)} initial="hidden" animate="visible">
             <span className="bento-card__label">CV / Önéletrajz</span>
             <span className="bento-card__arrow">↓</span>
           </motion.a>
 
-          <motion.a href="#footer" className="bento-card bento-card--contact" variants={card(5)} initial="hidden" animate="visible">
+          <motion.a href="#footer" className="bento-card bento-card--contact" variants={card(4)} initial="hidden" animate="visible">
             <span className="bento-card__label">Kontakt</span>
             <span className="bento-card__arrow">↗</span>
           </motion.a>
