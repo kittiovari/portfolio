@@ -307,16 +307,16 @@
 }
 
 .works-modal__logo {
-  height: 24px;
+  height: 32px;
   display: flex;
   align-items: center;
   opacity: 0.85;
 }
 
 .works-modal__logo img {
-  height: 26px;
+  height: 32px;
   width: auto;
-  max-width: 132px;
+  max-width: 168px;
   object-fit: contain;
 }
 
@@ -349,7 +349,7 @@
   color: var(--text-primary);
   line-height: 1.15;
   letter-spacing: -0.025em;
-  margin-bottom: 0.85rem;
+  margin-bottom: 0.6rem;
 }
 
 /* Központi kérdés: a cím alatt, gyengébb nála, erősebb a body-nál */
@@ -370,15 +370,15 @@
   font-size: 0.82rem;
   color: var(--text-secondary);
   line-height: 1.5;
-  margin-top: 1.4rem;
+  margin-top: 1.1rem;
 }
 
 .works-modal__team {
   font-size: 0.75rem;
   color: var(--text-secondary);
-  opacity: 0.68;
+  opacity: 0.62;
   line-height: 1.5;
-  margin-top: 0.2rem;
+  margin-top: 0.3rem;
 }
 
 /* Rövid kontextus: cím és kérdés nélkül, önmagában */
@@ -388,7 +388,7 @@
   color: var(--text-primary);
   opacity: 0.78;
   line-height: 1.65;
-  margin-top: 1.75rem;
+  margin-top: 1.6rem;
 }
 
 .works-modal__section {
@@ -406,6 +406,7 @@
 
 /* Megoldások: 2 oszlopos editorial grid, keret és háttér nélkül */
 .works-modal__grid {
+  margin-top: 1.9rem;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   column-gap: 1.75rem;
@@ -440,8 +441,9 @@
   line-height: 1.55;
 }
 
-/* Tanulság: finom accent vonal, keret és háttér nélkül */
+/* Mit tanultam?: finom accent vonal, keret és háttér nélkül */
 .works-modal__lesson {
+  margin-top: 1.9rem;
   padding-left: 1.1rem;
   border-left: 2px solid var(--modal-accent, #5B3FA0);
 }
@@ -452,26 +454,6 @@
 }
 
 /* Tagek: háttérbe húzódnak */
-.works-modal__tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  margin-top: auto;
-  padding-top: 2rem;
-}
-
-.works-modal__tag {
-  font-family: var(--font-body);
-  font-size: 0.62rem;
-  letter-spacing: 0.04em;
-  color: var(--text-secondary);
-  opacity: 0.7;
-  padding: 0.2rem 0.6rem;
-  background: transparent;
-  border: 1px solid rgba(24, 24, 27, 0.11);
-  border-radius: var(--radius-pill);
-  font-weight: 400;
-}
 
 /* Close button */
 .works-modal__close {
@@ -575,10 +557,6 @@
 
   .works-modal__question {
     font-size: 1.05rem;
-  }
-
-  .works-modal__tags {
-    padding-top: 2rem;
   }
 
   .works-modal__nav--prev { left: 0.5rem; }

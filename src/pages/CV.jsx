@@ -129,12 +129,6 @@ function CV() {
                 </div>
               </div>
 
-              <div className="cv__inner-section">
-                <h4 className="cv__inner-title">{cv.jobs[0].otherTitle}</h4>
-                <ul className="cv__proj-list">
-                  <li>{cv.jobs[0].otherDesc}</li>
-                </ul>
-              </div>
             </div>
 
             {/* Appartman */}

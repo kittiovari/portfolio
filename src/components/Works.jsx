@@ -249,7 +249,7 @@ function ProjectModal({ projects, index, onClose, onPrev, onNext }) {
 
                 <h2 className="works-modal__title">{p.title}</h2>
 
-                {/* A központi kérdés közvetlenül a cím alatt, label nélkül */}
+                {/* Központi kérdés: közvetlenül a cím alatt, label nélkül */}
                 {p.question && (Array.isArray(p.question) ? p.question : [p.question]).map((q, i) => (
                   <p key={i} className="works-modal__question">{q}</p>
                 ))}
@@ -265,30 +265,26 @@ function ProjectModal({ projects, index, onClose, onPrev, onNext }) {
                   <p className="works-modal__excerpt">{p.excerpt || p.context}</p>
                 )}
 
+                {/* Megoldásblokkok: label nélkül, önmagukban érthetően */}
                 {p.achievement && (
-                  <div className="works-modal__section">
-                    <p className="works-modal__label">
-                      {isHu ? 'Megoldások & eredmények' : 'Solutions & results'}
-                    </p>
-                    <div className="works-modal__grid">
-                      {(Array.isArray(p.achievement) ? p.achievement : [p.achievement]).map((a, i) => {
-                        const colonIdx = a.indexOf(':')
-                        const label = colonIdx > -1 ? a.slice(0, colonIdx).trim() : null
-                        const body = colonIdx > -1 ? a.slice(colonIdx + 1).trim() : a
-                        return (
-                          <div key={i} className="works-modal__cell">
-                            {label && <span className="works-modal__cell-label">{label}</span>}
-                            <span className="works-modal__cell-body">{body}</span>
-                          </div>
-                        )
-                      })}
-                    </div>
+                  <div className="works-modal__grid">
+                    {(Array.isArray(p.achievement) ? p.achievement : [p.achievement]).map((a, i) => {
+                      const colonIdx = a.indexOf(':')
+                      const label = colonIdx > -1 ? a.slice(0, colonIdx).trim() : null
+                      const body = colonIdx > -1 ? a.slice(colonIdx + 1).trim() : a
+                      return (
+                        <div key={i} className="works-modal__cell">
+                          {label && <span className="works-modal__cell-label">{label}</span>}
+                          <span className="works-modal__cell-body">{body}</span>
+                        </div>
+                      )
+                    })}
                   </div>
                 )}
 
                 {p.lesson && (
-                  <div className="works-modal__section works-modal__lesson">
-                    <p className="works-modal__label">{isHu ? 'Tanulság' : 'Key takeaway'}</p>
+                  <div className="works-modal__lesson">
+                    <p className="works-modal__label">{isHu ? 'Mit tanultam?' : 'What I learned'}</p>
                     <div className="works-modal__learnings">
                       {(Array.isArray(p.lesson) ? p.lesson : [p.lesson]).map((l, i) => {
                         const colonIdx = l.indexOf(':')
@@ -304,12 +300,6 @@ function ProjectModal({ projects, index, onClose, onPrev, onNext }) {
                     </div>
                   </div>
                 )}
-
-                <div className="works-modal__tags">
-                  {p.tags.map((tag) => (
-                    <span key={tag} className="works-modal__tag">{tag}</span>
-                  ))}
-                </div>
               </div>
             </motion.div>
           </motion.div>

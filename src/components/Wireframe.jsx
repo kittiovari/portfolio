@@ -199,7 +199,6 @@ const projectWireframeMap = {
   antares: 'audit',
   geroa: 'saas',
   testgroup: 'saas',
-  mixieqr: 'mobile',
 }
 
 function Wireframe({ projectId }) {

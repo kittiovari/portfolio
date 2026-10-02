@@ -59,7 +59,7 @@ function Hero() {
 
           <motion.a href="#works" className="bento-card bento-card--works" variants={card(2)} initial="hidden" animate="visible">
             <span className="bento-card__label">{t.bento.works}</span>
-            <span className="bento-card__arrow">↗</span>
+            <span className="bento-card__arrow">↓</span>
           </motion.a>
 
           <motion.a href="#cv" className="bento-card bento-card--cv" variants={card(3)} initial="hidden" animate="visible">
@@ -69,7 +69,7 @@ function Hero() {
 
           <motion.a href="#footer" className="bento-card bento-card--contact" variants={card(4)} initial="hidden" animate="visible">
             <span className="bento-card__label">{t.bento.contact}</span>
-            <span className="bento-card__arrow">↗</span>
+            <span className="bento-card__arrow">↓</span>
           </motion.a>
         </div>
 
