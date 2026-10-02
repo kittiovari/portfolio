@@ -293,15 +293,15 @@ export const translations = {
       titleHighlight: 'dolgozom?',
       cards: [
         {
-          topic: 'Megértés & Kutatás',
+          topic: 'Kérdezek, mielőtt tervezek',
           body: 'Mielőtt megoldást tervezek, szeretném érteni a <strong class="copper-text">valódi problémát</strong>. Kérdezek, kutatok és megfigyelek, hogy ne feltételezésekből, hanem <strong class="copper-text">valódi felhasználói igényekből</strong> induljunk ki.',
         },
         {
-          topic: 'Tisztaság & Rendszer',
+          topic: 'Egyszerűbbé teszem',
           body: 'Szeretem kibogozni az összetett folyamatokat, <strong class="copper-text">megtalálni az elakadásokat</strong>, majd <strong class="copper-text">egyszerűbb és átláthatóbb rendszert</strong> építeni belőlük. Olyat, amit a felhasználónak nem kell megfejtenie.',
         },
         {
-          topic: 'Együttműködés',
+          topic: 'Együtt gondolkodom',
           body: '<strong class="copper-text">A jó termék csapatmunka.</strong> Szeretek fejlesztőkkel, üzleti szereplőkkel és tervezőkkel együtt gondolkodni, és olyan közeget teremteni, ahol <strong class="copper-text">a félkész ötleteket is érdemes kimondani</strong>. 😊',
         },
       ],
@@ -540,15 +540,15 @@ export const translations = {
       titleHighlight: 'in my work',
       cards: [
         {
-          topic: 'Understanding & Research',
+          topic: 'I ask before I design',
           body: 'Before I design a solution, I want to understand the <strong class="copper-text">real problem</strong>. I ask, research and observe, so that we start from <strong class="copper-text">real user needs</strong> rather than assumptions.',
         },
         {
-          topic: 'Clarity & System',
+          topic: 'I make things simpler',
           body: 'I like untangling complex processes, <strong class="copper-text">finding where people get stuck</strong>, and then building something <strong class="copper-text">simpler and clearer</strong> out of them. Something the user does not have to decipher.',
         },
         {
-          topic: 'Collaboration',
+          topic: 'I think together',
           body: '<strong class="copper-text">Good products are teamwork.</strong> I like thinking together with developers, business stakeholders and designers, and creating a space where <strong class="copper-text">half-formed ideas are worth saying out loud</strong>. 😊',
         },
       ],
