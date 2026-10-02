@@ -158,6 +158,11 @@
   margin: 0;
 }
 
+/* A bemutatkozó bekezdések kiemelései: szín öröklés, csak vastagság */
+.at-para strong {
+  color: inherit;
+  font-weight: 700;
+}
 /* A kiemelések a kártya szövegszínét öröklik, csak a vastagság jelöli őket */
 .at-card-body strong,
 .at-card-body .copper-text {

@@ -52,8 +52,8 @@ export const translations = {
       title: 'Megértem az embereket',
       titleHighlight: 'és folyamatokat építek nekik.',
       paragraphs: [
-        'Kitti vagyok, product designer, UX generalista. Az oktatás felől érkeztem a UX világába, így különösen foglalkoztat, az emberek gondolkodása, a viselkedésük mögötti miértek.',
-        'Segítek scopet-ot definiálni, üzleti ötleteket validálni, majd azokat tesztelni, megvalósítani, utánkövetni. Fejlesztői ügynökségi háttérrel egy- és sokfős fejlesztői csapatokban dolgoztam startupoknak és corporate ügyfeleknek.',
+        '<strong>Kitti vagyok, product designer, UX generalista.</strong> Az oktatás felől érkeztem a UX világába, így különösen foglalkoztat, <strong>az emberek gondolkodása, a viselkedésük mögötti miértek.</strong>',
+        'Segítek <strong>scopet-ot</strong> definiálni, üzleti ötleteket <strong>validálni</strong>, majd azokat <strong>tesztelni</strong>, <strong>megvalósítani</strong>, <strong>utánkövetni</strong>. Fejlesztő <strong>ügynökségi háttérrel</strong> egy- és sokfős fejlesztői csapatokban dolgoztam <strong>startupoknak</strong> és <strong>corporate ügyfeleknek</strong>.',
       ],
       hobbies: [],
       cvCta: 'CV',
@@ -301,7 +301,7 @@ export const translations = {
           body: 'Szeretem kibogozni az összetett folyamatokat, <strong class="copper-text">megtalálni az elakadásokat</strong>, majd <strong class="copper-text">egyszerűbb és átláthatóbb rendszert</strong> építeni belőlük. Olyat, amit a felhasználónak nem kell megfejtenie.',
         },
         {
-          topic: 'Együtt gondolkodom',
+          topic: 'Csapatban gondolkodom',
           body: '<strong class="copper-text">A jó termék csapatmunka.</strong> Szeretek fejlesztőkkel, üzleti szereplőkkel és tervezőkkel együtt gondolkodni, és olyan közeget teremteni, ahol <strong class="copper-text">a félkész ötleteket is érdemes kimondani</strong>.',
         },
       ],

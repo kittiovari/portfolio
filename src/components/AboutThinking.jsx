@@ -35,7 +35,7 @@ function AboutThinking() {
             </h2>
             <div className="at-paragraphs">
               {t.about.paragraphs.map((p, i) => (
-                <p key={i} className="at-para">{p}</p>
+                <p key={i} className="at-para" dangerouslySetInnerHTML={{ __html: p }} />
               ))}
             </div>
           </motion.div>
