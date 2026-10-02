@@ -55,6 +55,19 @@
   position: relative;
 }
 
+.footer__pill-copy {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  opacity: 0.5;
+  margin-left: 0.15rem;
+  transition: opacity 0.18s;
+}
+
+.footer__pill:hover .footer__pill-copy {
+  opacity: 1;
+}
+
 .footer__pill svg {
   width: 15px;
   height: 15px;
@@ -109,9 +122,17 @@
 
 .footer__logo {
   opacity: 0.5;
+  filter: saturate(0.35);
   flex: 1;
   display: flex;
   justify-content: flex-start;
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+/* Hoverre kiszínesedik */
+.footer__logo:hover {
+  opacity: 1;
+  filter: saturate(1.1);
 }
 
 .footer__logo-img {

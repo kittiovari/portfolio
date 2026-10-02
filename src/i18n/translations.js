@@ -49,10 +49,10 @@ export const translations = {
     },
     about: {
       label: 'Rólam',
-      title: 'Az emberi viselkedés megértéséből építek',
-      titleHighlight: 'intuitív élményeket',
+      title: 'Megértem az embereket,',
+      titleHighlight: 'használható folyamatokat építek.',
       paragraphs: [
-        'Horváthné Óvári Kitti vagyok, product designer és UX generalista. A nyelvészet és a pszichológia felől érkeztem a UX világába, ezért különösen érdekel, hogyan gondolkodnak az emberek, mi motiválja őket, és hol akadnak el.',
+        'Kitti vagyok, product designer, UX generalista. Az oktatás felől érkeztem a UX világába, így különösen foglalkoztat, az emberek gondolkodása, a viselkedésük mögötti miértek.',
         'A munkám során kutatással, rendszerezéssel és tervezéssel kötöm össze a felhasználói igényeket az üzleti célokkal. Komplex folyamatokból egyszerűbb, átláthatóbb digitális élményeket építek.',
       ],
       hobbies: [],
@@ -457,10 +457,10 @@ export const translations = {
     },
     about: {
       label: 'About',
-      title: 'I build intuitive experiences from understanding',
-      titleHighlight: 'human behaviour',
+      title: 'I understand people,',
+      titleHighlight: 'and build processes that work.',
       paragraphs: [
-        'I\'m Kitti H. Óvári, a product designer and UX generalist. I came to UX from linguistics and psychology, so I\'m especially interested in how people think, what motivates them, and where they get stuck.',
+        'I am Kitti, a product designer and UX generalist. I came to UX from teaching, so I am especially drawn to how people think and to the reasons behind their behaviour.',
         'In my work I connect user needs with business goals through research, structuring and design. I turn complex processes into simpler, clearer digital experiences.',
       ],
       hobbies: [],

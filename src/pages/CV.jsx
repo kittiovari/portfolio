@@ -17,7 +17,7 @@ function CV() {
 
   const copyEmail = (e) => {
     e.preventDefault()
-    navigator.clipboard.writeText('kitti.ovari@gmail.com')
+    copyText('kitti.ovari@gmail.com')
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }

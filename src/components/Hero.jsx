@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useLanguage, useTranslation } from '../i18n/LanguageContext.jsx'
 import './Hero.css'
+import { copyText } from '../utils/clipboard.js'
 
 const card = (i) => ({
   hidden: { opacity: 0, y: 18 },
@@ -14,6 +16,13 @@ const card = (i) => ({
 function Hero() {
   const { language, setLanguage } = useLanguage()
   const t = useTranslation()
+  const [copied, setCopied] = useState(false)
+
+  const copyEmail = async () => {
+    await copyText('kitti.ovari@gmail.com')
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   return (
     <section id="hero" className="hero">
@@ -53,7 +62,13 @@ function Hero() {
             <div className="bento-identity">
               <span className="bento-greeting">{t.bento.greeting}</span>
               <strong className="bento-name">{t.bento.name}</strong>
-              <a href="mailto:kitti.ovari@gmail.com" className="bento-email">kitti.ovari@gmail.com</a>
+              <button type="button" className="bento-email" onClick={copyEmail}>
+                <span>{copied ? (language === 'hu' ? 'Kimásolva!' : 'Copied!') : 'kitti.ovari@gmail.com'}</span>
+                <svg className="bento-email-copy" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="5.5" y="5.5" width="8" height="8" rx="1.6"/>
+                  <path d="M10.5 3.5v-.5a1.5 1.5 0 0 0-1.5-1.5H4A1.5 1.5 0 0 0 2.5 3v5A1.5 1.5 0 0 0 4 9.5h.5"/>
+                </svg>
+              </button>
             </div>
           </motion.div>
 

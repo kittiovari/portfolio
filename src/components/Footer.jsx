@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation, useLanguage } from '../i18n/LanguageContext.jsx'
 import './Footer.css'
+import { copyText } from '../utils/clipboard.js'
 
 function Footer() {
   const t = useTranslation()
@@ -9,7 +10,7 @@ function Footer() {
   const isHu = language === 'hu'
 
   const handleCopyEmail = async () => {
-    await navigator.clipboard.writeText('kitti.ovari@gmail.com')
+    await copyText('kitti.ovari@gmail.com')
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -33,6 +34,10 @@ function Footer() {
               <path d="m2 6 8 6 8-6"/>
             </svg>
             <span>kitti.ovari@gmail.com</span>
+            <svg className="footer__pill-copy" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="5.5" y="5.5" width="8" height="8" rx="1.6"/>
+              <path d="M10.5 3.5v-.5a1.5 1.5 0 0 0-1.5-1.5H4A1.5 1.5 0 0 0 2.5 3v5A1.5 1.5 0 0 0 4 9.5h.5"/>
+            </svg>
             <span className={`footer__copied ${copied ? 'footer__copied--visible' : ''}`}>
               {isHu ? 'Kimásolva!' : 'Copied!'}
             </span>
