@@ -142,7 +142,8 @@
 /* ── Card text ── */
 .at-card-title {
   font-family: var(--font-heading);
-  font-size: 1.05rem;
+  font-size: 1.32rem;
+  letter-spacing: -0.015em;
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.25;

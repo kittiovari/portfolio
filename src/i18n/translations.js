@@ -52,8 +52,8 @@ export const translations = {
       title: 'Megértem az embereket',
       titleHighlight: 'és folyamatokat építek nekik.',
       paragraphs: [
-        '<strong>Kitti vagyok, product designer, UX generalista.</strong> Az oktatás felől érkeztem a UX világába, így különösen foglalkoztat, <strong>az emberek gondolkodása, a viselkedésük mögötti miértek.</strong>',
-        'Segítek <strong>scopet-ot</strong> definiálni, üzleti ötleteket <strong>validálni</strong>, majd azokat <strong>tesztelni</strong>, <strong>megvalósítani</strong>, <strong>utánkövetni</strong>. Fejlesztő <strong>ügynökségi háttérrel</strong> egy- és sokfős fejlesztői csapatokban dolgoztam <strong>startupoknak</strong> és <strong>corporate ügyfeleknek</strong>.',
+        '<strong>Kitti vagyok, product designer, UX generalista.</strong> Az oktatás felől érkeztem a UX világába, így különösen foglalkoztat <strong>az emberek gondolkodása, a viselkedésük mögötti miértek.</strong>',
+        'Segítek <strong>scopet-ot definiálni</strong>, üzleti <strong>ötleteket validálni</strong>, majd azokat <strong>tesztelni</strong>, <strong>megvalósítani</strong>, <strong>utánkövetni</strong>. Fejlesztő <strong>ügynökségi háttérrel</strong> egy- és sokfős fejlesztői csapatokban dolgoztam <strong>startupoknak</strong> és <strong>corporate ügyfeleknek</strong>.',
       ],
       hobbies: [],
       cvCta: 'CV',
