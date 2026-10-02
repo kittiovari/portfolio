@@ -39,7 +39,7 @@ function CV() {
             <span className="navbar__lang-divider">|</span>
             <button className={language === 'en' ? 'navbar__lang-btn navbar__lang-btn--active' : 'navbar__lang-btn'} onClick={() => setLanguage('en')}>EN</button>
           </div>
-          <a href="/CV.pdf" target="_blank" rel="noopener noreferrer" className="cv__print-btn">
+          <a href="/CV%20-%20H.%20%C3%93v%C3%A1ri%20Kitti%20%282026%2C%20HU%29.pdf" target="_blank" rel="noopener noreferrer" className="cv__print-btn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '1em', height: '1em', marginRight: '0.45em', verticalAlign: 'middle', flexShrink: 0 }}>
               <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
             </svg>

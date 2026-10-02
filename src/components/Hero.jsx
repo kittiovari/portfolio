@@ -48,6 +48,8 @@ function Hero() {
             className="bento-card bento-card--portrait"
             variants={card(1)} initial="hidden" animate="visible"
           >
+            {/* A teljes kártya a Rólam szekcióra visz; a lenti e-mail gomb fölötte marad */}
+            <a href="#about" className="bento-card__stretch" aria-label={t.bento.about}></a>
             <div className="bento-card__toprow">
               <img
                 src="/images/logo-light.svg"
