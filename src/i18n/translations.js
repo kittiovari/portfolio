@@ -294,7 +294,7 @@ export const translations = {
       cards: [
         {
           topic: 'Kérdezek, mielőtt tervezek',
-          body: 'Mielőtt megoldást tervezek, szeretném érteni a <strong class="copper-text">valódi problémát</strong>. Kérdezek, kutatok és megfigyelek, hogy ne feltételezésekből, hanem <strong class="copper-text">valódi felhasználói igényekből</strong> induljunk ki.',
+          body: 'Mielőtt tervezek, megkeresem <strong class="copper-text">a jó kérdéseket és a gyökérproblémákat</strong>. Kérdezek, kutatok, hogy ne feltételezésekből, hanem <strong class="copper-text">valódi felhasználói igényekből</strong> induljunk ki.',
         },
         {
           topic: 'Egyszerűbbé teszem',
@@ -302,7 +302,7 @@ export const translations = {
         },
         {
           topic: 'Együtt gondolkodom',
-          body: '<strong class="copper-text">A jó termék csapatmunka.</strong> Szeretek fejlesztőkkel, üzleti szereplőkkel és tervezőkkel együtt gondolkodni, és olyan közeget teremteni, ahol <strong class="copper-text">a félkész ötleteket is érdemes kimondani</strong>. 😊',
+          body: '<strong class="copper-text">A jó termék csapatmunka.</strong> Szeretek fejlesztőkkel, üzleti szereplőkkel és tervezőkkel együtt gondolkodni, és olyan közeget teremteni, ahol <strong class="copper-text">a félkész ötleteket is érdemes kimondani</strong>.',
         },
       ],
     },

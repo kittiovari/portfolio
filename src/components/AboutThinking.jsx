@@ -72,15 +72,6 @@ function AboutThinking() {
         </div>
 
         {/* ── Thinking section label ── */}
-        <motion.p
-          className="at-thinking-label"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: '-40px' }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          {t.thinking.label === 'Módszerem' ? 'HOGYAN DOLGOZOM?' : 'HOW I WORK'}
-        </motion.p>
 
         {/* ── Thinking cards ── */}
         <div className="at-cards">

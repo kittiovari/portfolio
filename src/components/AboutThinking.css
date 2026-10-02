@@ -100,18 +100,6 @@
   pointer-events: none;
 }
 
-/* ── Thinking section label ── */
-.at-thinking-label {
-  font-family: var(--font-body);
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-primary);
-  opacity: 0.45;
-  margin: 0 0 1rem;
-}
-
 /* ── Card grid ── */
 .at-cards {
   display: grid;
@@ -170,10 +158,11 @@
   margin: 0;
 }
 
+/* A kiemelések a kártya szövegszínét öröklik, csak a vastagság jelöli őket */
 .at-card-body strong,
 .at-card-body .copper-text {
-  color: #7A5810;
-  font-weight: 600;
+  color: inherit;
+  font-weight: 700;
 }
 
 /* ── Responsive ── */
