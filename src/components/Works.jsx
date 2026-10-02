@@ -14,7 +14,7 @@ const projectMockups = {
   aimee:    ['/images/aimee.webp'],
   appartman:['/images/appartman-mockup.png'],
   moodmeup: ['/images/moodmeup-mockup.webp'],
-  chantblaster: ['/images/chantblaster-mockup.webp'],
+  chantblaster: ['/images/chantblaster-mockup.png'],
   cec:      ['/images/cec-mockup.webp'],
   winefo:   ['/images/winefo.webp'],
 }

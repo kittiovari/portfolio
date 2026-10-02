@@ -188,7 +188,7 @@
 /* ── Tile grid: portrait spans the left, three links fill the right ── */
 .bento-grid {
   display: grid;
-  grid-template-columns: clamp(320px, 31%, 420px) 1fr 1fr;
+  grid-template-columns: clamp(340px, 38%, 470px) 1fr 1fr;
   grid-template-rows: 1fr 1fr;
   grid-template-areas:
     "portrait works   works"

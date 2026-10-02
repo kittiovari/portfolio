@@ -49,11 +49,11 @@ export const translations = {
     },
     about: {
       label: 'Rólam',
-      title: 'Megértem az embereket,',
-      titleHighlight: 'használható folyamatokat építek.',
+      title: 'Megértem az embereket',
+      titleHighlight: 'és folyamatokat építek nekik.',
       paragraphs: [
         'Kitti vagyok, product designer, UX generalista. Az oktatás felől érkeztem a UX világába, így különösen foglalkoztat, az emberek gondolkodása, a viselkedésük mögötti miértek.',
-        'A munkám során kutatással, rendszerezéssel és tervezéssel kötöm össze a felhasználói igényeket az üzleti célokkal. Komplex folyamatokból egyszerűbb, átláthatóbb digitális élményeket építek.',
+        'Segítek scopet-ot definiálni, üzleti ötleteket validálni, majd azokat tesztelni, megvalósítani, utánkövetni. Fejlesztői ügynökségi háttérrel egy- és sokfős fejlesztői csapatokban dolgoztam startupoknak és corporate ügyfeleknek.',
       ],
       hobbies: [],
       cvCta: 'CV',
@@ -457,11 +457,11 @@ export const translations = {
     },
     about: {
       label: 'About',
-      title: 'I understand people,',
-      titleHighlight: 'and build processes that work.',
+      title: 'I understand people',
+      titleHighlight: 'and build processes for them.',
       paragraphs: [
         'I am Kitti, a product designer and UX generalist. I came to UX from teaching, so I am especially drawn to how people think and to the reasons behind their behaviour.',
-        'In my work I connect user needs with business goals through research, structuring and design. I turn complex processes into simpler, clearer digital experiences.',
+        'I help define scope, validate business ideas, then test, deliver and follow up on them. With a development agency background, I have worked in solo and large engineering teams alike, for startups and corporate clients.',
       ],
       hobbies: [],
       cvCta: 'CV',
