@@ -53,6 +53,11 @@ const projectVideos = {
   },
 }
 
+// Modálba ágyazott videók: YouTube azonosító projektenként.
+const projectEmbeds = {
+  chantblaster: 'gEm_Y5s79GQ',
+}
+
 // Accents darkened for legibility on the light panel.
 const accentColor = {
   // cig: default purple, no override
@@ -297,6 +302,21 @@ function ProjectModal({ projects, index, onClose, onPrev, onNext }) {
                           </div>
                         )
                       })}
+                    </div>
+                  </div>
+                )}
+
+                {projectEmbeds[p.id] && (
+                  <div className="works-modal__embed">
+                    <p className="works-modal__label">{isHu ? 'Ízelítő' : 'Teaser'}</p>
+                    <div className="works-modal__embed-frame">
+                      <iframe
+                        src={`https://www.youtube-nocookie.com/embed/${projectEmbeds[p.id]}`}
+                        title={p.title}
+                        loading="lazy"
+                        allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
                     </div>
                   </div>
                 )}
