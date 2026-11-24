@@ -1,8 +1,32 @@
-# Heti ellenőrzés: ismert sebezhetőségű vagy elavult npm-csomagok
+# Dependabot: heti egy összevont frissítés, hogy kevesebb PR és e-mail jöjjön.
+# - A React és a React DOM mindig együtt frissül (külön frissítve eltörne az oldal).
+# - A kis frissítések (minor + patch) egyetlen heti PR-ba kerülnek.
+# - A biztonsági javítások is egy PR-ba gyűlnek.
+# - A főverzió-ugrások (pl. framer-motion 14 → 15) külön PR-t kapnak, mert
+#   ezeket érdemes kipróbálni, mielőtt bekerülnek.
 version: 2
 updates:
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+      day: monday
+      time: "08:00"
+      timezone: Europe/Budapest
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "deps"
+    groups:
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+      minor-and-patch:
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"
+      security:
+        applies-to: security-updates
+        patterns:
+          - "*"
