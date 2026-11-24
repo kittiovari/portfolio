@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { useLanguage, useTranslation } from '../i18n/LanguageContext.jsx'
 import './Hero.css'
 import { copyText } from '../utils/clipboard.js'
@@ -33,7 +34,10 @@ function Hero() {
           className="bento-header"
           variants={card(0)} initial="hidden" animate="visible"
         >
-          <h1 className="bento-portfolio-title">{t.bento.title}</h1>
+          <div className="bento-header__titles">
+            <Link to="/" className="bento-back">← {t.bento.back}</Link>
+            <h1 className="bento-portfolio-title">{t.bento.title}</h1>
+          </div>
           <div className="hero-controls">
             <button className={`hc-lang ${language === 'hu' ? 'hc-lang--active' : ''}`} onClick={() => setLanguage('hu')}>HU</button>
             <span className="hc-divider" />

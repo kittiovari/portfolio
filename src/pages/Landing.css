@@ -1,0 +1,359 @@
+/* ════════════════════════════════════════════
+   Kittipedia nyitóoldal
+   ════════════════════════════════════════════ */
+.home {
+  --ink: #241422;
+  --ink-soft: #6B5A69;
+  --hairline: rgba(36, 20, 34, 0.08);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(60% 45% at 12% 0%, rgba(244, 226, 208, 0.75), transparent 70%),
+    radial-gradient(55% 45% at 92% 8%, rgba(226, 216, 244, 0.7), transparent 70%),
+    radial-gradient(70% 50% at 50% 110%, rgba(214, 232, 221, 0.6), transparent 70%),
+    #F4F1EC;
+  color: var(--ink);
+}
+.home section { padding: 0; }
+
+/* Fejléc */
+.home__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2rem 0 0;
+}
+.home__brand { margin: 0; line-height: 0; }
+.home__brand img { height: 30px; width: auto; }
+.home .hero-controls {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-color: var(--hairline);
+}
+
+.home__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(2.5rem, 6vh, 4.5rem);
+  padding: clamp(2rem, 6vh, 4rem) 0;
+}
+
+/* ── Három terület ── */
+.areas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.6rem, 1.6vw, 1.4rem);
+}
+.areas__cell { display: flex; min-width: 0; }
+
+.area {
+  --tile: #F3E6D8;
+  --tile-2: #ECD8C4;
+  --landing-tile-fill: var(--tile);
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  aspect-ratio: 4 / 5;
+  max-height: 62vh;
+  min-height: 300px;
+  padding: clamp(1.1rem, 2.2vw, 1.8rem);
+  border-radius: 28px;
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(255, 255, 255, 0.55), transparent 60%),
+    linear-gradient(165deg, var(--tile) 0%, var(--tile-2) 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6),
+    0 1px 2px rgba(36, 20, 34, 0.04),
+    0 18px 40px -24px rgba(36, 20, 34, 0.25);
+  color: var(--ink);
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.area--language   { --tile: #F6EADD; --tile-2: #EEDAC6; }
+.area--arttherapy { --tile: #F0EAF8; --tile-2: #DFD3EF; }
+.area--ux         { --tile: #E9F2EC; --tile-2: #D3E5DA; }
+
+.area:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.7),
+    0 2px 4px rgba(36, 20, 34, 0.05),
+    0 30px 60px -28px rgba(36, 20, 34, 0.35);
+}
+.area:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+
+.area__lock {
+  position: absolute;
+  top: clamp(0.9rem, 1.8vw, 1.4rem);
+  right: clamp(0.9rem, 1.8vw, 1.4rem);
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--ink-soft);
+}
+.area__lock svg { width: 14px; height: 14px; }
+
+.area__art {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+}
+.area__art svg {
+  width: min(92%, 300px);
+  height: auto;
+  stroke-width: 2;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.area:hover .area__art svg { transform: scale(1.05) translateY(-4px); }
+
+.area__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.area__title {
+  white-space: pre-line;
+  font-family: var(--font-heading);
+  font-size: clamp(1.1rem, 1.7vw, 1.55rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+.area__go {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(36, 20, 34, 0.18);
+  transition: background 0.35s, color 0.35s, border-color 0.35s, transform 0.35s;
+}
+.area__go svg { width: 16px; height: 16px; }
+.area:hover .area__go {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+  transform: translateX(2px);
+}
+
+/* ── Saját appok: középen, kompaktan ── */
+.apps {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+.apps__divider {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  margin-bottom: 0.4rem;
+}
+.apps__divider > span {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(36, 20, 34, 0.18));
+}
+.apps__divider > span:last-child {
+  background: linear-gradient(90deg, rgba(36, 20, 34, 0.18), transparent);
+}
+.apps__label {
+  white-space: nowrap;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.apps__row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.8rem;
+}
+/* Az appkártyák a terület-csempék stílusát követik; csak a logó őrzi az app saját arculatát */
+.app {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 244px;
+  padding: 0.6rem 0.75rem 0.6rem 0.6rem;
+  border-radius: 20px;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.6), transparent 60%),
+    linear-gradient(165deg, #FBF8F4 0%, #EFE9E2 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.7),
+    0 1px 2px rgba(36, 20, 34, 0.04),
+    0 14px 30px -20px rgba(36, 20, 34, 0.3);
+  color: var(--ink);
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.app:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.8),
+    0 2px 4px rgba(36, 20, 34, 0.05),
+    0 22px 40px -22px rgba(36, 20, 34, 0.4);
+}
+.app:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+/* Logók: az appok saját stílusában */
+.app__logo {
+  width: 46px;
+  height: 46px;
+  transform: scale(1.18);
+  flex-shrink: 0;
+  object-fit: contain;
+}
+.app__badge {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(74, 124, 78, 0.35), transparent 70%),
+    linear-gradient(160deg, #141a16 0%, #0a0f0c 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+/* A logo.svg fekete rajz sok üres hellyel: invertálva, középre vágva */
+.app__badge img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: 54px;
+  width: auto;
+  max-width: none;
+  transform: translate(-50%, -53%);
+  filter: invert(1) drop-shadow(0 0 3px rgba(255, 255, 255, 0.25));
+}
+
+.app__text { display: flex; flex-direction: column; min-width: 0; }
+.app__name {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.app__tagline { font-size: 0.78rem; color: var(--ink-soft); }
+.app__ext {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(36, 20, 34, 0.16);
+  font-size: 0.75rem;
+  transition: background 0.3s, color 0.3s, border-color 0.3s;
+}
+.app:hover .app__ext { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+.home__foot {
+  padding: 0 0 1.6rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  opacity: 0.7;
+}
+
+/* ════════════════════════════════════════════
+   Jelszókapu és témaoldalak (közös váz)
+   ════════════════════════════════════════════ */
+.landing {
+  min-height: 100vh;
+  padding: 3.5rem 0 4rem;
+}
+.landing section { padding: 0; }
+.landing__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+}
+.landing__label {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 0.9rem;
+}
+
+
+.topic-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.8rem 2rem;
+  border-radius: var(--radius-card);
+  color: #18181B;
+}
+.landing section.topic-card { padding: 1.8rem 2rem; }
+.landing-tile--language   { background: #F3E9DC; }
+.landing-tile--arttherapy { background: #EDE8F4; }
+.topic-card__intro { font-size: 1.15rem; line-height: 1.5; }
+.landing-tile__desc { font-size: 0.95rem; line-height: 1.5; opacity: 0.75; }
+
+/* ── Tablet ── */
+@media (max-width: 900px) {
+  .area { aspect-ratio: 3 / 4; min-height: 0; border-radius: 22px; }
+  .area__go { width: 34px; height: 34px; }
+}
+
+/* ── Mobil: a három csempe egymás mellett marad ── */
+@media (max-width: 560px) {
+  .home__bar { padding-top: 1.3rem; }
+  .home__brand img { height: 24px; }
+  .home__main { justify-content: flex-start; padding-top: 2.4rem; gap: 2.4rem; }
+
+  .areas { gap: 0.5rem; }
+  .area {
+    aspect-ratio: auto;
+    height: clamp(220px, 34vh, 300px);
+    max-height: none;
+    min-height: 0;
+    padding: 0.8rem 0.4rem 1.1rem;
+    border-radius: 18px;
+  }
+  .area__lock { width: 22px; height: 22px; top: 0.5rem; right: 0.5rem; }
+  .area__lock svg { width: 11px; height: 11px; }
+  .area__art svg { width: 112%; max-width: none; stroke-width: 2.8; }
+  .area__foot { justify-content: center; }
+  .area__go { display: none; }
+  .area__title {
+    font-size: clamp(0.72rem, 3.4vw, 0.9rem);
+    text-align: center;
+    hyphens: manual;
+  }
+
+  .apps__row { flex-direction: column; align-items: stretch; width: 100%; max-width: 240px; gap: 0.6rem; }
+  .app { width: auto; }
+  .app__logo, .app__badge { width: 40px; height: 40px; }
+  .app__badge img { height: 48px; }
+  .app__name { font-size: 0.95rem; }
+
+  .landing { padding: 2rem 0 3rem; }
+  .landing .bento-header { flex-wrap: wrap; justify-content: flex-end; }
+  .landing .bento-header__titles { order: 2; width: 100%; }
+  .landing .bento-portfolio-title { font-size: clamp(2rem, 9.5vw, 3rem); }
+}

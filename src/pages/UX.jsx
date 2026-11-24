@@ -4,7 +4,7 @@ import Works from '../components/Works.jsx'
 import TimelineCv from '../components/TimelineCv.jsx'
 import Footer from '../components/Footer.jsx'
 
-function Home() {
+function UX() {
   return (
     <>
       <Hero />
@@ -16,4 +16,4 @@ function Home() {
   )
 }
 
-export default Home
+export default UX

@@ -401,3 +401,17 @@ a.bento-card:hover .bento-card__arrow {
     min-height: 90px;
   }
 }
+
+/* ── Vissza a Kittipedia nyitóoldalra ── */
+.bento-header__titles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.bento-back {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: color 0.18s;
+}
+.bento-back:hover { color: var(--text-primary); }
