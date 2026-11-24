@@ -2,7 +2,63 @@
   command = "npm run build"
   publish = "dist"
 
+# Szerveroldali függvények (jelszóellenőrzés, védett tartalom kiadása).
+# A titkosított védett tartalom (protected/) csak a függvényekbe kerül be,
+# a nyilvános dist/ mappába nem.
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+  included_files = ["protected/**"]
+
+# SPA: minden ismeretlen útvonal az index.html-re (az /api/* a függvényeké)
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+
+# ── Biztonsági fejlécek minden oldalra ──
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
+    Cross-Origin-Opener-Policy = "same-origin"
+    Content-Security-Policy = """
+      default-src 'self';
+      script-src 'self';
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com;
+      img-src 'self' data: https://fulbevalo.vercel.app https://gombarat.hu https://i.ytimg.com;
+      frame-src 'self' https://www.youtube-nocookie.com;
+      connect-src 'self';
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      frame-ancestors 'self';
+      upgrade-insecure-requests
+    """
+
+# ── Védett területek és az API: ne kerüljenek keresőbe, ne cache-eljék ──
+[[headers]]
+  for = "/ux*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/nyelvoktatas*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/muveszetterapia*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "private, no-store"

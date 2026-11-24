@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, useAnimationControls } from 'framer-motion'
 import { useTranslation } from '../i18n/LanguageContext.jsx'
-import { checkPassword, markUnlocked } from '../lib/unlock.js'
+import { checkPassword } from '../lib/unlock.js'
 import { areaArt } from './AreaIllustrations.jsx'
 import './PasswordModal.css'
 
@@ -14,7 +14,7 @@ function PasswordModal({ area, title, onSuccess, onClose }) {
   const t = useTranslation()
   const [value, setValue] = useState('')
   const [show, setShow] = useState(false)
-  const [error, setError] = useState(false)
+  const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const inputRef = useRef(null)
   const dialogRef = useRef(null)
@@ -55,16 +55,23 @@ function PasswordModal({ area, title, onSuccess, onClose }) {
     e.preventDefault()
     if (busy) return
     setBusy(true)
-    const ok = await checkPassword(area, value)
+    const res = await checkPassword(area, value)
     setBusy(false)
-    if (ok) {
-      markUnlocked(area)
+    if (res.ok) {
       onSuccess()
-    } else {
-      setError(true)
-      shake.start({ x: [0, -10, 10, -7, 7, -3, 0], transition: { duration: 0.45 } })
-      inputRef.current?.select()
+      return
     }
+    // Hibaüzenet a hiba okától függően (a szerver dönt, nem a böngésző)
+    if (res.reason === 'locked') {
+      const minutes = Math.max(1, Math.ceil((res.retryAfter || 900) / 60))
+      setError(t.gate.locked.replace('{n}', minutes))
+    } else if (res.reason === 'unavailable') {
+      setError(t.gate.unavailable)
+    } else {
+      setError(t.gate.wrong)
+    }
+    shake.start({ x: [0, -10, 10, -7, 7, -3, 0], transition: { duration: 0.45 } })
+    inputRef.current?.select()
   }
 
   return createPortal(
@@ -105,14 +112,14 @@ function PasswordModal({ area, title, onSuccess, onClose }) {
               className="pw-input"
               placeholder={t.gate.placeholder}
               aria-label={t.gate.placeholder}
-              aria-invalid={error}
+              aria-invalid={!!error}
               aria-describedby={error ? 'pw-error' : undefined}
               autoComplete="off"
               autoCapitalize="off"
               autoCorrect="off"
               spellCheck={false}
               value={value}
-              onChange={(e) => { setValue(e.target.value); setError(false) }}
+              onChange={(e) => { setValue(e.target.value); setError('') }}
             />
             <button
               type="button"
@@ -128,7 +135,7 @@ function PasswordModal({ area, title, onSuccess, onClose }) {
               )}
             </button>
           </div>
-          <p id="pw-error" className="pw-error" role="alert">{error ? t.gate.wrong : ''}</p>
+          <p id="pw-error" className="pw-error" role="alert">{error}</p>
           <button type="submit" className="pw-submit" disabled={busy || !value.trim()}>
             {busy ? t.gate.checking : t.gate.submit}
             {!busy && <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" /></svg>}

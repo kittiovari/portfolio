@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useReducer, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage, useTranslation } from '../i18n/LanguageContext.jsx'
 import { areaArt } from '../components/AreaIllustrations.jsx'
 import PasswordModal from '../components/PasswordModal.jsx'
-import { AREAS, isUnlocked } from '../lib/unlock.js'
+import { AREAS, isUnlocked, refreshSession, onSessionChange } from '../lib/unlock.js'
 import '../components/Hero.css'
 import './Landing.css'
 
@@ -38,6 +38,14 @@ function Landing({ gateArea = null, onUnlock }) {
   const l = t.landing
   const navigate = useNavigate()
   const [pending, setPending] = useState(gateArea)
+
+  // A lakat ikonok állapotát a szervertől kérdezzük (a süti HttpOnly, a JS nem látja)
+  const [, rerender] = useReducer((x) => x + 1, 0)
+  useEffect(() => {
+    const off = onSessionChange(rerender)
+    if (!gateArea) refreshSession()
+    return off
+  }, [gateArea])
 
   const titleOf = (key) => l.areas.find((a) => a.key === key)?.title ?? ''
 

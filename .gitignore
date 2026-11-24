@@ -5,3 +5,9 @@ dist
 *.local
 .DS_Store
 .claude/worktrees/
+
+# Védett tartalom nyers forrása – SOHA nem kerülhet a (nyilvános) repóba.
+# A repóba csak a titkosított protected/ mappa kerül (npm run seal).
+content-src/
+jelszavak.local.txt
+.netlify/

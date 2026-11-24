@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import Landing from './pages/Landing.jsx'
 import UX from './pages/UX.jsx'
 import Topic from './pages/Topic.jsx'
 import CV from './pages/CV.jsx'
-import { isUnlocked } from './lib/unlock.js'
+import { fetchContent } from './lib/unlock.js'
+import { useProtectedContent } from './i18n/LanguageContext.jsx'
 
 // Oldalváltáskor az új oldal tetejére ugrunk; #horgonynál a horgonyhoz.
 function ScrollToTop() {
@@ -18,26 +19,44 @@ function ScrollToTop() {
 }
 
 /*
-  Zárolt területi oldal. Esetek:
-  - már feloldva ebben a munkamenetben (csempéről jött, vagy korábban megadta)
-    → az oldal azonnal megjelenik;
-  - közvetlen URL / frissítés / könyvjelző / megosztott link, feloldás nélkül
+  Zárolt területi oldal. A tartalom NINCS benne a letöltött kódban: a szerver
+  csak érvényes (HttpOnly) munkamenet-süti mellett adja ki. Esetek:
+  - érvényes süti (csempéről jött, frissít, könyvjelző a 7 napos érvényességen belül)
+    → a tartalom letöltődik, az oldal megjelenik;
+  - nincs/lejárt süti (közvetlen URL, megosztott link, más böngésző)
     → a nyitóoldal homályosítva, előtte a jelszómodal;
-      helyes jelszó → az oldal betölt ugyanazon az URL-en (#horgonyt is követi),
-      bezárás (X, Esc, háttér) → vissza a nyitóoldalra.
+      helyes jelszó → a szerver sütit ad, a tartalom letöltődik, az URL marad
+      (#horgonyt is követi); bezárás (X, Esc, háttér) → vissza a nyitóoldalra.
+  - a szerver nem elérhető → szintén a jelszómodal, ami jelzi a hibát.
 */
 function Gated({ area, children }) {
   const { hash } = useLocation()
-  const [open, setOpen] = useState(() => isUnlocked(area))
+  const { protectedContent, addProtected } = useProtectedContent()
+  const [state, setState] = useState(() => (protectedContent[area] ? 'open' : 'checking'))
+
+  const load = useCallback(async () => {
+    const res = await fetchContent(area)
+    if (res.status === 200) {
+      addProtected(area, res.data)
+      setState('open')
+    } else {
+      setState('locked')
+    }
+  }, [area, addProtected])
 
   useEffect(() => {
-    if (!open || !hash) return
+    if (state === 'checking') load()
+  }, [state, load])
+
+  useEffect(() => {
+    if (state !== 'open' || !hash) return
     const id = setTimeout(() => document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'instant', block: 'start' }), 120)
     return () => clearTimeout(id)
-  }, [open, hash])
+  }, [state, hash])
 
-  if (open) return children
-  return <Landing gateArea={area} onUnlock={() => setOpen(true)} />
+  if (state === 'open') return children
+  if (state === 'checking') return <div className="home" aria-busy="true" />
+  return <Landing gateArea={area} onUnlock={() => setState('checking')} />
 }
 
 function App() {

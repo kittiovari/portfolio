@@ -5,18 +5,16 @@ import './Works.css'
 
 const FEATURED_IDS = ['alphavet', 'winefo', 'appartman']
 
-const projectMockups = {
-  cig:      ['/images/CIG.png'],
-  cib:      ['/images/CIB.png'],
-  uniqa:    ['/images/Uniqa.png'],
-  alphavet: ['/images/allatorvosod.webp'],
-  gombarat: ['/images/Gombarat.png'],
-  aimee:    ['/images/aimee.webp'],
-  appartman:['/images/appartman-mockup.png'],
-  moodmeup: ['/images/moodmeup-mockup.webp'],
-  chantblaster: ['/images/chantblaster-mockup.png'],
-  cec:      ['/images/cec-mockup.webp'],
-  winefo:   ['/images/winefo.webp'],
+// A projektképek, videók és beágyazások listája a védett tartalomban van
+// (t.works.media) – a szerver csak feloldás után adja ki, a képeket pedig
+// az /api/asset végponton keresztül, érvényes munkamenettel szolgálja ki.
+function useMedia() {
+  const media = useTranslation().works?.media || {}
+  return {
+    mockups: media.mockups || {},
+    videos: media.videos || {},
+    embeds: media.embeds || {},
+  }
 }
 
 const mockupBg = {
@@ -44,18 +42,6 @@ const infoBg = {
   chantblaster: '#FDFBF9',
   cec:      '#FBFAFD',
   winefo:   '#FDFAFC',
-}
-
-const projectVideos = {
-  winefo: {
-    hu: 'https://www.youtube.com/watch?v=sdUCwPSTlyc',
-    en: 'https://www.youtube.com/watch?v=tebOZ8lc9tA',
-  },
-}
-
-// Modálba ágyazott videók: YouTube azonosító projektenként.
-const projectEmbeds = {
-  chantblaster: 'gEm_Y5s79GQ',
 }
 
 // Accents darkened for legibility on the light panel.
@@ -93,6 +79,7 @@ const projectLogos = {
 }
 
 function MockupArea({ id }) {
+  const { mockups: projectMockups, videos: projectVideos } = useMedia()
   const images = projectMockups[id]
   const [active, setActive] = useState(0)
   const bg = mockupBg[id]
@@ -141,6 +128,7 @@ function MockupArea({ id }) {
 }
 
 function ProjectModal({ projects, index, onClose, onPrev, onNext }) {
+  const { videos: projectVideos, embeds: projectEmbeds } = useMedia()
   const p = projects[index]
   const hasPrev = index > 0
   const hasNext = index < projects.length - 1
@@ -330,6 +318,7 @@ function ProjectModal({ projects, index, onClose, onPrev, onNext }) {
 }
 
 function ProjectCard({ p, onClick, animDelay }) {
+  const { mockups: projectMockups } = useMedia()
   const img = projectMockups[p.id]?.[0]
   const bg = mockupBg[p.id]
   return (
