@@ -26,9 +26,12 @@ function PasswordModal({ area, title, onSuccess, onClose }) {
     const prevFocus = document.activeElement
     const prevOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
+    // A mögöttes oldal elmosása (lásd PasswordModal.css: body.pw-open #root)
+    document.body.classList.add('pw-open')
     const id = setTimeout(() => inputRef.current?.focus(), 60)
     return () => {
       clearTimeout(id)
+      document.body.classList.remove('pw-open')
       document.body.style.overflow = prevOverflow
       if (prevFocus && prevFocus.focus) prevFocus.focus({ preventScroll: true })
     }
