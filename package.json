@@ -11,7 +11,7 @@
     "jelszo": "node scripts/set-password.mjs"
   },
   "dependencies": {
-    "@netlify/blobs": "^8.2.0",
+    "@netlify/blobs": "^11.1.9",
     "@supabase/supabase-js": "^2.119.2",
     "framer-motion": "^14.14.0",
     "react": "^19.3.1",
