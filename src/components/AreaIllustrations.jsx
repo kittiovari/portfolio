@@ -1,6 +1,9 @@
 // Vonalrajzos jelenetek a három területhez, a portfólió „thinking”
 // karaktereinek stílusában: babszem alakú figurák, hullámos hajszálak,
 // egyszerű arc, vastag, lekerekített vonal. Mind currentColor-t használ.
+// Az „a-…” osztályú részek animálódnak (lásd AreaIllustrations.css):
+// a csempén hoverre / kijelölésre, a jelszómodalban folyamatosan.
+import './AreaIllustrations.css'
 
 const common = {
   viewBox: '0 0 200 160',
@@ -20,6 +23,7 @@ const label = {
   fontWeight: 700,
   textAnchor: 'middle',
 }
+const delay = (s) => ({ style: { '--d': `${s}s` } })
 
 // Nyelvoktatás: kontyos tanár „Hello!”-val, a kis diák jelentkezik: „¡Hola!”
 function LanguageArt(props) {
@@ -33,13 +37,17 @@ function LanguageArt(props) {
       <circle cx="64" cy="44.5" r="7.5" />
       <path d="M50 86q4-4 8 0M70 86q4-4 8 0" />
       <path d="M56 98q8 7 16 0" />
-      {/* magyarázó kar */}
-      <path d="M100 106C108 102 114 96 119 89M101 119C110 114 118 105 125 96" />
-      <path d="M118 89q1-8 9-7q7 2 3 10q-2 3-5 4" />
+      {/* magyarázó kar – integet */}
+      <g className="a-wave">
+        <path d="M100 106C108 102 114 96 119 89M101 119C110 114 118 105 125 96" />
+        <path d="M118 89q1-8 9-7q7 2 3 10q-2 3-5 4" />
+      </g>
 
       {/* nagy buborék */}
-      <path d="M120 8h58a8 8 0 0 1 8 8v18a8 8 0 0 1-8 8h-40l-10 9 1-9h-9a8 8 0 0 1-8-8V16a8 8 0 0 1 8-8z" />
-      <text x="149" y="30.5" fontSize="15" {...label}>Hello!</text>
+      <g className="a-pop">
+        <path d="M120 8h58a8 8 0 0 1 8 8v18a8 8 0 0 1-8 8h-40l-10 9 1-9h-9a8 8 0 0 1-8-8V16a8 8 0 0 1 8-8z" />
+        <text x="149" y="30.5" fontSize="15" {...label}>Hello!</text>
+      </g>
 
       {/* diák */}
       <path d="M134 156C132 132 136 110 150 102C162 96 176 100 182 114C187 127 186 142 188 156" />
@@ -47,13 +55,17 @@ function LanguageArt(props) {
       <circle cx="153" cy="124" r="1.9" {...dot} />
       <circle cx="167" cy="124" r="1.9" {...dot} />
       <circle cx="160" cy="133" r="2.6" />
-      {/* jelentkező kar */}
-      <path d="M185 120C189 111 190 104 190 97M188 131C193 120 196 109 196 98" />
-      <circle cx="193" cy="92" r="5" />
+      {/* jelentkező kar – lelkesen nyújtózik */}
+      <g className="a-raise">
+        <path d="M185 120C189 111 190 104 190 97M188 131C193 120 196 109 196 98" />
+        <circle cx="193" cy="92" r="5" />
+      </g>
 
       {/* kis buborék */}
-      <path d="M140 56h34a7 7 0 0 1 7 7v10a7 7 0 0 1-7 7h-18l-6 7v-7h-10a7 7 0 0 1-7-7V63a7 7 0 0 1 7-7z" />
-      <text x="157" y="72" fontSize="11.5" {...label}>¡Hola!</text>
+      <g className="a-pop" {...delay(0.45)}>
+        <path d="M140 56h34a7 7 0 0 1 7 7v10a7 7 0 0 1-7 7h-18l-6 7v-7h-10a7 7 0 0 1-7-7V63a7 7 0 0 1 7-7z" />
+        <text x="157" y="72" fontSize="11.5" {...label}>¡Hola!</text>
+      </g>
     </svg>
   )
 }
@@ -118,18 +130,26 @@ function ArtTherapyArt(props) {
   return (
     <svg {...common} {...props}>
       <g strokeWidth="1.8">
-        {/* hangjegyek */}
-        <path d="M44 34v-12l12-3v12" />
-        <ellipse cx="41.5" cy="34.5" rx="3" ry="2.2" />
-        <ellipse cx="53.5" cy="31.5" rx="3" ry="2.2" />
-        <path d="M152 30v-11" />
-        <ellipse cx="149.5" cy="30.5" rx="3" ry="2.2" />
-        <path d="M152 19q5 2 5 7" />
-        <path d="M178 44v-9" />
-        <ellipse cx="175.8" cy="44.4" rx="2.6" ry="1.9" />
-        <path d="M18 42v-9" />
-        <ellipse cx="15.8" cy="42.4" rx="2.6" ry="1.9" />
-        <path d="M62 24q6-6 12 0M128 26q6-5 12 0M26 30q5-5 10 0M162 34q5-4 9 0" opacity=".5" />
+        {/* hangjegyek – lebegnek */}
+        <g className="a-note">
+          <path d="M44 34v-12l12-3v12" />
+          <ellipse cx="41.5" cy="34.5" rx="3" ry="2.2" />
+          <ellipse cx="53.5" cy="31.5" rx="3" ry="2.2" />
+        </g>
+        <g className="a-note" {...delay(0.6)}>
+          <path d="M152 30v-11" />
+          <ellipse cx="149.5" cy="30.5" rx="3" ry="2.2" />
+          <path d="M152 19q5 2 5 7" />
+        </g>
+        <g className="a-note" {...delay(1.1)}>
+          <path d="M178 44v-9" />
+          <ellipse cx="175.8" cy="44.4" rx="2.6" ry="1.9" />
+        </g>
+        <g className="a-note" {...delay(0.3)}>
+          <path d="M18 42v-9" />
+          <ellipse cx="15.8" cy="42.4" rx="2.6" ry="1.9" />
+        </g>
+        <path className="a-flow" d="M62 24q6-6 12 0M128 26q6-5 12 0M26 30q5-5 10 0M162 34q5-4 9 0" opacity=".5" />
 
         {/* hátsó sor: 4 résztvevő szemből */}
         {backRow.map((p) => (
@@ -147,11 +167,13 @@ function ArtTherapyArt(props) {
         ))}
 
         {/* a vezető: középen ül, virágkoszorú, csukott szem, békés mosoly */}
-        <path d="M84 80q-6-10 3-19M116 80q6-10-3-19" opacity=".35" />
+        <path className="a-aura" d="M84 80q-6-10 3-19M116 80q6-10-3-19" opacity=".35" />
         <path d={bean(100, bBase, 26, 39)} />
-        <Flower x={90.5} y={72} />
-        <Flower x={100} y={68} r={2} />
-        <Flower x={109.5} y={72} />
+        <g className="a-sway">
+          <Flower x={90.5} y={72} />
+          <Flower x={100} y={68} r={2} />
+          <Flower x={109.5} y={72} />
+        </g>
         <path d="M92 84q2.5 2.5 5 0M103 84q2.5 2.5 5 0" />
         <path d="M96 91q4 3.5 8 0" />
 
@@ -159,27 +181,35 @@ function ArtTherapyArt(props) {
         <path d="M6 108H194L199 124H1Z" />
         <path d="M4 124v28M196 124v28" />
 
-        {/* agyagozás */}
+        {/* agyagozás – a kezek formázzák az edényt */}
         <path d="M19 120q-2-7 5-8q7 1 5 8z M20 112.5h8" />
-        <circle cx="16.5" cy="116" r="2.4" />
-        <circle cx="31.5" cy="116" r="2.4" />
-        {/* festés */}
+        <g className="a-knead">
+          <circle cx="16.5" cy="116" r="2.4" />
+          <circle cx="31.5" cy="116" r="2.4" />
+        </g>
+        {/* festés – ecsetvonások */}
         <path d="M49 121l15-2l-1-8l-15 2z" />
         <path d="M51 117q3-3 5 0t6-1" />
-        <circle cx="68" cy="113" r="2.4" />
-        <path d="M66.5 114.5l-5 4" />
+        <g className="a-brush">
+          <circle cx="68" cy="113" r="2.4" />
+          <path d="M66.5 114.5l-5 4" />
+        </g>
         {/* a vezető nyugodtan egymásra tett keze */}
         <ellipse cx="97.5" cy="114" rx="3.2" ry="2.4" />
         <ellipse cx="102.5" cy="114.6" rx="3.2" ry="2.4" />
         {/* agyagozás */}
         <path d="M135 120q-2-7 5-8q7 1 5 8z M136 116q5 2 9 0" />
-        <circle cx="131.5" cy="116" r="2.4" />
-        <circle cx="148.5" cy="116" r="2.4" />
+        <g className="a-knead" {...delay(0.35)}>
+          <circle cx="131.5" cy="116" r="2.4" />
+          <circle cx="148.5" cy="116" r="2.4" />
+        </g>
         {/* festés */}
         <path d="M165 121l15-1l-1-8l-15 1z" />
         <circle cx="172" cy="116.5" r="2.2" />
-        <circle cx="184" cy="113" r="2.4" />
-        <path d="M182.5 114.5l-5 3.5" />
+        <g className="a-brush" {...delay(0.4)}>
+          <circle cx="184" cy="113" r="2.4" />
+          <path d="M182.5 114.5l-5 3.5" />
+        </g>
 
         {/* első sor: 5 résztvevő háttal */}
         {frontRow.map((p) => (
@@ -199,31 +229,37 @@ function UXArt(props) {
   return (
     <svg {...common} {...props}>
       <g strokeWidth="2">
-        {/* kérdőjelek */}
-        <text x="22" y="44" fontSize="20" {...label} transform="rotate(-10 22 44)">?</text>
-        <text x="46" y="28" fontSize="14" {...label} transform="rotate(8 46 28)">?</text>
-        <text x="66" y="48" fontSize="11" {...label}>?</text>
+        {/* kérdőjelek – fel-le billegnek */}
+        <g className="a-q"><text x="22" y="44" fontSize="20" {...label} transform="rotate(-10 22 44)">?</text></g>
+        <g className="a-q" {...delay(0.35)}><text x="46" y="28" fontSize="14" {...label} transform="rotate(8 46 28)">?</text></g>
+        <g className="a-q" {...delay(0.7)}><text x="66" y="48" fontSize="11" {...label}>?</text></g>
 
-        {/* post-itek a falon */}
-        <g transform="rotate(-6 106 24)">
-          <rect x="96" y="14" width="20" height="20" rx="1.5" />
-          <path d="M100 21h12M100 26h8" opacity=".6" />
+        {/* post-itek a falon – lengenek */}
+        <g className="a-swing">
+          <g transform="rotate(-6 106 24)">
+            <rect x="96" y="14" width="20" height="20" rx="1.5" />
+            <path d="M100 21h12M100 26h8" opacity=".6" />
+          </g>
         </g>
-        <g transform="rotate(5 132 20)">
-          <rect x="122" y="10" width="20" height="20" rx="1.5" />
-          <path d="M126 17h12M126 22h9" opacity=".6" />
+        <g className="a-swing" {...delay(0.5)}>
+          <g transform="rotate(5 132 20)">
+            <rect x="122" y="10" width="20" height="20" rx="1.5" />
+            <path d="M126 17h12M126 22h9" opacity=".6" />
+          </g>
         </g>
-        <g transform="rotate(-3 110 50)">
-          <rect x="100" y="40" width="20" height="20" rx="1.5" />
-          <path d="M104 47h12M104 52h7" opacity=".6" />
+        <g className="a-swing" {...delay(0.25)}>
+          <g transform="rotate(-3 110 50)">
+            <rect x="100" y="40" width="20" height="20" rx="1.5" />
+            <path d="M104 47h12M104 52h7" opacity=".6" />
+          </g>
         </g>
 
-        {/* folyamatskicc a falon */}
+        {/* folyamatskicc a falon – a nyilak „kirajzolódnak” */}
         <rect x="150" y="12" width="42" height="48" rx="2" />
         <rect x="156" y="18" width="12" height="9" rx="1.5" />
         <rect x="174" y="30" width="12" height="9" rx="1.5" />
         <rect x="156" y="44" width="12" height="9" rx="1.5" />
-        <path d="M168 23q8 0 9 6M174 37q-8 2-9 6" opacity=".7" />
+        <path className="a-draw" d="M168 23q8 0 9 6M174 37q-8 2-9 6" opacity=".7" />
 
         {/* asztal */}
         <path d="M76 130H198" />
@@ -235,24 +271,26 @@ function UXArt(props) {
         <path d="M98 85h22" opacity=".7" />
         <rect x="98" y="90" width="22" height="17" rx="2" />
         <path d="M98 90l22 17M120 90l-22 17" opacity=".45" />
-        <path d="M125 92h24M125 98h18M125 104h22" opacity=".7" />
-        <rect x="98" y="111" width="18" height="7" rx="3.5" />
+        <path className="a-type" d="M125 92h24M125 98h18M125 104h22" opacity=".7" />
+        <rect className="a-pulse" x="98" y="111" width="18" height="7" rx="3.5" />
 
         {/* papírskicc + ceruza */}
         <path d="M164 128l28-3l-2.5-22l-28 3z" />
         <rect x="168" y="108" width="9" height="14" rx="2" transform="rotate(-6 172 115)" />
         <path d="M180 112q3-2 6 0M180 117h6M180 121h4" opacity=".7" />
-        <path d="M150 128l10-12l3 2.5l-10 12z" />
+        <path className="a-pencil" d="M150 128l10-12l3 2.5l-10 12z" />
 
-        {/* töprengő figura, kéz az állán */}
+        {/* töprengő figura, kéz az állán – ütögeti */}
         <path d={bean(40, 156, 54, 88)} />
         <path d="M30 70c-3-6 2-9-1-15M38 68c0-6 5-8 4-14M45 70c3-5 8-6 10-11" />
         <path d="M27 88q4-3 8 0M45 87q4-3 8 0" />
         <circle cx="32" cy="95" r="1.9" {...dot} />
         <circle cx="50" cy="94" r="1.9" {...dot} />
         <path d="M34 107q3-2 6 0t6 0" />
-        <path d="M66 136C64 126 60 119 54 114M58 140C56 130 52 122 46 117" />
-        <circle cx="50" cy="113" r="5" />
+        <g className="a-tap">
+          <path d="M66 136C64 126 60 119 54 114M58 140C56 130 52 122 46 117" />
+          <circle cx="50" cy="113" r="5" />
+        </g>
       </g>
     </svg>
   )
