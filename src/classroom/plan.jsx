@@ -335,11 +335,11 @@ export function LessonPicker({ value, options, nextKey, planned, onChange, doc =
   )
 }
 
-const ROLE_LABEL = { attendance: 'Attendance', warmer: 'Warmer', hwreview: 'Homework review', homework: 'Future homework', reflection: 'Self-reflection & Overall evaluation' }
+const ROLE_LABEL = { attendance: 'Attendance', warmer: 'Warmer', hwreview: 'Homework review', homework: 'Next homework', reflection: 'Self-reflection & Overall evaluation' }
 const roleLabel = (it) => ROLE_LABEL[it.role] || ''
 const AIM_PLACEHOLDER = {
   warmer: 'Warmer – e.g. Quizlet game, picture talk',
-  homework: 'Future homework – e.g. WB p3/5–6',
+  homework: 'Next homework – e.g. WB p3/5–6',
 }
 
 function PlanRow({ item, step, start, cls, doc, review, maxMinutes = 45, open, onToggle, onChange, onFiles, draggable, index, count, onMove, onRemove }) {
@@ -422,7 +422,7 @@ function PlanRow({ item, step, start, cls, doc, review, maxMinutes = 45, open, o
 
       {open && locked && (
         <div className="cr-prow__details">
-          <p className="cr-hint"><Art name="lock" className="cr-art cr-art--xs" /> Copied from the previous lesson's <b>Future homework</b>{review ? ` (${lessonLabel(review.key, { weekday: 'long', day: 'numeric', month: 'long' })})` : ''}. Edit it there.</p>
+          <p className="cr-hint"><Art name="lock" className="cr-art cr-art--xs" /> Copied from the previous lesson's <b>Next homework</b>{review ? ` (${lessonLabel(review.key, { weekday: 'long', day: 'numeric', month: 'long' })})` : ''}. Edit it there.</p>
           {review?.items.map((h) => (
             <div key={h.id} className="cr-review">
               <b>{h.aim || 'Homework'}</b>

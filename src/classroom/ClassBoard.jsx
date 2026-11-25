@@ -101,6 +101,20 @@ export default function ClassBoard({ cls }) {
   return (
     <AvatarThemeContext.Provider value={data.avatarTheme || 'monsters'}>
     <div className="cr cr-board">
+      {homework && (
+        <div className="cr-board__info cr-board__info--hw">
+          <div className="cr-board__card cr-hwcard">
+            <h3><Art name="homework" className="cr-art cr-art--lg" />Next homework{homework.due ? <small>due {lessonLabel(homework.due, { weekday: 'long', day: 'numeric', month: 'long' }, publicDoc)}</small> : null}</h3>
+            {homework.items.map((h) => (
+              <div key={h.id} className="cr-hwcard__item">
+                {h.aim && <b>{h.aim}</b>}
+                {h.activity && <p><Linkify text={h.activity} /></p>}
+                {h.resources?.length > 0 && <div className="cr-tcard__res">{h.resources.map((r) => <Resource key={r.id} r={r} cls={cls} />)}</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {lesson && (
         <div className="cr-board__lesson">
           <label className="cr-board__pick">
@@ -115,20 +129,6 @@ export default function ClassBoard({ cls }) {
             heading={`${lessonLabel(lesson.key, { weekday: 'long', day: 'numeric', month: 'long' }, publicDoc)}`}
             startTime={lesson.time}
           />
-        </div>
-      )}
-      {homework && (
-        <div className="cr-board__info">
-          <div className="cr-board__card cr-hwcard">
-            <h3><Art name="homework" className="cr-art cr-art--lg" />Next homework{homework.due ? <small> · due {lessonLabel(homework.due, { weekday: 'long', day: 'numeric', month: 'long' }, publicDoc)}</small> : null}</h3>
-            {homework.items.map((h) => (
-              <div key={h.id} className="cr-hwcard__item">
-                {h.aim && <b>{h.aim}</b>}
-                {h.activity && <p><Linkify text={h.activity} /></p>}
-                {h.resources?.length > 0 && <div className="cr-tcard__res">{h.resources.map((r) => <Resource key={r.id} r={r} cls={cls} />)}</div>}
-              </div>
-            ))}
-          </div>
         </div>
       )}
 

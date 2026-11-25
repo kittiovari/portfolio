@@ -1474,3 +1474,9 @@ svg.cr-art.cr-art--toast { width: 64px; height: 64px; }
 .cr-board { position: relative; padding-bottom: 250px; }
 .cr-board > .season { border-radius: 0 0 24px 24px; }
 .cr-board > .cr-main, .cr-board > .cr-subbar, .cr-board > .cr-board__info, .cr-board > .cr-board__lesson { position: relative; z-index: 1; }
+/* Diákoldal: kiemelt Next homework a lap tetején */
+.cr-board__info--hw { margin-bottom: 1rem; }
+.cr-hwcard { position: relative; padding: 1.1rem 1.2rem 1.2rem; border: 2px solid #3F6E9A; background: linear-gradient(180deg, #EAF2FA 0, #F7FAFD 100%); box-shadow: 0 14px 30px -22px rgba(63, 110, 154, 0.9); }
+.cr-hwcard h3 { font-size: 1.25rem; }
+.cr-hwcard h3 small { display: inline-flex; padding: 0.15rem 0.6rem; border-radius: 999px; background: #3F6E9A; color: #fff; font-size: 0.78rem; }
+.cr-hwcard__item b { font-family: var(--font-heading); font-size: 1.05rem; }

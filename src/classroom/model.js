@@ -167,7 +167,7 @@ export const TAGS = [
   { id: 'grammar', label: 'Grammar practice', color: '#B5527A' },
   { id: 'pronunciation', label: 'Pronunciation practice', color: '#A0568F' },
   { id: 'vocabulary', label: 'Vocabulary practice', color: '#8F5A9E' },
-  { id: 'homework', label: 'Future homework', color: '#3F6E9A' },
+  { id: 'homework', label: 'Next homework', color: '#3F6E9A' },
   { id: 'reflection', label: 'Self-reflection & Overall evaluation', color: '#6B5A69' },
 ]
 export const tagOf = (id) => TAGS.find((t) => t.id === id)
