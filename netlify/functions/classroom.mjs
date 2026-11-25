@@ -4,7 +4,7 @@
 // Csak a tanári (teacher) munkamenet-sütivel érhető el.
 import zlib from 'node:zlib'
 import { hasSession, json, sameOrigin } from '../lib/security.mjs'
-import { isClass, loadClass, saveClass } from '../lib/classroomStore.mjs'
+import { isClass, loadClass, saveClass, loadAvatars, saveAvatars, mergeAvatars, sameAvatar } from '../lib/classroomStore.mjs'
 
 // A kliens tömörítve (gzip) küldi a dokumentumot: így évekig elfér a teljes
 // eseménynapló. Tömörítve max. 5 MB, kibontva max. 40 MB.
@@ -27,7 +27,7 @@ export default async (req, context) => {
 
   try {
     if (req.method === 'GET') {
-      return gz(req, 200, { doc: await loadClass(cls) })
+      return gz(req, 200, { doc: mergeAvatars(await loadClass(cls), await loadAvatars(cls)) })
     }
     if (req.method !== 'PUT') return json(405, { error: 'method' }, { Allow: 'GET, PUT' })
     if (!sameOrigin(req)) return json(403, { error: 'origin' })
@@ -53,9 +53,23 @@ export default async (req, context) => {
 
     const current = await loadClass(cls)
     const currentRev = current?.rev ?? 0
-    if ((doc.rev ?? 0) !== currentRev) return gz(req, 409, { error: 'conflict', doc: current })
+    const avatars = await loadAvatars(cls)
+    if ((doc.rev ?? 0) !== currentRev) return gz(req, 409, { error: 'conflict', doc: mergeAvatars(current, avatars) })
 
-    const next = { ...doc, rev: currentRev + 1, savedAt: Date.now() }
+    // diák által választott avatar: ha a beküldött érték a diák választása (vagy az előtte
+    // lévő / a tárolt alap), az övé marad; ha a tanár mást állított be, a tanáré nyer
+    let avChanged = false
+    const base = Object.fromEntries((current?.students || []).map((s) => [s.id, s.avatar]))
+    const students = doc.students.map((s) => {
+      const o = avatars[s.id]
+      if (!o) return s
+      if (sameAvatar(s.avatar, o.a) || sameAvatar(s.avatar, o.prev) || sameAvatar(s.avatar, base[s.id])) return { ...s, avatar: o.a }
+      delete avatars[s.id]; avChanged = true
+      return s
+    })
+    for (const id of Object.keys(avatars)) if (!doc.students.some((s) => s.id === id)) { delete avatars[id]; avChanged = true }
+    if (avChanged) await saveAvatars(cls, avatars)
+    const next = { ...doc, students, rev: currentRev + 1, savedAt: Date.now() }
     await saveClass(cls, next)
     return json(200, { rev: next.rev })
   } catch (err) {

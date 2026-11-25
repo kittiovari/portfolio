@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Avatar, { ClassAvatar, AvatarThemeContext } from './Avatar.jsx'
-import { Sheet } from './ui.jsx'
+import { Sheet, Icon } from './ui.jsx'
+import { AvatarEditor } from './StudentModal.jsx'
 import { sortStudents, fullName, lessonLabel } from './model.js'
 import { PlanTimeline, Resource, Linkify } from './plan.jsx'
 import { Art } from './art.jsx'
@@ -33,6 +34,8 @@ export default function ClassBoard({ cls }) {
   const [open, setOpen] = useState(null) // { ids, title, student?, isClass? }
   const [lessonKey, setLessonKey] = useState(null)
   const [me, setMe] = useState(null)
+  const [editing, setEditing] = useState(null) // a saját avatar szerkesztés alatt
+  const [saveMsg, setSaveMsg] = useState('')
   const [asking, setAsking] = useState(null) // annak a diáknak az adatai, akinek a kódját kérjük
 
   useEffect(() => {
@@ -96,6 +99,20 @@ export default function ClassBoard({ cls }) {
     const due = lessons.find((l) => l.key > given.key)?.key || null
     return { items: given.items.filter((it) => isHw(it) && (it.aim || it.activity || it.resources?.length)), due }
   })()
+  // a saját avatar mentése a személyes kóddal (a szerver ellenőrzi)
+  const saveAvatar = async () => {
+    setSaveMsg('')
+    try {
+      const res = await fetch(`/api/studentview/${cls}`, {
+        method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: ssGet(codeKey(cls)), id: me.id, avatar: editing }),
+      })
+      if (!res.ok) throw new Error(res.status)
+      const { avatar } = await res.json()
+      setData((d) => ({ ...d, students: d.students.map((x) => (x.id === me.id ? { ...x, avatar } : x)) }))
+      setEditing(null)
+    } catch { setSaveMsg('Could not save – please try again (or type your code again).') }
+  }
   const signOut = () => { ssSet(codeKey(cls), null); setMe(null) }
 
   return (
@@ -172,14 +189,27 @@ export default function ClassBoard({ cls }) {
           const doc = mine ? myDoc : publicDoc
           const sum = open.ids.reduce((a, id) => a + doc.events.filter((e) => e.s === id).reduce((x, e) => x + e.v, 0), 0)
           return (
-            <Sheet key="rep" onClose={() => setOpen(null)} wide className="cr-target cr-readonly">
+            <Sheet key="rep" onClose={() => { setOpen(null); setEditing(null) }} wide className="cr-target cr-readonly">
               <header className="cr-target__head">
-                <span className="cr-target__avatar">{open.student ? <Avatar a={open.student.avatar} /> : <ClassAvatar />}</span>
+                <span className="cr-target__avatar">{open.student ? <Avatar a={(mine && data.students.find((x) => x.id === me.id)?.avatar) || open.student.avatar} /> : <ClassAvatar />}</span>
                 <h2>{open.title}</h2>
                 <span className={`cr-chip ${sum < 0 ? 'cr-chip--neg' : ''}`}><b>{sum}</b> point{Math.abs(sum) === 1 ? '' : 's'}</span>
+                {mine && !editing && <button className="cr-btn cr-btn--sm" onClick={() => setEditing(data.students.find((x) => x.id === me.id)?.avatar || {})}><Icon.pencil />Edit avatar</button>}
               </header>
               <div className="cr-target__content">
-                <ReportPanel doc={doc} update={null} ids={open.ids} isClass={false} studentId={mine ? me.id : null} publicView={!mine} />
+                {mine && editing ? (
+                  <div className="cr-form">
+                    <AvatarEditor value={editing} onChange={setEditing} />
+                    {saveMsg && <p className="cr-codeform__err" role="alert">{saveMsg}</p>}
+                    <div className="cr-form__actions">
+                      <button className="cr-btn" onClick={() => { setEditing(null); setSaveMsg('') }}>Cancel</button>
+                      <span className="cr-spacer" />
+                      <button className="cr-btn cr-btn--primary" onClick={saveAvatar}>Save my avatar</button>
+                    </div>
+                  </div>
+                ) : (
+                  <ReportPanel doc={doc} update={null} ids={open.ids} isClass={false} studentId={mine ? me.id : null} publicView={!mine} />
+                )}
               </div>
             </Sheet>
           )

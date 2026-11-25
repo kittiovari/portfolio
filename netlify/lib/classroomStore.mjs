@@ -194,3 +194,33 @@ export async function listArchiveYears(cls) {
   }
   return keys.map((k) => k.slice(prefix.length)).filter((y) => /^\d{4}$/.test(y)).sort()
 }
+
+// ── A diákok által (személyes kóddal) választott avatarok – külön tárolva ──
+// { [studentId]: { a: avatar, prev: előző avatar, at } }. Olvasáskor ráfésüljük
+// a dokumentumra; így a tanár egy közben elmentett (régebbi) példánya sem írja felül.
+const avatarsKey = (cls) => `avatars-${cls}`
+export async function loadAvatars(cls) {
+  const raw = await readRaw(avatarsKey(cls)).catch(() => null)
+  return raw ? JSON.parse(open(raw).toString('utf8')) : {}
+}
+export async function saveAvatars(cls, map) {
+  await writeRaw(avatarsKey(cls), seal(Buffer.from(JSON.stringify(map), 'utf8')))
+}
+export function mergeAvatars(doc, map) {
+  if (!doc || !map || !Object.keys(map).length) return doc
+  return { ...doc, students: (doc.students || []).map((s) => (map[s.id]?.a ? { ...s, avatar: map[s.id].a } : s)) }
+}
+const AV_LIMITS = { c: 8, b: 3, e: 3, m: 3, x: 4 }
+const AV_THEMES = ['monsters', 'fruits', 'food', 'cities', 'tales']
+export function cleanAvatar(a) {
+  if (!a || typeof a !== 'object') return null
+  const out = {}
+  for (const [k, n] of Object.entries(AV_LIMITS)) {
+    const v = Number(a[k])
+    if (!Number.isInteger(v) || v < 0 || v >= n) return null
+    out[k] = v
+  }
+  if (a.t != null) { if (!AV_THEMES.includes(a.t)) return null; out.t = a.t }
+  return out
+}
+export const sameAvatar = (x, y) => JSON.stringify(cleanAvatar(x) || {}) === JSON.stringify(cleanAvatar(y) || {})

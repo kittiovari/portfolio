@@ -5,7 +5,7 @@
 // Rossz kódra ugyanaz a próbálkozáskorlát érvényes, mint a jelszavaknál.
 import crypto from 'node:crypto'
 import { hasSession, json, sameOrigin, clientIp } from '../lib/security.mjs'
-import { isClass, loadClass, loadArchive } from '../lib/classroomStore.mjs'
+import { isClass, loadClass, loadArchive, loadAvatars, saveAvatars, cleanAvatar } from '../lib/classroomStore.mjs'
 import { lockedFor, registerFailure, registerSuccess } from '../lib/rateLimit.mjs'
 
 const norm = (c) => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12)
@@ -38,6 +38,15 @@ export default async (req, context) => {
       return json(401, { error: 'wrong', remaining })
     }
     await registerSuccess(ip, area)
+    const avatars = await loadAvatars(cls)
+    // a saját avatar módosítása (csak érvényes értékekkel)
+    if (body?.avatar !== undefined) {
+      const a = cleanAvatar(body.avatar)
+      if (!a) return json(400, { error: 'avatar' })
+      avatars[s.id] = { a, prev: avatars[s.id]?.a || s.avatar || null, at: Date.now() }
+      await saveAvatars(cls, avatars)
+      return json(200, { ok: true, avatar: a }, { 'Cache-Control': 'no-store' })
+    }
     const past = []
     for (const y of doc.previousYears || []) {
       const a = await loadArchive(cls, y).catch(() => null)
@@ -47,7 +56,7 @@ export default async (req, context) => {
       .map((e) => ({ id: e.id, s: e.s, k: e.k, n: e.n, i: e.i, v: e.v, t: e.t, l: e.l, sn: e.sn, auto: e.auto }))
     const attendance = Object.entries(doc.attendance || {})
       .filter(([, m]) => m?.[s.id]).map(([date, m]) => ({ date, status: m[s.id] }))
-    return json(200, { id: s.id, events, resets: doc.resets?.[s.id] || {}, attendance }, { 'Cache-Control': 'no-store' })
+    return json(200, { id: s.id, avatar: avatars[s.id]?.a || s.avatar, events, resets: doc.resets?.[s.id] || {}, attendance }, { 'Cache-Control': 'no-store' })
   } catch (err) {
     console.error('studentview failed', cls, err?.message)
     return json(500, { error: 'store' })
