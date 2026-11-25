@@ -10,7 +10,7 @@ import {
 } from '../classroom/tools.jsx'
 import { SessionSetup, SessionPlayer } from '../classroom/session.jsx'
 import { useClassroom } from '../classroom/useClassroom.js'
-import { ATTENDANCE, CLASSES, dayKey, fullName, pointsBy, uid } from '../classroom/model.js'
+import { ATTENDANCE, CLASSES, dayKey, fullName, pointsBy, sortStudents, uid } from '../classroom/model.js'
 import '../components/PasswordModal.css'
 import '../classroom/Classroom.css'
 
@@ -168,8 +168,8 @@ export default function Classroom() {
           <span className={`cr-badge ${p < 0 ? 'is-neg' : p === 0 ? 'is-zero' : ''}`}>{p}</span>
         )}
         {mode === 'normal' && a && a !== 'present' && <span className={`cr-att cr-att--mini cr-att--${a}`} title={ATTENDANCE[a].label}><AttIcon /></span>}
+        <span className="cr-tile__last">{s.last || ' '}</span>
         <span className="cr-tile__first">{s.first}</span>
-        <span className="cr-tile__last">{s.last}</span>
         <AnimatePresence>
           {floats.filter((f) => f.s === s.id).map((f) => (
             <motion.span key={f.key} className={`cr-float ${f.v < 0 ? 'is-neg' : ''}`}
@@ -208,7 +208,7 @@ export default function Classroom() {
               {mode === 'normal' && <span className={`cr-badge ${classTotal < 0 ? 'is-neg' : ''}`}>{classTotal}</span>}
               <span className="cr-tile__first">{mode === 'select' ? (selected.size === presentIds.length && presentIds.length ? 'Senki' : 'Mindenki') : 'Osztály'}</span>
             </button>
-            {doc.students.map(studentTile)}
+            {sortStudents(doc.students).map(studentTile)}
             {mode === 'normal' && (
               <button className="cr-tile cr-tile--add" onClick={() => setModal({ kind: 'add' })}>
                 <span className="cr-tile__plus"><Icon.plus /></span>

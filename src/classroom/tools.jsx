@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import Avatar from './Avatar.jsx'
 import { Sheet, FullScreen, Icon, play } from './ui.jsx'
-import { dayKey, fmtTime, isAbsent, makeGroups, shortName, shuffle, uid } from './model.js'
+import { dayKey, fmtTime, isAbsent, makeGroups, shortName, shuffle, sortStudents, uid } from './model.js'
 
 export const TOOLS = [
   { id: 'session', label: 'Időzítő és zene', color: '#6A4BC4', icon: Icon.timer },
@@ -188,7 +188,7 @@ function AvoidPairs({ doc, update, color, onBack, onClose }) {
     <Sheet title="Ne kerüljenek egy csoportba" color={color} icon={<Icon.people />} onClose={onClose} onBack={onBack}>
       <p className="cr-hint">Válassz ki két diákot – a csoportkészítő igyekszik külön csoportba tenni őket.</p>
       <div className="cr-pickgrid">
-        {doc.students.map((s) => (
+        {sortStudents(doc.students).map((s) => (
           <button type="button" key={s.id} className={`cr-pick ${sel.includes(s.id) ? 'is-active' : ''}`} onClick={() => choose(s.id)}>
             <Avatar a={s.avatar} /><span>{s.first}</span>
           </button>

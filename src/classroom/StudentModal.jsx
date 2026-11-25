@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import Avatar, { ClassAvatar } from './Avatar.jsx'
 import { Sheet, Icon } from './ui.jsx'
 import {
-  AVATAR, RANGES, rangeBounds, inRange, fullName, uid, parseName, randomAvatar, toCsv, download, dayKey,
+  AVATAR, RANGES, sortStudents, rangeBounds, inRange, fullName, uid, parseName, randomAvatar, toCsv, download, dayKey,
 } from './model.js'
 
 /*
@@ -384,7 +384,7 @@ export function GroupEditor({ doc, group, update, onClose }) {
       <form className="cr-form" onSubmit={save}>
         <label className="cr-field"><span>Csoport neve</span><input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} autoFocus /></label>
         <div className="cr-pickgrid">
-          {doc.students.map((s) => (
+          {sortStudents(doc.students).map((s) => (
             <button type="button" key={s.id} className={`cr-pick ${ids.has(s.id) ? 'is-active' : ''}`} onClick={() => toggle(s.id)} aria-pressed={ids.has(s.id)}>
               <Avatar a={s.avatar} /><span>{s.first}</span>
             </button>

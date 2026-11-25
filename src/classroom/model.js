@@ -75,6 +75,10 @@ export function parseName(line) {
   return { last: parts[0], first: parts.slice(1).join(' ') }
 }
 
+// Keresztnév szerinti ABC-sorrend (magyar ábécé), azonos keresztnévnél vezetéknév szerint
+const coll = new Intl.Collator('hu', { sensitivity: 'base' })
+export const sortStudents = (list) => [...list].sort((a, b) => coll.compare(a.first, b.first) || coll.compare(a.last, b.last))
+
 export const fullName = (s) => [s.last, s.first].filter(Boolean).join(' ')
 export const shortName = (s) => `${s.first}${s.last ? ` ${s.last[0]}.` : ''}`
 
