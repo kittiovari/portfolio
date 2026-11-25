@@ -51,3 +51,22 @@
 - **Ami már egyszer nyilvános volt, az nyilvános marad.** A régi UX-szövegek és ügyfélképek a git-történetben és a Netlify régi deployjaiban továbbra is elérhetők. Javaslat: a régi deployok törlése, vagy a repó privátra állítása.
 - **A `/cv` oldal és a CV-PDF szándékosan nyilvános.** Ezek is felsorolnak projektneveket.
 - **Diákadatok csak a 2–3. fázisban, Supabase-szel kerülhetnek ide**: egyéni hozzáféréssel, álnevekkel és az iskola jóváhagyásával. A `protected/` mappába ne tegyél személyes adatot.
+
+## Netlify ingyenes keret (300 kredit/hó, kemény korlát)
+
+Ha a keret elfogy, a Netlify a hónap végéig **leállítja az oldalt**, ezért ezekre figyelünk:
+
+| Tétel | Ár | Tipikus havi fogyasztás |
+|---|---|---|
+| Éles deploy (push a `master`-re) | 15 kredit / db | **ez a fő tétel**: legfeljebb kb. 15 deploy egy hónapban |
+| Sávszélesség | 20 kredit / GB | 0,4–0,9 GB → 8–18 kredit |
+| Kérések | 2 kredit / 10 000 | kb. 40 000 → 8 kredit |
+| Függvények (jelszó, védett tartalom) | 10 kredit / GB-óra | 1 kredit alatt |
+| Előnézeti deployok (PR-ok) | ingyenes | – |
+
+Szabályok:
+- **Gyűjtsd össze a változásokat**, és egyszerre élesíts. Helyben (`npm run dev`) a zár és a védett tartalom is működik, így élesítés nélkül is kipróbálható minden.
+- **Ami nem érinti az oldalt, az nem buildel.** A `scripts/netlify-ignore.sh` kihagyja a buildet, ha egy push csak leírást, Dependabot-beállítást vagy helyi szkriptet módosít.
+- **Dependabot havonta egyszer** nyit összevont PR-t (a biztonsági javítások azonnal jönnek). Az előnézete ingyenes; bevonni a következő tervezett élesítéssel együtt érdemes.
+- A Netlify felületén lévő **„Work with an AI agent”** funkció is kreditet fogyaszt, ezért ne használd.
+- A fogyasztás itt követhető: Netlify → Team → Usage & billing → Account usage insights → Credits.

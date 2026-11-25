@@ -1,4 +1,6 @@
-# Dependabot: heti egy összevont frissítés, hogy kevesebb PR és e-mail jöjjön.
+# Dependabot: havi egy összevont frissítés, hogy kevesebb PR, e-mail és
+# (Netlify-kreditbe kerülő) éles deploy legyen. A biztonsági javítások
+# ettől függetlenül azonnal érkeznek.
 # - A React és a React DOM mindig együtt frissül (külön frissítve eltörne az oldal).
 # - A kis frissítések (minor + patch) egyetlen heti PR-ba kerülnek.
 # - A biztonsági javítások is egy PR-ba gyűlnek.
@@ -9,8 +11,7 @@ updates:
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: weekly
-      day: monday
+      interval: monthly
       time: "08:00"
       timezone: Europe/Budapest
     open-pull-requests-limit: 3
