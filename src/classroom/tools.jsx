@@ -127,52 +127,61 @@ export function GroupMakerTool({ doc, update, onClose, onBack, initialSize = nul
   const [groups, setGroups] = useState(null)
   const byId = useMemo(() => Object.fromEntries(doc.students.map((s) => [s.id, s])), [doc.students])
 
-  const [keepAlone, setKeepAlone] = useState(false)
+  const [picked, setPicked] = useState(null) // koppintásos áthelyezés (érintőképernyőhöz)
   const make = (n) => {
-    setKeepAlone(false)
+    setPicked(null)
     setSize(n)
     setGroups(makeGroups(present.map((s) => s.id), n, doc.avoid))
     setView('result')
   }
   // párokhoz rögtön sorsol (a kártyáról indítva)
   useEffect(() => { if (initialSize && present.length > 1) make(initialSize) }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  // mentés: a Csoportok nézet beosztását felülírja (és csak erre a napra érvényes)
   const saveAsGroups = () => {
-    if (doc.groups.length && !window.confirm('Replace the existing groups with the new ones?')) return
-    update((d) => ({ ...d, groups: groups.map((ids, i) => ({ id: uid(), name: `${size === 2 ? 'Pair' : 'Group'} ${i + 1}`, ids })) }))
+    update((d) => ({ ...d, groupsDate: date || dayKey(), groups: groups.map((ids, i) => ({ id: uid(), name: `${size === 2 ? 'Pair' : 'Group'} ${i + 1}`, ids })) }))
     onClose()
   }
+  // áthelyezés: target = csoport sorszáma vagy 'new' (új csoport)
+  const move = (id, target) => {
+    setPicked(null)
+    setGroups((gs) => {
+      const from = gs.findIndex((g) => g.includes(id))
+      if (from === target) return gs
+      const next = gs.map((g) => g.filter((x) => x !== id))
+      if (target === 'new') next.push([id])
+      else next[target] = [...next[target], id]
+      return next.filter((g) => g.length)
+    })
+  }
+  const dropProps = (target) => ({
+    onDragOver: (e) => { e.preventDefault(); e.currentTarget.classList.add('is-drop') },
+    onDragLeave: (e) => e.currentTarget.classList.remove('is-drop'),
+    onDrop: (e) => { e.preventDefault(); e.currentTarget.classList.remove('is-drop'); const id = e.dataTransfer.getData('text/plain'); if (id) move(id, target) },
+    onClick: () => { if (picked) move(picked, target) },
+  })
 
   if (view === 'result' && groups) {
-    // egyedül maradt diák: a tanár választja ki, hová kerüljön (vagy maradjon egyedül)
-    const loneIdx = size > 1 && !keepAlone ? groups.findIndex((g) => g.length === 1) : -1
-    const lone = loneIdx >= 0 ? byId[groups[loneIdx][0]] : null
     const label = (i) => `${size === 2 ? 'Pair' : 'Group'} ${i + 1}`
-    const addTo = (target) => setGroups((gs) => {
-      const id = gs[loneIdx][0]
-      return gs.map((g, i) => (i === target ? [...g, id] : g)).filter((_, i) => i !== loneIdx)
-    })
     return (
       <FullScreen color={t.color} onClose={onClose}>
-        {lone && (
-          <div className="cr-lone">
-            <span className="cr-lone__who"><Avatar a={lone.avatar} /><b>{shortName(lone)}</b> is on their own – add to:</span>
-            <span className="cr-lone__opts">
-              {groups.map((g, i) => i !== loneIdx && (
-                <button key={i} className="cr-pillbtn cr-pillbtn--sm" onClick={() => addTo(i)}>{label(i)}</button>
-              ))}
-              <button className="cr-pillbtn cr-pillbtn--sm cr-lone__keep" onClick={() => setKeepAlone(true)}>Keep alone</button>
-            </span>
-          </div>
-        )}
         <div className="cr-groupres">
           {groups.map((g, i) => (
-            <motion.div key={i} className="cr-groupres__card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
-              <h3>{size === 2 ? 'Pair' : 'Group'} {i + 1}</h3>
+            <motion.div key={i} className={`cr-groupres__card ${picked && !g.includes(picked) ? 'is-target' : ''}`} {...dropProps(i)}
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
+              <h3>{label(i)}{g.length === 1 && size > 1 && <small className="cr-groupres__alone"> · alone</small>}</h3>
               {g.map((id) => byId[id] && (
-                <div key={id} className="cr-groupres__row"><Avatar a={byId[id].avatar} /><span>{shortName(byId[id])}</span></div>
+                <div key={id} className={`cr-groupres__row ${picked === id ? 'is-picked' : ''}`} draggable
+                  onDragStart={(e) => { e.dataTransfer.setData('text/plain', id); e.dataTransfer.effectAllowed = 'move' }}
+                  onClick={(e) => { e.stopPropagation(); setPicked(picked === id ? null : id) }}
+                  title="Drag to another group">
+                  <Avatar a={byId[id].avatar} /><span>{shortName(byId[id])}</span>
+                </div>
               ))}
             </motion.div>
           ))}
+          {picked && (
+            <div className="cr-groupres__card cr-groupres__card--new is-target" {...dropProps('new')}><h3>+ New {size === 2 ? 'pair' : 'group'}</h3></div>
+          )}
         </div>
         <div className="cr-controls cr-controls--pills">
           <button className="cr-pillbtn" onClick={() => make(size)}><Icon.shuffle />Reshuffle</button>

@@ -12,6 +12,7 @@ import { PlanEditor, ClassSettings, LessonBoard } from '../classroom/plan.jsx'
 import { SessionSetup, SessionPlayer } from '../classroom/session.jsx'
 import { useClassroom } from '../classroom/useClassroom.js'
 import SeasonScene from '../classroom/SeasonScene.jsx'
+import Deskmates from '../classroom/Deskmates.jsx'
 import { ATTENDANCE, CLASSES, dayKey, fullName, getPlan, lessonLabel, nextLessonKey, pointsBy, sortStudents, uid } from '../classroom/model.js'
 import '../components/PasswordModal.css'
 import '../classroom/Classroom.css'
@@ -81,6 +82,8 @@ export default function Classroom() {
   }
 
   const presentIds = doc ? doc.students.filter((s) => !absent(s.id)).map((s) => s.id) : []
+  // a csoportok csak arra a napra érvényesek, amikor készültek – minden új órán üresen indul
+  const groupsToday = doc && doc.groupsDate === today ? doc.groups : []
 
   // ── Csempe kattintás módtól függően ──
   const onStudent = (s) => {
@@ -201,6 +204,7 @@ export default function Classroom() {
       <div className="cr-subbar">
         <div className="cr-seg" role="tablist" aria-label="View">
           <button role="tab" aria-selected={view === 'students'} className={view === 'students' ? 'is-active' : ''} onClick={() => setView('students')}>Students</button>
+          <button role="tab" aria-selected={view === 'pairs'} className={view === 'pairs' ? 'is-active' : ''} onClick={() => setView('pairs')}>Pairs</button>
           <button role="tab" aria-selected={view === 'groups'} className={view === 'groups' ? 'is-active' : ''} onClick={() => setView('groups')}>Groups</button>
         </div>
         {mode === 'attendance' && <p className="cr-modehint">Attendance – tap a student: present → absent → late → left early</p>}
@@ -229,9 +233,12 @@ export default function Classroom() {
               </button>
             )}
           </div>
+        ) : view === 'pairs' ? (
+          <Deskmates doc={doc} update={update} points={points}
+            onGive={(ids, title) => setModal({ kind: 'target', target: { type: 'multi', ids, title } })} />
         ) : (
           <div className="cr-grid cr-grid--groups">
-            {doc.groups.map((g) => {
+            {groupsToday.map((g) => {
               const members = g.ids.map((id) => doc.students.find((s) => s.id === id)).filter(Boolean)
               const total = members.reduce((sum, s) => sum + (points[s.id] || 0), 0)
               return (
@@ -260,7 +267,7 @@ export default function Classroom() {
               <span className="cr-tile__first">New group</span>
               <small className="cr-muted">or: Toolkit → Group maker</small>
             </button>
-            {doc.groups.length > 1 && (
+            {groupsToday.length > 1 && (
               <button className="cr-link cr-groups__clear" onClick={() => { if (window.confirm('Delete all groups? Students and their points stay.')) update((d) => ({ ...d, groups: [] })) }}>
                 <Icon.trash />Delete all groups
               </button>

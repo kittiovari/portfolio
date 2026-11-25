@@ -1134,3 +1134,37 @@ span.cr-sk { cursor: default; }
 
 /* hosszú tartalomnál ne vágja le a tetejét */
 .cr-full { justify-content: safe center; }
+
+/* Csoportkészítő: húzd és ejtsd / koppints */
+.cr-groupres__card { transition: box-shadow 0.15s, transform 0.15s; }
+.cr-groupres__card.is-drop, .cr-groupres__card.is-target:hover { box-shadow: 0 0 0 3px #F7D569; transform: scale(1.02); }
+.cr-groupres__card.is-target { cursor: pointer; }
+.cr-groupres__card--new { display: grid; place-items: center; min-height: 110px; background: rgba(255, 255, 255, 0.7); border: 2px dashed rgba(36, 20, 34, 0.3); }
+.cr-groupres__row { cursor: grab; border-radius: 12px; padding: 0.25rem 0.4rem; margin: 0 -0.4rem; }
+.cr-groupres__row:hover { background: #F6F2EE; }
+.cr-groupres__row.is-picked { background: #FBF4DC; box-shadow: 0 0 0 2px #E0B33A; }
+.cr-groupres__alone { font-size: 0.8rem; color: #B4443B; font-weight: 600; }
+
+/* ── Pairs (padtársak) nézet ── */
+.cr-desks-wrap { display: flex; flex-direction: column; gap: 1rem; }
+.cr-desks { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.8rem; }
+.cr-desk { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.7rem 0.8rem 0.8rem; border-radius: 20px; background: var(--card); border: 1px solid var(--line); transition: box-shadow 0.15s, transform 0.15s; }
+.cr-desk.is-drop, .cr-desk.is-target:hover { box-shadow: 0 0 0 3px #E0B33A; transform: translateY(-2px); }
+.cr-desk.is-target { cursor: pointer; }
+.cr-desk__head { display: flex; align-items: center; gap: 0.4rem; }
+.cr-desk__head b { font-family: var(--font-heading); }
+.cr-desk__head .cr-badge { position: static; min-width: 26px; height: 24px; font-size: 0.8rem; box-shadow: none; }
+.cr-desk__seats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+.cr-desk__person { display: flex; flex-direction: column; align-items: center; gap: 0.1rem; padding: 0.4rem 0.2rem; border-radius: 14px; background: #fff; border: 1.5px solid transparent; cursor: grab; font-weight: 600; font-size: 0.9rem; }
+.cr-desk__person .cr-avatar { width: 46px; height: 52px; }
+.cr-desk__person:hover { border-color: rgba(36, 20, 34, 0.15); }
+.cr-desk__person.is-picked { border-color: #E0B33A; background: #FBF4DC; }
+.cr-desk__empty { display: grid; place-items: center; border: 1.5px dashed rgba(36, 20, 34, 0.18); border-radius: 14px; font-size: 0.8rem; color: var(--muted); min-height: 84px; }
+.cr-desk--new { align-items: center; justify-content: center; min-height: 140px; border: 2px dashed rgba(36, 20, 34, 0.18); background: transparent; color: var(--muted); font-weight: 600; }
+.cr-desk--new svg { width: 22px; height: 22px; }
+.cr-desk--new small { font-weight: 400; font-size: 0.78rem; }
+.cr-desk-pool { padding: 0.8rem; border-radius: 20px; border: 1.5px dashed rgba(36, 20, 34, 0.15); transition: box-shadow 0.15s; }
+.cr-desk-pool.is-drop, .cr-desk-pool.is-target:hover { box-shadow: 0 0 0 3px #E0B33A; }
+.cr-desk-pool__label { display: block; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+.cr-desk-pool__list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.cr-desk-pool__list .cr-desk__person { width: 84px; }

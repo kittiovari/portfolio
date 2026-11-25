@@ -399,13 +399,18 @@ export function AddStudents({ update, onClose }) {
 
 // ── Csoport szerkesztése ──
 export function GroupEditor({ doc, group, update, onClose }) {
-  const [name, setName] = useState(group?.name ?? `Group ${doc.groups.length + 1}`)
+  const todays = doc.groupsDate === dayKey() ? doc.groups : []
+  const [name, setName] = useState(group?.name ?? `Group ${todays.length + 1}`)
   const [ids, setIds] = useState(new Set(group?.ids ?? []))
   const toggle = (id) => setIds((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
   const save = (e) => {
     e.preventDefault()
     const item = { id: group?.id ?? uid(), name: name.trim() || 'Group', ids: [...ids] }
-    update((d) => ({ ...d, groups: group ? d.groups.map((g) => (g.id === group.id ? item : g)) : [...d.groups, item] }))
+    // a csoportok mindig a mai napra szólnak: régi napi beosztásból újat kezdünk
+    update((d) => {
+      const base = d.groupsDate === dayKey() ? d.groups : []
+      return { ...d, groupsDate: dayKey(), groups: group ? base.map((g) => (g.id === group.id ? item : g)) : [...base, item] }
+    })
     onClose()
   }
   const remove = () => {

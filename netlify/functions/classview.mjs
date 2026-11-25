@@ -28,7 +28,8 @@ export default async (req, context) => {
     const events = (doc.events || [])
       .filter((e) => e.v > 0 && ids.has(e.s))
       .map((e) => ({ id: e.id, s: e.s, n: e.n, i: e.i, v: e.v, t: e.t }))
-    const groups = (doc.groups || []).map((g) => ({ id: g.id, name: g.name, ids: (g.ids || []).filter((id) => ids.has(id)) }))
+    // csoportok csak arra a napra érvényesek, amikor készültek
+    const groups = (doc.groupsDate === dayKey() ? doc.groups || [] : []).map((g) => ({ id: g.id, name: g.name, ids: (g.ids || []).filter((id) => ids.has(id)) }))
     // A következő (vagy ma zajló) betervezett óra – kulcs: 'YYYY-MM-DD@HH:MM' vagy 'YYYY-MM-DD'
     const SKILL_TAG = { R: 'reading', L: 'listening', S: 'speaking', W: 'writing', G: 'grammar', V: 'vocabulary' }
     const normItem = (it) => (it.aim !== undefined ? it : {
