@@ -4,9 +4,10 @@
 import crypto from 'node:crypto'
 
 // ── Területek ──────────────────────────────────────────────
-export const AREAS = ['language', 'arttherapy', 'ux']
+// A nyelvoktatás osztályonként külön terület: saját jelszó, süti és tartalom
+export const AREAS = ['language-9b', 'language-9d', 'arttherapy', 'ux']
 export const isArea = (a) => AREAS.includes(a)
-const hashEnv = (area) => `PASS_HASH_${area.toUpperCase()}`
+export const hashEnv = (area) => `PASS_HASH_${area.toUpperCase().replace(/-/g, '_')}`
 
 // ── Jelszó: scrypt (lassú, memóriaigényes → nehéz nyers erővel törni) ──
 // Formátum: scrypt$N$r$p$<salt base64>$<hash base64>

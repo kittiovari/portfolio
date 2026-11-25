@@ -4,10 +4,19 @@
 // amit a JavaScript nem is lát. Ez a modul csak kérdez és megjegyzi a választ.
 
 export const AREAS = {
-  language: { path: '/nyelvoktatas' },
+  'language-9b': { path: '/nyelvoktatas/9b' },
+  'language-9d': { path: '/nyelvoktatas/9d' },
   arttherapy: { path: '/muveszetterapia' },
   ux: { path: '/ux' },
 }
+
+// A Nyelvoktatás csempe mögötti csoportok (profilválasztó a jelszómodalban)
+export const LANGUAGE_PROFILES = [
+  { area: 'language-9b', id: '9b', label: 'NYEK9B' },
+  { area: 'language-9d', id: '9d', label: 'NYEK9D' },
+]
+export const isLanguageArea = (area) => area === 'language' || area.startsWith('language-')
+export const unlockedLanguageAreas = () => LANGUAGE_PROFILES.filter((p) => isUnlocked(p.area)).map((p) => p.area)
 
 // A szervertől utoljára kapott állapot (csak a lakat ikonokhoz / gyors navigációhoz)
 let known = new Set()

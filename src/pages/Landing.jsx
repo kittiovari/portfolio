@@ -4,7 +4,10 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useLanguage, useTranslation } from '../i18n/LanguageContext.jsx'
 import { areaArt } from '../components/AreaIllustrations.jsx'
 import PasswordModal from '../components/PasswordModal.jsx'
-import { AREAS, isUnlocked, refreshSession, onSessionChange } from '../lib/unlock.js'
+import {
+  AREAS, LANGUAGE_PROFILES, isLanguageArea, isUnlocked, unlockedLanguageAreas,
+  refreshSession, onSessionChange,
+} from '../lib/unlock.js'
 import '../components/Hero.css'
 import './Landing.css'
 
@@ -47,19 +50,29 @@ function Landing({ gateArea = null, onUnlock }) {
     return off
   }, [gateArea])
 
-  const titleOf = (key) => l.areas.find((a) => a.key === key)?.title ?? ''
+  // A Nyelvoktatás csempe mögött csoportonként külön terület van (language-9b, …)
+  const tileKey = (key) => (isLanguageArea(key) ? 'language' : key)
+  const titleOf = (key) => l.areas.find((a) => a.key === tileKey(key))?.title ?? ''
+  const tileOpen = (key) => (key === 'language' ? unlockedLanguageAreas().length > 0 : isUnlocked(key))
 
   const openArea = (e, key) => {
-    if (isUnlocked(key)) return // már feloldva: a Link simán navigál
     e.preventDefault()
-    setPending(key)
+    if (key === 'language') {
+      // Ha pontosan egy csoport van feloldva, egyenesen annak az oldalára megyünk
+      const open = unlockedLanguageAreas()
+      if (open.length === 1) navigate(AREAS[open[0]].path)
+      else setPending('language')
+      return
+    }
+    if (isUnlocked(key)) navigate(AREAS[key].path)
+    else setPending(key)
   }
 
-  const handleSuccess = () => {
-    const key = pending
+  // A modal a ténylegesen feloldott terület azonosítójával hív vissza
+  const handleSuccess = (unlockedArea) => {
     setPending(null)
-    if (gateArea) onUnlock?.()
-    else navigate(AREAS[key].path)
+    if (gateArea && unlockedArea === gateArea) onUnlock?.()
+    else navigate(AREAS[unlockedArea].path)
   }
 
   const handleClose = () => {
@@ -89,7 +102,7 @@ function Landing({ gateArea = null, onUnlock }) {
         <nav className="areas" aria-label={l.title}>
           {l.areas.map((a, i) => {
             const Art = areaArt[a.key]
-            const open = isUnlocked(a.key)
+            const open = tileOpen(a.key)
             return (
               <motion.div key={a.key} className="areas__cell" variants={rise(i)} initial="hidden" animate="visible">
                 <Link
@@ -144,9 +157,12 @@ function Landing({ gateArea = null, onUnlock }) {
       <AnimatePresence>
         {pending && (
           <PasswordModal
-            key={pending}
+            key={isLanguageArea(pending) ? 'language' : pending}
             area={pending}
             title={titleOf(pending)}
+            // Nyelvoktatás: profilválasztó; közvetlen osztály-URL-nél előre kijelölve
+            profiles={isLanguageArea(pending) ? LANGUAGE_PROFILES : null}
+            initialProfile={pending !== 'language' && isLanguageArea(pending) ? pending : null}
             onSuccess={handleSuccess}
             onClose={handleClose}
           />

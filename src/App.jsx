@@ -4,7 +4,8 @@ import Landing from './pages/Landing.jsx'
 import UX from './pages/UX.jsx'
 import Topic from './pages/Topic.jsx'
 import CV from './pages/CV.jsx'
-import { fetchContent } from './lib/unlock.js'
+import ClassPage from './pages/ClassPage.jsx'
+import { AREAS, fetchContent, refreshSession, unlockedLanguageAreas } from './lib/unlock.js'
 import { useProtectedContent } from './i18n/LanguageContext.jsx'
 
 // Oldalváltáskor az új oldal tetejére ugrunk; #horgonynál a horgonyhoz.
@@ -59,6 +60,28 @@ function Gated({ area, children }) {
   return <Landing gateArea={area} onUnlock={() => setState('checking')} />
 }
 
+/*
+  /nyelvoktatas – csoportválasztó belépési pont.
+  - ha pontosan egy csoport van feloldva ebben a böngészőben → egyenesen oda;
+  - különben a nyitóoldal homályosítva, előtte a profilválasztós jelszómodal;
+    azonosítás után a kiválasztott csoport saját aloldalára érkezünk.
+*/
+function LanguageHub() {
+  const [target, setTarget] = useState(undefined)
+  useEffect(() => {
+    let alive = true
+    refreshSession().then(() => {
+      if (!alive) return
+      const open = unlockedLanguageAreas()
+      setTarget(open.length === 1 ? AREAS[open[0]].path : null)
+    })
+    return () => { alive = false }
+  }, [])
+  if (target === undefined) return <div className="home" aria-busy="true" />
+  if (target) return <Navigate to={target} replace />
+  return <Landing gateArea="language" />
+}
+
 function App() {
   return (
     <>
@@ -66,7 +89,9 @@ function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/ux" element={<Gated area="ux" key="ux"><UX /></Gated>} />
-        <Route path="/nyelvoktatas" element={<Gated area="language" key="language"><Topic topic="language" /></Gated>} />
+        <Route path="/nyelvoktatas" element={<LanguageHub />} />
+        <Route path="/nyelvoktatas/9b" element={<Gated area="language-9b" key="language-9b"><ClassPage id="9b" /></Gated>} />
+        <Route path="/nyelvoktatas/9d" element={<Gated area="language-9d" key="language-9d"><ClassPage id="9d" /></Gated>} />
         <Route path="/muveszetterapia" element={<Gated area="arttherapy" key="arttherapy"><Topic topic="arttherapy" /></Gated>} />
         <Route path="/cv" element={<CV />} />
         {/* Rövid / alternatív címek */}

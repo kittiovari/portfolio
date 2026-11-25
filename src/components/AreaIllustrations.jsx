@@ -296,6 +296,83 @@ function UXArt(props) {
   )
 }
 
+// ── Nyelvoktatás profilválasztó: kör alakú ikonok (négyzetes vászon) ──
+const profileCommon = { ...common, viewBox: '0 0 120 120' }
+
+// NYEK9B: olasz gesztus – összezárt ujjak felfelé, kockás ingujj
+function ItalianHandArt(props) {
+  return (
+    <svg {...profileCommon} {...props}>
+      <g strokeWidth="2.2">
+        {/* mozgásvonalak */}
+        <path className="a-flow" d="M86 22q6 4 4 10M93 33q5 3 3 8M50 20q-6 4-4 10" opacity=".55" />
+        <g className="a-shake">
+          {/* kockás ingujj */}
+          <path d="M34 120L40 96L68 100L64 120" />
+          <path d="M38 108l28 4M36 116l28 4M48 97l-4 22M58 99l-3 21" opacity=".45" />
+          {/* csukló */}
+          <path d="M43 96C45 88 47 82 49 76M66 100C68 92 69 86 71 80" />
+          {/* kidomborodó kézfej (jobb oldal) az ujjbegyekig */}
+          <path d="M71 80C81 74 87 63 85 51C83 40 79 31 77 25" />
+          {/* tenyér + hüvelykujj (bal oldal) */}
+          <path d="M49 76C44 68 44 60 48 52C50 43 55 34 60 28" />
+          {/* összeérő ujjbegyek felül */}
+          <path d="M60 28C59 22 63 18 67 21C69 16 75 17 76 22C79 21 81 24 77 25" />
+          {/* ujjak vonala lefelé a tenyérbe */}
+          <path d="M67 21C70 31 72 41 72 53M75 23C78 33 80 43 79 55" opacity=".6" />
+          {/* hüvelykujj belső vonala + köröm */}
+          <path d="M52 57C55 47 58 38 63 30" />
+          <path d="M60 33q3 1 4-2" opacity=".6" />
+          {/* bütykök */}
+          <path d="M58 64q9 6 20 2" opacity=".5" />
+        </g>
+      </g>
+    </svg>
+  )
+}
+
+// NYEK9D: salsát táncoló figura fodros ruhában, legyezővel, virággal a hajában
+function SalsaDancerArt(props) {
+  return (
+    <svg {...profileCommon} {...props}>
+      <g strokeWidth="2.2">
+        {/* felemelt, ívelt kar */}
+        <g className="a-raise">
+          <path d="M72 54C82 46 86 34 80 22M73 63C88 52 94 34 85 18" />
+          <circle cx="82" cy="17" r="3.6" />
+        </g>
+        {/* fej + felsőtest (babszem) */}
+        <path d="M44 80C42 62 43 44 51 35C56 29 66 29 70 35C76 44 76 62 74 80" />
+        <circle cx="62" cy="28" r="4.6" />
+        <g className="a-sway">
+          <Flower x={46} y={38} r={2.2} />
+        </g>
+        <path d="M52 50q2.5 2.5 5 0M63 50q2.5 2.5 5 0" />
+        <path d="M56 58q4 3.5 8 0" />
+        {/* fodros szoknya */}
+        <g className="a-ruffle">
+          <path d="M44 78C38 90 30 102 22 112M74 78C80 90 88 102 96 112" />
+          <path d="M22 112q6-5 12 0t12 0t12 0t12 0t12 0t12 0" />
+          <path d="M33 98q5-4 10 0t10 0t10 0t10 0t10 0" opacity=".7" />
+          <path d="M40 87q4-3 8 0t8 0t8 0t8 0" opacity=".55" />
+        </g>
+        {/* legyező a másik kézben */}
+        <path d="M45 62C38 66 33 70 30 74" />
+        <g className="a-fan">
+          <path d="M30 74L14 62A20 20 0 0 1 36 54Z" />
+          <path d="M30 74L20 57M30 74L27 54" opacity=".6" />
+        </g>
+        <circle cx="30" cy="74" r="3.2" />
+      </g>
+    </svg>
+  )
+}
+
+export const profileArt = {
+  'language-9b': ItalianHandArt,
+  'language-9d': SalsaDancerArt,
+}
+
 export const areaArt = {
   language: LanguageArt,
   arttherapy: ArtTherapyArt,

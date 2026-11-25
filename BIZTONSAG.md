@@ -2,7 +2,7 @@
 
 ## Hogyan működik
 
-- A három területi oldal (Nyelvoktatás, Antalfai művészetterápia, UX/UI design) tartalma **nincs benne a letölthető kódban**.
+- A területi oldalak (Nyelvoktatás csoportonként: NYEK9B, NYEK9D; Antalfai művészetterápia; UX/UI design) tartalma **nincs benne a letölthető kódban**.
 - A védett szövegek és képek a `protected/` mappában vannak, **AES-256-GCM-mel titkosítva**. A repóba csak ez kerül. Kulcs nélkül olvashatatlan, és ha valaki módosítja, a szerver elutasítja.
 - A jelszót a szerver ellenőrzi (`netlify/functions/unlock.mjs`). A jelszavak csak **scrypt-hash**ként léteznek, a Netlify környezeti változóiban.
 - Helyes jelszó után a böngésző egy aláírt, 7 napig érvényes sütit kap: `HttpOnly`, `Secure`, `SameSite=Strict`, és csak az `/api` útvonalra szól. A tartalmat (`/api/content/:terület`) és a képeket (`/api/asset/:terület/:fájl`) a szerver csak ezzel a sütivel adja ki.
@@ -14,7 +14,8 @@
 |---|---|
 | `SESSION_SECRET` | a sütik aláírása |
 | `CONTENT_KEY` | a `protected/` fájlok titkosítása (32 bájt, base64) |
-| `PASS_HASH_LANGUAGE` | Nyelvoktatás jelszó-hash |
+| `PASS_HASH_LANGUAGE_9B` | Nyelvoktatás – NYEK9B csoport jelszó-hash |
+| `PASS_HASH_LANGUAGE_9D` | Nyelvoktatás – NYEK9D csoport jelszó-hash |
 | `PASS_HASH_ARTTHERAPY` | Antalfai művészetterápia jelszó-hash |
 | `PASS_HASH_UX` | UX/UI design jelszó-hash |
 
@@ -32,7 +33,7 @@
 
 **Jelszócsere**
 
-- `npm run jelszo -- language` (vagy `arttherapy` / `ux`): rejtetten bekéri az új jelszót, és a hash-t beírja a `.env`-be.
+- `npm run jelszo -- language-9b` (vagy `language-9d` / `arttherapy` / `ux`): rejtetten bekéri az új jelszót, és a hash-t beírja a `.env`-be.
 - Ugyanezt az értéket másold be a Netlify-on is, majd indíts egy új deployt.
 - Legalább 6 karakter. Gépelés közben csak pöttyök látszanak, és a szkript kétszer kéri be a jelszót.
 - Jól megjegyezhető és erős, ha több szót kötsz össze. A próbálkozáskorlát miatt egy rövidebb jelszót sem lehet gyorsan kitalálni.

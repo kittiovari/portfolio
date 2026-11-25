@@ -1,13 +1,13 @@
 // npm run jelszo -- <terület>
-//   terület: language | arttherapy | ux
+//   terület: language-9b | language-9d | arttherapy | ux
 // Rejtetten bekéri az új jelszót (gépelés közben csak pöttyök látszanak),
 // a scrypt-hash-ét a .env-be írja (PASS_HASH_<TERÜLET>), és kiírja, mit kell
 // a Netlify-on beállítani. Maga a jelszó sehol nem tárolódik.
 import { loadEnv, setEnv } from './env.mjs'
-import { hashPassword, AREAS } from '../netlify/lib/security.mjs'
+import { hashPassword, hashEnv, AREAS } from '../netlify/lib/security.mjs'
 
 const MIN_LENGTH = 6
-const LABELS = { language: 'Nyelvoktatás', arttherapy: 'Antalfai művészetterápia', ux: 'UX/UI design' }
+const LABELS = { 'language-9b': 'Nyelvoktatás – NYEK9B', 'language-9d': 'Nyelvoktatás – NYEK9D', arttherapy: 'Antalfai művészetterápia', ux: 'UX/UI design' }
 
 loadEnv()
 const area = process.argv[2]
@@ -91,7 +91,7 @@ if (again !== password) {
   process.exit(1)
 }
 
-const key = `PASS_HASH_${area.toUpperCase()}`
+const key = hashEnv(area)
 setEnv(key, hashPassword(password))
 console.log(`Kész: ${key} beírva a .env-be.`)
 console.log('Élesítéshez ugyanezt az értéket másold be a Netlify-on: Project configuration → Environment variables.')

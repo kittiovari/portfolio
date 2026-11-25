@@ -28,12 +28,14 @@ export const translations = {
       ],
       appsLabel: 'Saját appok',
       apps: [
-        { key: 'fulbevalo', name: 'Fülbevaló', tagline: 'Írásból hangot', logo: 'https://fulbevalo.vercel.app/logo.svg', url: 'https://fulbevalo.vercel.app/' },
+        { key: 'fulbevalo', name: 'Fülbevaló', tagline: 'Hangoskönyv-készítő', logo: 'https://fulbevalo.vercel.app/logo.svg', url: 'https://fulbevalo.vercel.app/' },
         { key: 'gombarat', name: 'GomBarát', tagline: 'Gombász kisokos', logo: 'https://gombarat.hu/logo.svg', url: 'https://gombarat.hu/' },
       ],
     },
     gate: {
       prompt: 'Add meg a jelszót a belépéshez',
+      choose: 'Válaszd ki a csoportodat',
+      promptFor: 'Add meg a {name} csoport jelszavát',
       placeholder: 'Jelszó',
       submit: 'Belépés',
       checking: 'Ellenőrzés…',
@@ -48,6 +50,8 @@ export const translations = {
       back: 'Kittipedia',
       soon: 'Ez az oldal épül. Hamarosan itt lesz a részletes tartalom.',
       language: { title: 'Nyelvoktatás' },
+      classes: { '9b': { title: 'NYEK9B' }, '9d': { title: 'NYEK9D' } },
+      classBack: 'Nyelvoktatás',
       arttherapy: { title: 'Antalfai művészetterápia' },
     },
     bento: {
@@ -154,12 +158,14 @@ export const translations = {
       ],
       appsLabel: 'My apps',
       apps: [
-        { key: 'fulbevalo', name: 'Fülbevaló', tagline: 'Text to sound', logo: 'https://fulbevalo.vercel.app/logo.svg', url: 'https://fulbevalo.vercel.app/' },
+        { key: 'fulbevalo', name: 'Fülbevaló', tagline: 'Audiobook maker', logo: 'https://fulbevalo.vercel.app/logo.svg', url: 'https://fulbevalo.vercel.app/' },
         { key: 'gombarat', name: 'GomBarát', tagline: 'Mushroom pocket guide', logo: 'https://gombarat.hu/logo.svg', url: 'https://gombarat.hu/' },
       ],
     },
     gate: {
       prompt: 'Enter the password to continue',
+      choose: 'Choose your group',
+      promptFor: 'Enter the password for {name}',
       placeholder: 'Password',
       submit: 'Enter',
       checking: 'Checking…',
@@ -174,6 +180,8 @@ export const translations = {
       back: 'Kittipedia',
       soon: 'This page is under construction. Detailed content is coming soon.',
       language: { title: 'Language teaching' },
+      classes: { '9b': { title: 'NYEK9B' }, '9d': { title: 'NYEK9D' } },
+      classBack: 'Language teaching',
       arttherapy: { title: 'Antalfai art therapy' },
     },
     bento: {
