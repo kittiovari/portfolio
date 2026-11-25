@@ -168,7 +168,7 @@ export const TAGS = [
   { id: 'pronunciation', label: 'Pronunciation practice', color: '#A0568F' },
   { id: 'vocabulary', label: 'Vocabulary practice', color: '#8F5A9E' },
   { id: 'homework', label: 'Future homework', color: '#3F6E9A' },
-  { id: 'reflection', label: 'Self-reflection', color: '#6B5A69' },
+  { id: 'reflection', label: 'Self-reflection & Overall evaluation', color: '#6B5A69' },
 ]
 export const tagOf = (id) => TAGS.find((t) => t.id === id)
 // A saját (középső) feladatoknál választható címkék – a fix lépések címkéi nélkül
@@ -192,7 +192,7 @@ export const FIXED = {
   warmer: { minutes: 5, aim: '', org: 'frontal', tags: ['warmer'] },
   hwreview: { minutes: 5, aim: '', org: 'frontal', tags: ['hwreview'], auto: 'hwreview' },
   homework: { minutes: 3, aim: '', org: 'frontal', tags: ['homework'] },
-  reflection: { minutes: 2, aim: 'Self-reflection', org: 'individual', tags: ['reflection'] },
+  reflection: { minutes: 2, aim: 'Self-reflection & Overall evaluation', org: 'individual', tags: ['reflection'] },
 }
 const fixedItem = (role) => ({ id: `fixed-${role}`, role, activity: '', equipment: '', resources: [], done: false, ...FIXED[role] })
 export const reflectionItem = () => fixedItem('reflection')
@@ -212,11 +212,29 @@ export function withSkeleton(plan) {
   const attendance = take('attendance', null)
   const warmer = take('warmer', (it, i) => i === 0 && it.tags?.length === 1 && it.tags[0] === 'warmer')
   const hwreview = take('hwreview', (it) => it.auto === 'hwreview')
-  const reflection = take('reflection', (it) => it.tags?.includes('reflection') && /self-reflection/i.test(it.aim || ''))
+  const reflection0 = take('reflection', (it) => it.tags?.includes('reflection') && /self-reflection/i.test(it.aim || ''))
+  // a korábbi „Self-reflection” cím frissítése
+  const reflection = reflection0.aim === 'Self-reflection' ? { ...reflection0, aim: 'Self-reflection & Overall evaluation' } : reflection0
   const homework = take('homework', null)
   return { ...plan, items: [attendance, warmer, { ...hwreview, auto: 'hwreview' }, ...items, homework, reflection] }
 }
 export const isFixed = (it) => Boolean(it.role)
+
+// ── Lépésenként adható pontok ──
+// item.points: a választható készségek azonosítói; ha nincs megadva, szerepkör szerinti alapértelmezés
+const HW_RE = /homework/i
+const DEFAULT_POINTS = {
+  warmer: (k) => /active participation|great answer|disruptive/i.test(k.name),
+  reflection: (k) => k.value > 0 && /top mark|extra task|quizlet|active participation/i.test(k.name),
+  task: (k) => !HW_RE.test(k.name) && !/^late$/i.test(k.name),
+}
+export function stepSkills(doc, item) {
+  const all = [...(doc.skills?.positive || []), ...(doc.skills?.negative || [])]
+  if (!item || item.role === 'attendance' || item.role === 'hwreview' || item.role === 'homework') return []
+  if (Array.isArray(item.points)) return all.filter((k) => item.points.includes(k.id))
+  const test = DEFAULT_POINTS[item.role] || DEFAULT_POINTS.task
+  return all.filter(test)
+}
 const hasContent = (it) => Boolean((it.aim || '').trim() || (it.activity || '').trim() || it.resources?.length)
 
 export const newItem = () => ({ id: uid(), minutes: 5, aim: '', activity: '', org: '', equipment: '', tags: [], resources: [], done: false })

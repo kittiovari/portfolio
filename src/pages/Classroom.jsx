@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { profileArt } from '../components/AreaIllustrations.jsx'
 import Avatar, { ClassAvatar } from '../classroom/Avatar.jsx'
 import { Icon, play, isMuted, setMuted } from '../classroom/ui.jsx'
-import { TargetModal, AddStudents, GroupEditor, HomeworkWizard, AttendanceWizard } from '../classroom/StudentModal.jsx'
+import { TargetModal, AddStudents, GroupEditor, HomeworkWizard, AttendanceWizard, PointsWizard } from '../classroom/StudentModal.jsx'
 import {
   Toolkit, RandomTool, GroupMakerTool, DirectionsTool, TpsTool,
 } from '../classroom/tools.jsx'
@@ -13,7 +13,7 @@ import { SessionSetup, SessionPlayer } from '../classroom/session.jsx'
 import { useClassroom } from '../classroom/useClassroom.js'
 import SeasonScene from '../classroom/SeasonScene.jsx'
 import Deskmates from '../classroom/Deskmates.jsx'
-import { ATTENDANCE, CLASSES, dayKey, fullName, pickName, getPlan, lessonLabel, nextLessonKey, pointsBy, sortStudents, uid } from '../classroom/model.js'
+import { ATTENDANCE, CLASSES, dayKey, fullName, pickName, getPlan, stepSkills, withSkeleton, lessonLabel, nextLessonKey, pointsBy, sortStudents, uid } from '../classroom/model.js'
 import '../components/PasswordModal.css'
 import '../classroom/Classroom.css'
 
@@ -85,16 +85,26 @@ export default function Classroom() {
   // a csoportok csak arra a napra érvényesek, amikor készültek – minden új órán üresen indul
   const groupsToday = doc && doc.groupsDate === today ? doc.groups : []
 
+  // ── Pontadás: mindig egy kijelölt lépéshez (feladathoz) kötve ──
+  const [notice, setNotice] = useState(null)
+  useEffect(() => { if (!notice) return; const id = setTimeout(() => setNotice(null), 2600); return () => clearTimeout(id) }, [notice])
+  const stepItem = (step) => step && doc ? withSkeleton(getPlan(doc, step.key)).items.find((x) => x.id === step.itemId) : null
+  const givePoints = (ids = [], step = activeStep) => {
+    if (!step) { setNotice('Select a task in the lesson timeline to give points'); return }
+    if (step.role === 'hwreview') return setModal({ kind: 'homework', preselect: ids })
+    if (step.role === 'attendance') return setModal({ kind: 'attendance', date: step.key.slice(0, 10) })
+    if (!stepSkills(doc, stepItem(step)).length) { setNotice('No points are set for this step – add them in the lesson plan'); return }
+    setModal({ kind: 'points', step, preselect: ids })
+  }
+
   // ── Csempe kattintás módtól függően ──
   const onStudent = (s) => {
     if (mode === 'attendance') {
       setDraftAtt((a) => ({ ...a, [s.id]: ATTENDANCE[a[s.id] || 'present'].next }))
     } else if (mode === 'select') {
       setSelected((set) => { const n = new Set(set); n.has(s.id) ? n.delete(s.id) : n.add(s.id); return n })
-    } else if (activeStep?.role === 'hwreview') {
-      setModal({ kind: 'homework', preselect: [s.id] })
-    } else if (activeStep?.role === 'attendance') {
-      setModal({ kind: 'attendance', date: activeStep.key.slice(0, 10) })
+    } else if (activeStep) {
+      givePoints([s.id])
     } else {
       setModal({ kind: 'target', target: { type: 'student', id: s.id } })
     }
@@ -218,7 +228,7 @@ export default function Classroom() {
               className={`cr-tile cr-tile--class ${mode !== 'normal' ? 'is-dim' : ''}`}
               onClick={() => mode === 'select'
                 ? setSelected(selected.size === presentIds.length ? new Set() : new Set(presentIds))
-                : mode === 'normal' && setModal(activeStep?.role === 'hwreview' ? { kind: 'homework', preselect: [] } : activeStep?.role === 'attendance' ? { kind: 'attendance', date: activeStep.key.slice(0, 10) } : { kind: 'target', target: { type: 'class' } })}
+                : mode === 'normal' && (activeStep ? givePoints([]) : setModal({ kind: 'target', target: { type: 'class' } }))}
               disabled={mode === 'attendance'}
             >
               <span className="cr-tile__art"><ClassAvatar /></span>
@@ -235,7 +245,7 @@ export default function Classroom() {
           </div>
         ) : view === 'pairs' ? (
           <Deskmates doc={doc} update={update} points={points}
-            onGive={(ids, title) => setModal({ kind: 'target', target: { type: 'multi', ids, title } })} />
+            onGive={(ids) => givePoints(ids)} />
         ) : (
           <div className="cr-grid cr-grid--groups">
             {groupsToday.map((g) => {
@@ -243,7 +253,7 @@ export default function Classroom() {
               const total = members.reduce((sum, s) => sum + (points[s.id] || 0), 0)
               return (
                 <div key={g.id} className="cr-group">
-                  <button className="cr-group__main" onClick={() => members.length && setModal({ kind: 'target', target: { type: 'multi', ids: members.map((s) => s.id), title: g.name } })}>
+                  <button className="cr-group__main" onClick={() => members.length && (activeStep ? givePoints(members.map((s) => s.id)) : setModal({ kind: 'target', target: { type: 'multi', ids: members.map((s) => s.id), title: g.name } }))}>
                     <span className="cr-group__faces">
                       {members.slice(0, 5).map((s) => <Avatar key={s.id} a={s.avatar} />)}
                       {members.length > 5 && <span className="cr-group__more">+{members.length - 5}</span>}
@@ -279,6 +289,7 @@ export default function Classroom() {
             onMakeGroups={(size, date) => setModal({ kind: 'tool', id: 'groups', size, date, fromBoard: true })}
             onCheckHomework={() => setModal({ kind: 'homework', preselect: [] })}
             onTakeAttendance={(date) => setModal({ kind: 'attendance', date })}
+            onGivePoints={(step) => givePoints([], step)}
             onEdit={(k) => setModal({ kind: 'tool', id: 'today', key: k })} />
         )}
       </main>
@@ -291,7 +302,6 @@ export default function Classroom() {
         {mode === 'normal' && (
           <>
             <button className="cr-dockbtn" onClick={() => setModal({ kind: 'toolkit' })}><Icon.grid />Toolkit</button>
-            <button className="cr-dockbtn" onClick={() => { setSelected(new Set()); setMode('select') }} disabled={!doc.students.length}><Icon.checkbox />Select multiple</button>
             <button className="cr-dockbtn" onClick={() => setModal({ kind: 'tool', id: 'random' })} disabled={!doc.students.length}><Icon.shuffle />Random</button>
             <button className="cr-dockbtn" onClick={() => setModal({ kind: 'tool', id: 'session' })}><Icon.timer />Timer & music</button>
           </>
@@ -328,6 +338,17 @@ export default function Classroom() {
             absentIds={doc.students.filter((s) => absent(s.id)).map((s) => s.id)}
             onAward={(ids, sk, label) => award(modal.target.type === 'class' ? presentIds : ids, sk, label)} />
         )}
+        {modal?.kind === 'points' && (() => {
+          const step = modal.step || activeStep
+          const item = stepItem(step)
+          const date = step.key.slice(0, 10)
+          const here = doc.students.filter((s) => doc.attendance?.[date]?.[s.id] !== 'absent').map((s) => s.id)
+          return (
+            <PointsWizard key="points" doc={doc} skills={stepSkills(doc, item)} stepTitle={step.title} presentIds={here} preselect={modal.preselect || []}
+              onClose={closeModal}
+              onSave={(skill, ids) => { award(ids, skill, `${ids.length} student${ids.length === 1 ? '' : 's'}`); closeModal() }} />
+          )
+        })()}
         {modal?.kind === 'attendance' && (
           <AttendanceWizard key="attendance" doc={doc} date={modal.date} onClose={closeModal}
             onSave={(map) => { update((d) => ({ ...d, attendance: { ...d.attendance, [modal.date]: map } })); closeModal() }} />
@@ -351,7 +372,7 @@ export default function Classroom() {
         )}
         {modal?.kind === 'tool' && modal.id === 'random' && (
           <RandomTool key="random" doc={doc} onClose={closeModal}
-            onGive={(id) => setModal({ kind: 'target', target: { type: 'student', id } })} />
+            onGive={(id) => givePoints([id])} />
         )}
         {modal?.kind === 'tool' && modal.id === 'groups' && <GroupMakerTool key="groups" doc={doc} update={update} initialSize={modal.size || null} date={modal.date}
           onClose={() => { closeModal(); if (!modal.fromBoard) setView('groups') }} onBack={modal.fromBoard ? undefined : backToKit} />}
@@ -366,6 +387,13 @@ export default function Classroom() {
         {session && <SessionPlayer key={session.key} session={session} onMode={(mode) => setSession((x) => x && { ...x, mode })} onClose={() => setSession(null)} />}
       </AnimatePresence>
 
+      {/* rövid értesítés (pl. ha nincs kijelölt lépés) */}
+      <AnimatePresence>
+        {notice && (
+          <motion.div key={notice} className="cr-notice" role="status" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }}>{notice}</motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Pontozás visszajelzése */}
       <AnimatePresence>
         {toast && (
@@ -375,7 +403,7 @@ export default function Classroom() {
             <span className="cr-toast__avatar">{toast.student ? <Avatar a={toast.student.avatar} /> : <ClassAvatar />}</span>
             <span className="cr-toast__text">
               <b>{toast.label}</b>
-              <span>{toast.skill.value > 0 ? `+${toast.skill.value}` : toast.skill.value} · {toast.skill.name}{toast.count > 1 ? ` · ${toast.count} students` : ''}{toast.step ? ` · ${toast.step}` : ''}</span>
+              <span>{toast.skill.value > 0 ? `+${toast.skill.value}` : toast.skill.value} · {toast.skill.name}{toast.count > 1 && !/student/.test(toast.label) ? ` · ${toast.count} students` : ''}{toast.step ? ` · ${toast.step}` : ''}</span>
             </span>
             <motion.span className="cr-toast__icon" initial={{ rotate: -20, scale: 0.4 }} animate={{ rotate: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 12, delay: 0.1 }}>
               {toast.skill.icon}

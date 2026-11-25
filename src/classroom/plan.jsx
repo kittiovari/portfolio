@@ -3,7 +3,7 @@ import { Reorder, useDragControls } from 'framer-motion'
 import { Sheet, Icon } from './ui.jsx'
 import {
   LESSON_MIN, ORG_FORMS, TAGS, WEEKDAYS, addMinutes, dayKey, getPlan, lessonLabel, lessonTimeline, newItem, nextLessonKey,
-  splitKey, tagOf, uid, previousHomework, withSkeleton, TASK_TAGS, plannedKeys,
+  splitKey, tagOf, uid, previousHomework, withSkeleton, TASK_TAGS, plannedKeys, stepSkills,
   BELLS, isShortDay, lessonStart, lessonLength, breakOn,
 } from './model.js'
 
@@ -209,7 +209,7 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings, 
 
   const row = (it, extra = {}) => (
     <PlanRow
-      key={it.id} item={it} step={stepNo[it.id]} start={startOf[it.id]} cls={cls}
+      key={it.id} item={it} step={stepNo[it.id]} start={startOf[it.id]} cls={cls} doc={doc}
       maxMinutes={Math.max(0, length - (total - mins(it)))}
       review={it.role === 'hwreview' ? prevHw : undefined}
       open={open === it.id} onToggle={() => setOpen(open === it.id ? null : it.id)}
@@ -331,14 +331,14 @@ export function LessonPicker({ value, options, nextKey, planned, onChange, doc =
   )
 }
 
-const ROLE_LABEL = { attendance: 'Attendance', warmer: 'Warmer', hwreview: 'Homework review', homework: 'Future homework', reflection: 'Self-reflection' }
+const ROLE_LABEL = { attendance: 'Attendance', warmer: 'Warmer', hwreview: 'Homework review', homework: 'Future homework', reflection: 'Self-reflection & Overall evaluation' }
 const roleLabel = (it) => ROLE_LABEL[it.role] || ''
 const AIM_PLACEHOLDER = {
   warmer: 'Warmer – e.g. Quizlet game, picture talk',
   homework: 'Future homework – e.g. WB p3/5–6',
 }
 
-function PlanRow({ item, step, start, cls, review, maxMinutes = 45, open, onToggle, onChange, onFiles, draggable, index, count, onMove, onRemove }) {
+function PlanRow({ item, step, start, cls, doc, review, maxMinutes = 45, open, onToggle, onChange, onFiles, draggable, index, count, onMove, onRemove }) {
   const controls = useDragControls()
   const fileRef = useRef(null)
   const [linkForm, setLinkForm] = useState(null)
@@ -346,8 +346,8 @@ function PlanRow({ item, step, start, cls, review, maxMinutes = 45, open, onTogg
   const role = item.role
   const locked = role === 'hwreview'
   const struck = locked && !review // nem volt házi az előző órán: áthúzva
-  const compactOnly = role === 'reflection' || role === 'attendance' || struck // csak cím + idő, nem nyitható
-  const canFiles = !locked && !compactOnly
+  const compactOnly = role === 'attendance' || struck // csak cím + idő, nem nyitható
+  const canFiles = !locked && !compactOnly && role !== 'reflection'
   const org = ORG_FORMS.find((o) => o.id === item.org)
   const reviewAim = locked ? (review ? review.items.map((h) => h.aim).filter(Boolean).join(' · ') || 'homework' : 'no homework set in the previous lesson') : null
   const toggleTag = (id) => onChange((it) => ({ tags: it.tags?.includes(id) ? it.tags.filter((t) => t !== id) : [...(it.tags || []), id] }))
@@ -399,8 +399,8 @@ function PlanRow({ item, step, start, cls, review, maxMinutes = 45, open, onTogg
             struck
               ? <span className="cr-prow__locked">Homework review</span>
               : <span className="cr-prow__locked" title={`From ${lessonLabel(review.key)}`}>🔒 {reviewAim}</span>
-          ) : compactOnly ? (
-            <span className="cr-prow__locked">{role === 'attendance' ? 'Attendance' : 'Self-reflection'}</span>
+          ) : compactOnly || role === 'reflection' ? (
+            <span className="cr-prow__locked">{ROLE_LABEL[role]}</span>
           ) : (
             <input value={item.aim} placeholder="Title" onChange={(e) => onChange({ aim: e.target.value })} aria-label="Title" />
           )}
@@ -431,7 +431,13 @@ function PlanRow({ item, step, start, cls, review, maxMinutes = 45, open, onTogg
         </div>
       )}
 
-      {open && !locked && !compactOnly && (
+      {open && role === 'reflection' && (
+        <div className="cr-prow__details">
+          <PointsPicker doc={doc} item={item} onChange={onChange} />
+        </div>
+      )}
+
+      {open && !locked && !compactOnly && role !== 'reflection' && (
         <div className="cr-prow__details">
           {/* Leírás + források egy dobozban: szöveg, alatta az előnézetek, alul a csatolás */}
           <div className={`cr-compose ${over ? 'is-over' : ''}`}>
@@ -464,6 +470,7 @@ function PlanRow({ item, step, start, cls, review, maxMinutes = 45, open, onTogg
               <input value={item.equipment || ''} placeholder="Equipment: coursebook, worksheet, speakers…" onChange={(e) => onChange({ equipment: e.target.value })} aria-label="Equipment" />
             </label>
           )}
+          {(!role || role === 'warmer') && <PointsPicker doc={doc} item={item} onChange={onChange} />}
           {!role && (
             <div className="cr-pfield">
               <div className="cr-pcard__skills">
@@ -521,6 +528,32 @@ export function OrgIcon({ id, className = 'cr-orgicon' }) {
     <svg className={className} viewBox="0 0 40 31" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       {figures[id]}
     </svg>
+  )
+}
+
+// Melyik pontok jöhetnek szóba ennél a lépésnél (pozitív és fejlesztendő)
+function PointsPicker({ doc, item, onChange }) {
+  const allowed = new Set(stepSkills(doc, item).map((k) => k.id))
+  const toggle = (id) => onChange((it) => {
+    const cur = new Set(Array.isArray(it.points) ? it.points : stepSkills(doc, it).map((k) => k.id))
+    cur.has(id) ? cur.delete(id) : cur.add(id)
+    return { points: [...cur] }
+  })
+  const row = (list, neg) => (
+    <div className="cr-pcard__skills">
+      {list.map((k) => (
+        <button key={k.id} className={`cr-ptchip ${neg ? 'is-neg' : ''} ${allowed.has(k.id) ? 'is-on' : ''}`} onClick={() => toggle(k.id)} aria-pressed={allowed.has(k.id)}>
+          <span aria-hidden="true">{k.icon}</span>{k.name}<b>{k.value > 0 ? `+${k.value}` : k.value}</b>
+        </button>
+      ))}
+    </div>
+  )
+  return (
+    <div className="cr-pfield cr-ptpick">
+      <span className="cr-ptpick__label">Points for this step</span>
+      {row(doc.skills?.positive || [], false)}
+      {row(doc.skills?.negative || [], true)}
+    </div>
   )
 }
 
@@ -695,7 +728,7 @@ function attSummary(doc, date) {
 // ── Tanári osztálynézet: az óra idővonala, feladathoz kötött pontozással ──
 // Választható órák: a már megtartott (betervezett) órák, az éppen aktuális óra,
 // és a következő, már előkészített órák.
-export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onCheckHomework, onTakeAttendance, onMakeGroups }) {
+export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onCheckHomework, onTakeAttendance, onMakeGroups, onGivePoints }) {
   const today = dayKey()
   const nowKey = nextLessonKey(doc)
   const planned = plannedKeys(doc)
@@ -796,6 +829,14 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
                     }}>
                       ✦ {it.org === 'pairs' ? 'Make pairs' : 'Make groups'}
                     </button>
+                  )}
+                  {/* pontadás ehhez a lépéshez */}
+                  {stepSkills(doc, it).length > 0 && (
+                    <button className="cr-btn cr-btn--primary cr-btn--sm cr-lcard__action" onClick={() => {
+                      const step = { key, itemId: it.id, title, role: it.role || null }
+                      onSelect(step)
+                      onGivePoints(step)
+                    }}>✓ Give points</button>
                   )}
                   {/* a jelenlét és a házi-ellenőrzés gombja magán a kártyán */}
                   {(it.role === 'attendance' || it.role === 'hwreview') && (

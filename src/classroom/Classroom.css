@@ -1178,3 +1178,21 @@ span.cr-sk { cursor: default; }
   background-image: repeating-linear-gradient(90deg, rgba(36, 20, 34, 0.28) 0 8px, transparent 8px 14px);
   background-size: 100% 2px; background-repeat: no-repeat; background-position: 0 0.85rem; background-attachment: local;
 }
+
+/* Lépésenként adható pontok */
+.cr-ptpick { gap: 0.35rem; }
+.cr-ptpick__label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.cr-ptchip { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.15rem 0.55rem; border: 1px dashed rgba(36, 20, 34, 0.22); border-radius: 999px; background: transparent; font-size: 0.74rem; font-weight: 600; color: var(--muted); cursor: pointer; }
+.cr-ptchip b { font-weight: 800; color: #3F7D4E; }
+.cr-ptchip.is-neg b { color: #B4443B; }
+.cr-ptchip.is-on { border-style: solid; border-color: #3F7D4E; background: rgba(63, 125, 78, 0.1); color: var(--ink); }
+.cr-ptchip.is-on.is-neg { border-color: #B4443B; background: rgba(180, 68, 59, 0.08); }
+
+/* Pontadás varázsló + értesítés */
+.cr-ptwiz__step { font-size: 0.82rem; font-weight: 700; color: var(--muted); margin: -0.3rem 0 0.4rem; }
+.cr-skills--sm { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.5rem; margin-bottom: 0.6rem; }
+.cr-skills--sm .cr-skill { min-height: 110px; padding: 1.1rem 0.5rem 0.7rem; }
+.cr-skills--sm .cr-skill__icon { font-size: 1.9rem; }
+.cr-hwwiz__q .is-pos { color: #3F7D4E; }
+.cr-hwwiz__q .is-neg { color: #B4443B; }
+.cr-notice { position: fixed; left: 50%; bottom: 100px; translate: -50% 0; z-index: 1200; padding: 0.7rem 1.2rem; border-radius: 999px; background: #241422; color: #fff; font-weight: 600; font-size: 0.92rem; box-shadow: 0 14px 30px -14px rgba(0, 0, 0, 0.5); }

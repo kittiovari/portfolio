@@ -11,7 +11,7 @@ import {
 */
 export function TargetModal({ doc, target, points, onAward, update, onClose, initialTab = 'give', homeworkMode = false, absentIds = [] }) {
   const student = target.type === 'student' ? doc.students.find((s) => s.id === target.id) : null
-  const [tab, setTab] = useState(initialTab)
+  const [tab, setTab] = useState(target.type === 'class' ? 'rules' : initialTab === 'give' ? 'report' : initialTab)
   if (target.type === 'student' && !student) return null
 
   const ids = target.type === 'student' ? [student.id] : target.type === 'multi' ? target.ids : doc.students.map((s) => s.id)
@@ -21,7 +21,7 @@ export function TargetModal({ doc, target, points, onAward, update, onClose, ini
   const title = student ? fullName(student) : target.type === 'class' ? 'Everyone' : target.title
 
   const tabs = [
-    { id: 'give', label: 'Give points', icon: <Icon.plus /> },
+    ...(target.type === 'class' ? [{ id: 'rules', label: 'Point rules', icon: <Icon.pencil /> }] : []),
     { id: 'report', label: 'Report', icon: <Icon.list /> },
     ...(student ? [{ id: 'custom', label: 'Customise', icon: <Icon.pencil /> }] : []),
   ]
@@ -44,9 +44,7 @@ export function TargetModal({ doc, target, points, onAward, update, onClose, ini
           ))}
         </nav>
         <div className="cr-target__content">
-          {tab === 'give' && (homeworkMode
-            ? <HomeworkCheck doc={doc} onGive={(sk) => { onAward(ids, sk, title); onClose() }} />
-            : <GivePoints doc={doc} update={update} editable={target.type === 'class'} onGive={(sk) => { onAward(ids, sk, title); onClose() }} />)}
+          {tab === 'rules' && <GivePoints doc={doc} update={update} editable rulesOnly onGive={() => {}} />}
           {tab === 'report' && <Report doc={doc} ids={ids} title={title} update={update} />}
           {tab === 'custom' && student && <Customize student={student} update={update} onClose={onClose} />}
         </div>
@@ -108,9 +106,9 @@ function HomeworkCheck({ doc, onGive }) {
 }
 
 // A pontszabályok csak az Everyone (egész osztály) menüben szerkeszthetők
-function GivePoints({ doc, update, onGive, editable = false }) {
+function GivePoints({ doc, update, onGive, editable = false, rulesOnly = false }) {
   const [kind, setKind] = useState('positive')
-  const [editing, setEditing] = useState(false)
+  const [editing, setEditing] = useState(rulesOnly)
   const [form, setForm] = useState(null) // { id?, name, icon, value }
   const [picking, setPicking] = useState(false)
   const list = doc.skills[kind]
@@ -171,7 +169,7 @@ function GivePoints({ doc, update, onGive, editable = false }) {
         <button className={kind === 'positive' ? 'is-active' : ''} onClick={() => setKind('positive')}>Positive</button>
         <button className={kind === 'negative' ? 'is-active' : ''} onClick={() => setKind('negative')}>Needs work</button>
         <span className="cr-spacer" />
-        {editable && (
+        {editable && !rulesOnly && (
           <button className={`cr-link ${editing ? 'is-on' : ''}`} onClick={() => setEditing((v) => !v)}>
             <Icon.pencil />{editing ? 'Done' : 'Edit'}
           </button>
@@ -604,6 +602,68 @@ export function AttendanceWizard({ doc, date, preselect = null, onSave, onClose 
             <button className="cr-btn" onClick={() => setStep(1)}>Back</button>
             <span className="cr-spacer" />
             <button className="cr-btn cr-btn--primary" onClick={save}>Save</button>
+          </div>
+        </>
+      )}
+    </Sheet>
+  )
+}
+
+// ── Pontadás egy lépéshez – két lépésben (mint a jelenlét és a házi) ──
+// 1. Mi­ért? (a lépéshez megadott pontok)  2. Ki kapja? (a hiányzók halványan, nem választhatók)
+export function PointsWizard({ doc, skills, stepTitle, presentIds, preselect = [], onSave, onClose }) {
+  const [skill, setSkill] = useState(skills.length === 1 ? skills[0] : null)
+  const [who, setWho] = useState(() => new Set(preselect.filter((id) => presentIds.includes(id))))
+  const present = sortStudents(doc.students.filter((s) => presentIds.includes(s.id)))
+  const absentees = sortStudents(doc.students.filter((s) => !presentIds.includes(s.id)))
+  const toggle = (id) => setWho((p) => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n })
+  const pos = skills.filter((k) => k.value > 0)
+  const neg = skills.filter((k) => k.value < 0)
+
+  return (
+    <Sheet title="Give points" onClose={onClose} className="cr-hwwiz cr-ptwiz">
+      <p className="cr-ptwiz__step">{stepTitle}</p>
+      <ol className="cr-hwwiz__steps">
+        <li className={!skill ? 'is-current' : 'is-done'}>1. What for?</li>
+        <li className={skill ? 'is-current' : ''}>2. Who?</li>
+      </ol>
+      {!skill ? (
+        <>
+          <p className="cr-hwwiz__q">What for?</p>
+          <div className="cr-skills cr-skills--sm">
+            {[...pos, ...neg].map((k) => (
+              <button key={k.id} className="cr-skill" onClick={() => setSkill(k)}>
+                <span className={`cr-skill__val ${k.value < 0 ? 'is-neg' : ''}`}>{k.value > 0 ? `+${k.value}` : k.value}</span>
+                <span className="cr-skill__icon" aria-hidden="true">{k.icon}</span>
+                <span className="cr-skill__name">{k.name}</span>
+              </button>
+            ))}
+          </div>
+          <div className="cr-form__actions"><span className="cr-spacer" /><button className="cr-btn" onClick={onClose}>Cancel</button></div>
+        </>
+      ) : (
+        <>
+          <p className="cr-hwwiz__q"><span aria-hidden="true">{skill.icon}</span> {skill.name} <b className={skill.value < 0 ? 'is-neg' : 'is-pos'}>{skill.value > 0 ? `+${skill.value}` : skill.value}</b> – who?</p>
+          <div className="cr-hwwiz__quick">
+            <button className="cr-btn cr-btn--sm" onClick={() => setWho(new Set(present.map((s) => s.id)))}>Everyone</button>
+            <button className="cr-btn cr-btn--sm" onClick={() => setWho(new Set())}>Nobody</button>
+            <span className="cr-muted">{who.size} / {present.length} selected</span>
+          </div>
+          <div className="cr-pickgrid">
+            {present.map((s) => (
+              <button type="button" key={s.id} className={`cr-pick ${who.has(s.id) ? `is-active ${skill.value < 0 ? 'is-no' : 'is-yes'}` : ''}`} onClick={() => toggle(s.id)} aria-pressed={who.has(s.id)}>
+                <Avatar a={s.avatar} /><span>{pickName(s, doc.students)}</span>
+                {who.has(s.id) && <i className={`cr-pick__mark ${skill.value < 0 ? 'is-no' : 'is-yes'}`}>{skill.value > 0 ? `+${skill.value}` : skill.value}</i>}
+              </button>
+            ))}
+            {absentees.map((s) => (
+              <span key={s.id} className="cr-pick is-absentee"><Avatar a={s.avatar} /><span>{pickName(s, doc.students)}</span><i className="cr-pick__mark is-abs">absent</i></span>
+            ))}
+          </div>
+          <div className="cr-form__actions">
+            {skills.length > 1 && <button className="cr-btn" onClick={() => setSkill(null)}>Back</button>}
+            <span className="cr-spacer" />
+            <button className="cr-btn cr-btn--primary" disabled={!who.size} onClick={() => onSave(skill, [...who])}>Save</button>
           </div>
         </>
       )}
