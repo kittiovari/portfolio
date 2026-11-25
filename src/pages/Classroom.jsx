@@ -11,6 +11,7 @@ import {
 import { PlanEditor, ClassSettings, LessonBoard } from '../classroom/plan.jsx'
 import { SessionSetup, SessionPlayer } from '../classroom/session.jsx'
 import { useClassroom } from '../classroom/useClassroom.js'
+import SeasonScene from '../classroom/SeasonScene.jsx'
 import { ATTENDANCE, CLASSES, dayKey, fullName, getPlan, lessonLabel, nextLessonKey, pointsBy, sortStudents, uid } from '../classroom/model.js'
 import '../components/PasswordModal.css'
 import '../classroom/Classroom.css'
@@ -273,6 +274,9 @@ export default function Classroom() {
             onEdit={(k) => setModal({ kind: 'tool', id: 'today', key: k })} />
         )}
       </main>
+
+      {/* Évszakos tájkép a képernyő alján (évszakváltáskor magától cserélődik) */}
+      <SeasonScene />
 
       {/* Alsó eszközsor */}
       <nav className="cr-dock" aria-label="Tools">

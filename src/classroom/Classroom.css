@@ -1070,3 +1070,36 @@ span.cr-sk { cursor: default; }
 /* Az alsó lebegő sáv ne takarja el az oldal alját (idővonal, New lesson plan) */
 .cr:not(.cr-board) { padding-bottom: 200px; }
 .cr-lboard { margin-bottom: 1rem; }
+
+/* ── Évszakos tájkép az oldal alján ── */
+.cr:not(.cr-board) { position: relative; }
+.season { position: absolute; left: 0; right: 0; bottom: 0; height: 170px; pointer-events: none; z-index: 0; overflow: hidden; }
+.season svg { display: block; width: 100%; height: 100%; }
+.cr-main, .cr-subbar { position: relative; z-index: 1; }
+.ss-flake { animation: ss-fall 7s linear infinite; animation-delay: var(--d, 0s); transform-box: fill-box; }
+@keyframes ss-fall { 0% { transform: translateY(-12px); opacity: 0; } 15% { opacity: 1; } 100% { transform: translateY(70px) translateX(8px); opacity: 0; } }
+.ss-flutter { animation: ss-flutter 2.4s ease-in-out infinite alternate; animation-delay: var(--d, 0s); transform-box: fill-box; transform-origin: center; }
+@keyframes ss-flutter { from { transform: translate(0, 0) rotate(-4deg); } to { transform: translate(10px, -6px) rotate(4deg); } }
+.ss-leaf { animation: ss-leaf 8s ease-in-out infinite; animation-delay: var(--d, 0s); transform-box: fill-box; transform-origin: center; }
+@keyframes ss-leaf { 0% { transform: translate(0, -10px) rotate(0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(30px, 90px) rotate(200deg); opacity: 0; } }
+.ss-sun { animation: ss-sun 40s linear infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes ss-sun { to { transform: rotate(360deg); } }
+.ss-drops { animation: ss-drops 1.4s ease-in infinite; transform-box: fill-box; }
+@keyframes ss-drops { from { transform: translateY(-3px); opacity: .9; } to { transform: translateY(10px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .ss-flake, .ss-flutter, .ss-leaf, .ss-sun, .ss-drops { animation: none; } }
+
+/* Jelenlét 2. lépés: diákonként hiányzik / késett / korábban távozott */
+.cr-attlist { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.8rem; }
+.cr-attrow { display: flex; align-items: center; gap: 0.6rem; padding: 0.3rem 0.4rem 0.3rem 0.5rem; border-radius: 14px; background: #FAF8F6; border: 1.5px solid transparent; }
+.cr-attrow .cr-avatar { width: 34px; height: 38px; flex-shrink: 0; }
+.cr-attrow b { flex: 1; font-weight: 600; }
+.cr-attrow.is-absent { border-color: rgba(180, 68, 59, 0.35); }
+.cr-attrow.is-late, .cr-attrow.is-left { border-color: rgba(224, 179, 58, 0.55); }
+.cr-attrow__seg { display: flex; gap: 2px; padding: 3px; border-radius: 10px; background: rgba(36, 20, 34, 0.06); }
+.cr-attrow__seg button { padding: 0.3rem 0.6rem; border: none; border-radius: 8px; background: transparent; font-size: 0.8rem; font-weight: 600; color: var(--muted); cursor: pointer; white-space: nowrap; }
+.cr-attrow__seg button.is-on { background: #fff; color: var(--ink); box-shadow: 0 1px 4px rgba(36, 20, 34, 0.15); }
+.cr-attrow__seg button.is-on.is-absent { color: #B4443B; }
+.cr-attrow__seg button.is-on.is-late, .cr-attrow__seg button.is-on.is-left { color: #A67C12; }
+/* magasabb tájkép */
+.season { height: 240px; }
+.cr:not(.cr-board) { padding-bottom: 260px; }

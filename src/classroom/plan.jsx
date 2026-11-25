@@ -687,10 +687,9 @@ function attSummary(doc, date) {
   const a = doc.attendance?.[date]
   if (!a || !Object.keys(a).length) return 'Not taken yet'
   const v = Object.values(a)
-  const present = v.filter((x) => x === 'present' || x === 'left').length
-  const absent = v.filter((x) => x === 'absent').length
-  const late = v.filter((x) => x === 'late').length
-  return `${present} here · ${absent} absent${late ? ` · ${late} late` : ''}`
+  const n = (st) => v.filter((x) => x === st).length
+  const late = n('late'), left = n('left')
+  return `${n('present')} here · ${n('absent')} absent${late ? ` · ${late} late` : ''}${left ? ` · ${left} left early` : ''}`
 }
 
 // ── Tanári osztálynézet: az óra idővonala, feladathoz kötött pontozással ──
