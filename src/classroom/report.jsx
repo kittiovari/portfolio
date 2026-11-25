@@ -160,6 +160,130 @@ function TrackedStats({ doc, events, multi }) {
   )
 }
 
+
+// ── Viszonyítás: az előző azonos időszakhoz (és az osztályátlaghoz) képest ──
+// mutatók egy diákcsoportra egy időszakban (osztály/csoport esetén diákonkénti átlag)
+export function metrics(doc, ids, from, to) {
+  const idSet = new Set(ids)
+  const ev = doc.events.filter((e) => idSet.has(e.s) && e.t >= from.getTime() && e.t < to.getTime())
+  const n = Math.max(1, ids.length)
+  const count = (key) => ev.filter((e) => keyOfEvent(doc, e) === key).length
+  const pos = ev.filter((e) => e.v > 0).reduce((a, e) => a + e.v, 0)
+  const neg = ev.filter((e) => e.v < 0).reduce((a, e) => a - e.v, 0)
+  const hwDone = count('hw_done'), noHw = count('no_hw')
+  return {
+    events: ev.length,
+    net: (pos - neg) / n,
+    pos: pos / n,
+    negCount: ev.filter((e) => e.v < 0).length / n,
+    active: count('active') / n,
+    late: count('late') / n,
+    extra: (count('extra_hw') + count('perfect_hw')) / n,
+    hwRate: hwDone + noHw ? Math.round((hwDone / (hwDone + noHw)) * 100) : null,
+  }
+}
+// százalékos változás (az előző érték abszolút értékéhez mérve)
+export const pctChange = (now, prev) => (prev === 0 ? (now === 0 ? 0 : null) : Math.round(((now - prev) / Math.abs(prev)) * 100))
+const r1 = (x) => (Math.round(x * 10) / 10).toString().replace(/\.0$/, '')
+
+const PERIOD_NAME = { week: 'last week', month: 'last month', semester: 'last semester', year: 'last school year' }
+function Compare({ doc, ids, view, offset, publicView }) {
+  const cur = periodBounds(doc, view, offset)
+  const prev = periodBounds(doc, view, offset - 1)
+  const a = metrics(doc, ids, cur.from, cur.to)
+  const b = metrics(doc, ids, prev.from, prev.to)
+  if (!b.events) return <p className="cr-muted cr-compare__none">Nothing to compare with yet ({PERIOD_NAME[view]} had no points).</p>
+  const multi = ids.length > 1
+  const rows = [
+    { label: multi ? 'Net points / student' : 'Net points', now: a.net, before: b.net, good: 'up' },
+    !publicView && a.hwRate != null && b.hwRate != null && { label: 'Homework done', now: a.hwRate, before: b.hwRate, unit: '%', good: 'up' },
+    { label: 'Active participation', now: a.active, before: b.active, unit: '×', good: 'up' },
+    { label: 'Extra / perfect homework', now: a.extra, before: b.extra, unit: '×', good: 'up' },
+    !publicView && { label: 'Needs-work entries', now: a.negCount, before: b.negCount, unit: '×', good: 'down' },
+    !publicView && { label: 'Late', now: a.late, before: b.late, unit: '×', good: 'down' },
+  ].filter(Boolean).filter((r) => r.now || r.before)
+
+  // értelmezés: a legfontosabb változások közérthetően
+  const tips = []
+  const pc = pctChange(a.net, b.net)
+  if (pc != null && Math.abs(pc) >= 20 && Math.abs(a.net - b.net) >= 2) tips.push({ up: a.net > b.net, text: a.net > b.net ? `Overall performance improved by ${pc}% compared with ${PERIOD_NAME[view]}.` : `Overall performance dropped by ${Math.abs(pc)}% compared with ${PERIOD_NAME[view]}.` })
+  if (!publicView && a.hwRate != null && b.hwRate != null && Math.abs(a.hwRate - b.hwRate) >= 10) tips.push({ up: a.hwRate > b.hwRate, text: a.hwRate > b.hwRate ? `Homework is more consistent: ${a.hwRate}% done (was ${b.hwRate}%).` : `Homework slipped: ${a.hwRate}% done (was ${b.hwRate}%).` })
+  if (a.active - b.active >= 2) tips.push({ up: true, text: `More active in class: ${r1(a.active)}× (was ${r1(b.active)}×).` })
+  else if (b.active - a.active >= 2) tips.push({ up: false, text: `Less active in class: ${r1(a.active)}× (was ${r1(b.active)}×).` })
+  if (!publicView && b.negCount - a.negCount >= 2) tips.push({ up: true, text: `Fewer needs-work entries (${r1(a.negCount)} vs ${r1(b.negCount)}).` })
+  else if (!publicView && a.negCount - b.negCount >= 2) tips.push({ up: false, text: `More needs-work entries (${r1(a.negCount)} vs ${r1(b.negCount)}).` })
+  if (!publicView && b.late > a.late && b.late - a.late >= 1 && a.late === 0) tips.push({ up: true, text: 'No late arrivals this time.' })
+  // az osztályátlaghoz képest (egy diáknál)
+  if (!multi) {
+    const cls = metrics(doc, doc.students.map((x) => x.id), cur.from, cur.to)
+    if (cls.events && Math.abs(a.net - cls.net) >= 2) tips.push({ up: a.net > cls.net, text: a.net > cls.net ? `Above the class average (${r1(a.net)} vs ${r1(cls.net)} points).` : `Below the class average (${r1(a.net)} vs ${r1(cls.net)} points).` })
+  }
+  // legjobb időszak a tanévben (havi nézetben)
+  if (view === 'month' && a.net > 0) {
+    const past = [-1, -2, -3, -4, -5, -6, -7, -8, -9].map((o) => periodBounds(doc, 'month', offset + o)).filter((x) => x.from >= periodBounds(doc, 'year', 0).from)
+    if (past.length >= 2 && past.every((x) => metrics(doc, ids, x.from, x.to).net < a.net)) tips.unshift({ up: true, text: 'Best month of the school year so far!' })
+  }
+
+  return (
+    <div className="cr-compare">
+      <h4>Compared with {PERIOD_NAME[view]}</h4>
+      {tips.length > 0 && (
+        <ul className="cr-compare__tips">
+          {tips.slice(0, 4).map((t, i) => <li key={i} className={t.up ? 'is-up' : 'is-down'}><span aria-hidden="true">{t.up ? '▲' : '▼'}</span>{t.text}</li>)}
+        </ul>
+      )}
+      <ul className="cr-compare__rows">
+        {rows.map((r) => {
+          const d = r.now - r.before
+          const better = d === 0 ? null : (d > 0) === (r.good === 'up')
+          const p = r.unit === '%' ? null : pctChange(r.now, r.before)
+          return (
+            <li key={r.label}>
+              <span>{r.label}</span>
+              <b>{r1(r.now)}{r.unit || ''}</b>
+              <small className={better == null ? '' : better ? 'is-pos' : 'is-neg'}>
+                {d === 0 ? '= same' : `${d > 0 ? '▲' : '▼'} ${r.unit === '%' ? `${Math.abs(d)} pts` : p == null ? 'new' : `${Math.abs(p)}%`}`}
+              </small>
+              <small className="cr-muted">was {r1(r.before)}{r.unit || ''}</small>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
+}
+
+// ── Overview: diákonkénti %-os teljesítményváltozás az előző ciklushoz képest ──
+function ChangeList({ doc, now, before, label }) {
+  const rows = sortStudents(doc.students).map((s) => {
+    const a = metrics(doc, [s.id], now.from, now.to).net
+    const b = metrics(doc, [s.id], before.from, before.to).net
+    return { s, a, b, p: pctChange(a, b), d: a - b }
+  }).sort((x, y) => (y.p ?? (y.d > 0 ? 9999 : -9999)) - (x.p ?? (x.d > 0 ? 9999 : -9999)))
+  const avg = (k) => rows.reduce((t, r) => t + r[k], 0) / Math.max(1, rows.length)
+  const classP = pctChange(avg('a'), avg('b'))
+  const max = Math.max(1, ...rows.map((r) => Math.abs(r.p ?? 0)).filter((x) => x < 9999))
+  return (
+    <div className="cr-overview">
+      <h4>Change vs {label}</h4>
+      <p className="cr-muted cr-overview__range">Net points compared with the previous cycle · class {classP == null ? '—' : `${classP > 0 ? '+' : ''}${classP}%`}</p>
+      <ul className="cr-change">
+        {rows.map(({ s, a, b, p, d }) => (
+          <li key={s.id} title={`${r1(b)} → ${r1(a)}`}>
+            <span className="cr-bars__name">{pickName(s, doc.students)}</span>
+            <span className="cr-change__track">
+              <span className="cr-change__neg">{p != null && p < 0 && <i style={{ width: `${(Math.min(Math.abs(p), max) / max) * 100}%` }} />}</span>
+              <span className="cr-change__pos">{p != null && p > 0 && <i style={{ width: `${(Math.min(p, max) / max) * 100}%` }} />}</span>
+            </span>
+            <b className={d > 0 ? 'is-pos' : d < 0 ? 'is-neg' : ''}>{p == null ? (d > 0 ? 'new' : '—') : `${p > 0 ? '+' : ''}${p}%`}</b>
+            <small className="cr-muted">{r1(b)} → {r1(a)}</small>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 // ── Egy óra részletes listája ──
 function LessonView({ doc, update, ids, multi }) {
   const idSet = useMemo(() => new Set(ids), [ids])
@@ -196,7 +320,7 @@ function LessonView({ doc, update, ids, multi }) {
 }
 
 // ── Heti / havi / féléves / éves: kördiagram + követett viselkedések ──
-function PeriodView({ doc, ids, view, multi }) {
+function PeriodView({ doc, ids, view, multi, publicView }) {
   const [offset, setOffset] = useState(0)
   const { from, to, label } = periodBounds(doc, view, offset)
   const idSet = new Set(ids)
@@ -207,6 +331,7 @@ function PeriodView({ doc, ids, view, multi }) {
       {!events.length ? <Empty text="No points in this period." /> : (
         <>
           <Totals events={events} />
+          <Compare doc={doc} ids={ids} view={view} offset={offset} publicView={publicView} />
           <Donut slices={slicesOf(doc, events)} />
           <TrackedStats doc={doc} events={events} multi={multi} />
         </>
@@ -284,6 +409,16 @@ function Overview({ doc, update, publicView }) {
     }
     return periodBounds(doc, cycle.slice(2) || 'month', 0)
   })()
+  const prevBounds = (() => {
+    if (cycle.startsWith('u:')) {
+      const i = units.findIndex((x) => `u:${x.id}` === cycle)
+      const u = i > 0 ? units[i - 1] : null
+      if (u) return { from: parse(u.from), to: new Date(parse(u.to).getTime() + DAY), label: u.name || 'previous unit' }
+      return null
+    }
+    const v = cycle.slice(2) || 'month'
+    return { ...periodBounds(doc, v, -1), label: PERIOD_NAME[v] }
+  })()
   const ev = doc.events.filter((e) => e.t >= bounds.from.getTime() && e.t < bounds.to.getTime())
   const rows = sortStudents(doc.students).map((s) => {
     const mine = ev.filter((e) => e.s === s.id)
@@ -323,6 +458,7 @@ function Overview({ doc, update, publicView }) {
           ))}
         </ul>
       </div>
+      {prevBounds && <ChangeList doc={doc} now={bounds} before={prevBounds} label={prevBounds.label} />}
     </>
   )
 }
@@ -343,7 +479,7 @@ export function ReportPanel({ doc, update, ids, isClass = false, studentId = nul
       </div>
       {view === 'overview' && <Overview doc={doc} update={update} publicView={publicView} />}
       {view === 'lesson' && <LessonView doc={doc} update={update} ids={ids} multi={multi} />}
-      {['week', 'month', 'semester', 'year'].includes(view) && <PeriodView key={view} doc={doc} ids={ids} view={view} multi={multi} />}
+      {['week', 'month', 'semester', 'year'].includes(view) && <PeriodView key={view} doc={doc} ids={ids} view={view} multi={multi} publicView={publicView} />}
       {studentId && view !== 'lesson' && !publicView && <Alerts doc={doc} update={update} ids={[studentId]} all />}
     </div>
   )

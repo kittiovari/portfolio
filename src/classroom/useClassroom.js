@@ -14,6 +14,18 @@ export function useClassroom(cls) {
   const inflight = useRef(false)
   const dirty = useRef(false)
   const saveRef = useRef(null)
+  const schoolTimer = useRef(null)
+
+  // Közös iskolai naptár (tanév, szünetek, rövidített napok) – egyszer kell megadni
+  const saveSchool = useCallback((d) => {
+    clearTimeout(schoolTimer.current)
+    schoolTimer.current = setTimeout(() => {
+      fetch('/api/school', {
+        method: 'PUT', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ school: { calendar: d.calendar || {}, shortDays: d.shortDays || [] } }),
+      }).catch(() => {})
+    }, 600)
+  }, [])
 
   const load = useCallback(async () => {
     setStatus('loading')
@@ -22,7 +34,11 @@ export function useClassroom(cls) {
       if (res.status === 401) { setStatus('locked'); return }
       if (!res.ok) throw new Error(res.status)
       const data = await res.json()
-      const loaded = data.doc ? { ...emptyClass(), ...data.doc } : emptyClass()
+      const school = await fetch('/api/school', { credentials: 'same-origin', cache: 'no-store' }).then((r) => (r.ok ? r.json() : {})).then((x) => x.school).catch(() => null)
+      const base = data.doc ? { ...emptyClass(), ...data.doc } : emptyClass()
+      // a közös naptár az irányadó; ha még nincs, ennek az osztálynak a beállításaiból indul
+      const loaded = school ? { ...base, calendar: school.calendar || base.calendar, shortDays: school.shortDays || base.shortDays } : base
+      if (!school && (base.calendar?.start || base.calendar?.breaks?.length || base.shortDays?.length)) saveSchool(base)
       // A korábbi magyar alapértelmezések angolra cserélése (egyszeri, utána elmentjük)
       const next = ensureCodes(ensureSkills(migrateToEnglish(loaded)))
       docRef.current = next
@@ -36,7 +52,7 @@ export function useClassroom(cls) {
     } catch {
       setStatus('error')
     }
-  }, [cls])
+  }, [cls, saveSchool])
 
   useEffect(() => {
     dirty.current = false
@@ -91,13 +107,15 @@ export function useClassroom(cls) {
   // update(fn): fn a régi dokumentumból újat ad vissza
   const update = useCallback((fn) => {
     if (!docRef.current) return
-    const next = fn(docRef.current)
+    const prev = docRef.current
+    const next = fn(prev)
+    if (next.calendar !== prev.calendar || next.shortDays !== prev.shortDays) saveSchool(next)
     docRef.current = next
     setDoc(next)
     dirty.current = true
     clearTimeout(timer.current)
     timer.current = setTimeout(save, 600)
-  }, [save])
+  }, [save, saveSchool])
 
   // Oldal elhagyása előtt figyelmeztetés, ha még nincs elmentve
   useEffect(() => {

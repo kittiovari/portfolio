@@ -17,7 +17,6 @@ function ClassPage({ id }) {
   const { language, setLanguage } = useLanguage()
   const t = useTranslation()
   const title = t.topics.classes?.[id]?.title ?? id
-  const intro = t.classes?.[id]?.intro
   const Art = profileArt[`language-${id}`]
   const TeacherArt = profileArt.teacher
 
@@ -45,11 +44,6 @@ function ClassPage({ id }) {
             </div>
           </div>
         </header>
-        {intro && (
-          <section className="landing-tile landing-tile--language topic-card">
-            <p className="topic-card__intro">{intro}</p>
-          </section>
-        )}
         <Suspense fallback={<div className="cr-skeleton" />}>
           <ClassBoard cls={id} />
         </Suspense>

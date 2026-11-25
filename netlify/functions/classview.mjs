@@ -5,7 +5,7 @@
 // személyes kód, nullázások. A saját, teljes riport csak a személyes kóddal
 // érhető el (/api/studentview/:cls).
 import { hasSession, json } from '../lib/security.mjs'
-import { isClass, loadClass } from '../lib/classroomStore.mjs'
+import { isClass, loadClass, withSchool } from '../lib/classroomStore.mjs'
 
 const dayKey = (d = new Date()) => {
   const z = (n) => String(n).padStart(2, '0')
@@ -36,7 +36,7 @@ export default async (req, context) => {
   if (!hasSession(req, `language-${cls}`) && !hasSession(req, 'teacher')) return json(401, { error: 'locked' })
 
   try {
-    const doc = await loadClass(cls)
+    const doc = await withSchool(await loadClass(cls))
     if (!doc) return json(200, { students: [], events: [], groups: [], deskmates: [], lessons: [], plan: { title: '', items: [] }, directions: [] }, { Vary: 'Cookie' })
 
     const students = (doc.students || []).map((s) => ({ id: s.id, first: s.first, last: s.last, avatar: s.avatar }))

@@ -95,3 +95,18 @@ export async function loadFile(cls, id) {
 export async function deleteFile(cls, id) {
   await deleteRaw(fileKey(cls, id))
 }
+
+// ── Iskolai naptár (minden osztálynak közös): tanév, szünetek, rövidített napok ──
+export async function loadSchool() {
+  const raw = await readRaw('school')
+  return raw ? JSON.parse(open(raw).toString('utf8')) : null
+}
+export async function saveSchool(doc) {
+  await writeRaw('school', seal(Buffer.from(JSON.stringify(doc), 'utf8')))
+}
+// az osztály dokumentuma a közös naptárral kiegészítve (olvasáshoz)
+export async function withSchool(doc) {
+  if (!doc) return doc
+  const school = await loadSchool().catch(() => null)
+  return school ? { ...doc, calendar: school.calendar || doc.calendar, shortDays: school.shortDays || doc.shortDays } : doc
+}

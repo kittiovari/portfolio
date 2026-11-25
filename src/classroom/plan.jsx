@@ -614,7 +614,7 @@ export function ClassSettings({ doc, update, onClose, className = '' }) {
         </div>
       )}
 
-      <h3 className="cr-settings__h">Shortened days <small className="cr-muted">· 35-minute lessons</small></h3>
+      <h3 className="cr-settings__h">Shortened days <small className="cr-muted">· 35-minute lessons · shared by all classes</small></h3>
       <div className="cr-chiplist">
         {shortDays.map((d) => (
           <span key={d} className="cr-chipx">
@@ -628,7 +628,7 @@ export function ClassSettings({ doc, update, onClose, className = '' }) {
         </form>
       </div>
 
-      <h3 className="cr-settings__h">School year</h3>
+      <h3 className="cr-settings__h">School year <span className="cr-muted">· shared by all classes</span></h3>
       <div className="cr-year">
         <label className="cr-year__f"><span>First day</span><input type="date" value={cal.start || ''} onChange={(e) => setCal({ start: e.target.value })} /></label>
         <label className="cr-year__f"><span>Last day</span><input type="date" value={cal.end || ''} onChange={(e) => setCal({ end: e.target.value })} /></label>
