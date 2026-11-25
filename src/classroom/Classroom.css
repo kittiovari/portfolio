@@ -586,3 +586,40 @@
   .cr-dockbtn { padding: 0.6rem 0.7rem; font-size: 0.85rem; gap: 0.35rem; }
   .cr-dockbtn svg { width: 16px; height: 16px; }
 }
+
+/* Spotify-kapcsolat (beállító panel) */
+.cr-setup__links { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.35rem; }
+.cr-setup__links .cr-setup__edit { margin-top: 0; }
+.cr-spotify { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.75rem; border: 1px solid rgba(36, 20, 34, 0.14); border-radius: 999px; background: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: var(--ink); }
+.cr-spotify.is-on { cursor: default; background: rgba(30, 215, 96, 0.1); border-color: rgba(30, 215, 96, 0.4); }
+.cr-spotify .cr-link { font-size: 0.78rem; padding: 0 0 0 0.3rem; }
+.cr-spotify__dot { width: 8px; height: 8px; border-radius: 50%; background: #B9AEB6; }
+.cr-spotify.is-on .cr-spotify__dot { background: #1ED760; }
+.cr-callback { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; text-align: center; font-size: 1.1rem; }
+
+/* Saját zenesáv (Web Playback SDK) */
+.cr-mbar { display: flex; align-items: center; gap: 0.75rem; padding: 0.55rem 0.8rem 0.55rem 0.55rem; border-radius: 16px; background: rgba(0, 0, 0, 0.22); color: #fff; }
+.cr-mbar__art { width: 52px; height: 52px; flex-shrink: 0; display: grid; place-items: center; border-radius: 10px; overflow: hidden; background: rgba(255, 255, 255, 0.15); }
+.cr-mbar__art img { width: 100%; height: 100%; object-fit: cover; }
+.cr-mbar__art svg { width: 22px; height: 22px; }
+.cr-mbar__text { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+.cr-mbar__text b, .cr-mbar__text small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cr-mbar__text small { opacity: 0.75; }
+.cr-mbar__ctrls { display: flex; align-items: center; gap: 0.3rem; }
+.cr-mbtn { width: 38px; height: 38px; display: grid; place-items: center; border: none; border-radius: 50%; background: transparent; color: #fff !important; cursor: pointer; }
+.cr-mbtn:hover { background: rgba(255, 255, 255, 0.15); }
+.cr-mbtn svg { width: 18px; height: 18px; }
+.cr-mbtn--main { width: 44px; height: 44px; background: #fff; color: var(--tool) !important; }
+.cr-mbtn--main:hover { background: #fff; transform: scale(1.05); }
+.cr-mbar__vol { display: flex; align-items: center; gap: 0.4rem; }
+.cr-mbar__vol svg { width: 18px; height: 18px; opacity: 0.85; }
+.cr-mbar__vol input { width: 110px; accent-color: #fff; }
+.cr-mbar--error { justify-content: space-between; font-size: 0.9rem; padding: 0.8rem 1rem; }
+.cr-pillbtn--sm { padding: 0.45rem 0.9rem; font-size: 0.85rem; }
+.cr-session--full .cr-session__music { width: min(640px, 100%); }
+.cr-session--full .cr-mbar { padding: 0.8rem 1.1rem 0.8rem 0.8rem; }
+.cr-session--full .cr-mbar__art { width: 64px; height: 64px; }
+.cr-session--compact .cr-mbar { flex-wrap: wrap; gap: 0.5rem; }
+.cr-session--compact .cr-mbar__art { width: 44px; height: 44px; }
+.cr-session--compact .cr-mbar__vol { width: 100%; }
+.cr-session--compact .cr-mbar__vol input { flex: 1; width: auto; }

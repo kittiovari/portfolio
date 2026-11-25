@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Sheet, Icon, play } from './ui.jsx'
 import { useCountdown } from './tools.jsx'
 import { fmtTime } from './model.js'
+import { api, connect, disconnect, finishLogin, getToken, isConfigured, isConnected, loadSdk } from './spotify.js'
 
 /*
   „Időzítő és zene” – egy eszköz, három választással:
@@ -79,11 +80,14 @@ export function SessionSetup({ doc, update, onStart, onClose, onBack }) {
             </button>
           ))}
         </div>
-        {music && (
-          <button className="cr-link cr-setup__edit" onClick={() => { setEditLink(music); setDraft(linkOf(doc, music)) }}>
-            <Icon.pencil />Spotify-lista cseréje
-          </button>
-        )}
+        <div className="cr-setup__links">
+          {music && (
+            <button className="cr-link cr-setup__edit" onClick={() => { setEditLink(music); setDraft(linkOf(doc, music)) }}>
+              <Icon.pencil />Lista cseréje
+            </button>
+          )}
+          <SpotifyStatus />
+        </div>
       </div>
 
       <div className="cr-setup__row">
@@ -112,6 +116,39 @@ export function SessionSetup({ doc, update, onStart, onClose, onBack }) {
         <Icon.play />Indítás
       </button>
     </Sheet>
+  )
+}
+
+// Spotify-fiók kapcsolat (saját lejátszó: léptetés, hangerő)
+function SpotifyStatus() {
+  const [on, setOn] = useState(isConnected())
+  if (!isConfigured()) return null
+  return on ? (
+    <span className="cr-spotify is-on">
+      <span className="cr-spotify__dot" />Spotify csatlakozva
+      <button className="cr-link" onClick={() => { disconnect(); setOn(false) }}>Bontás</button>
+    </span>
+  ) : (
+    <button className="cr-spotify" onClick={() => connect()}>
+      <span className="cr-spotify__dot" />Csatlakozás a Spotify-fiókhoz
+    </button>
+  )
+}
+
+// Visszatérés a Spotify bejelentkezés után (/osztalyterem/spotify)
+export function SpotifyCallback() {
+  const [msg, setMsg] = useState('Kapcsolódás a Spotify-hoz…')
+  useEffect(() => {
+    finishLogin(window.location.search).then(({ ok, back, error }) => {
+      if (ok) window.location.replace(back)
+      else setMsg(error === 'access_denied' ? 'A Spotify-kapcsolatot nem engedélyezted.' : 'Nem sikerült csatlakozni a Spotify-hoz.')
+    })
+  }, [])
+  return (
+    <div className="cr cr-callback">
+      <p>{msg}</p>
+      <a className="cr-btn" href="/osztalyterem">Vissza az Osztályterembe</a>
+    </div>
   )
 }
 
@@ -164,13 +201,132 @@ function useSpotify(hostRef, uri) {
   }
 }
 
+// ── Saját lejátszó: Spotify Web Playback SDK (Premium) ──
+// A böngésző maga lesz egy Spotify-eszköz („Kittipedia Osztályterem”); a
+// műsorlistát véletlen sorrendben indítjuk, és saját gombokkal vezéreljük.
+const VOL_KEY = 'cr-volume'
+const savedVolume = () => { try { return Number(localStorage.getItem(VOL_KEY)) || 0.6 } catch { return 0.6 } }
+
+function useSdkPlayer(uri, playlist) {
+  const player = useRef(null)
+  const [st, setSt] = useState({ ready: false, paused: true, track: null, volume: savedVolume(), error: null })
+  const set = (patch) => setSt((s) => ({ ...s, ...patch }))
+
+  useEffect(() => {
+    if (!uri) return
+    let alive = true
+    let p = null
+    loadSdk().then((Spotify) => {
+      if (!alive) return
+      p = new Spotify.Player({
+        name: 'Kittipedia Osztályterem',
+        getOAuthToken: (cb) => { getToken().then(cb).catch(() => alive && set({ error: 'auth' })) },
+        volume: savedVolume(),
+      })
+      player.current = p
+      p.addListener('ready', async ({ device_id: device }) => {
+        try {
+          // véletlen kezdőszám, utána keverés
+          let offset
+          try {
+            const info = await api(`/playlists/${playlist}?fields=tracks.total`)
+            const total = info?.tracks?.total || 0
+            if (total > 1) offset = { position: Math.floor(Math.random() * total) }
+          } catch { /* nem baj, az elejéről indul */ }
+          await api(`/me/player/play?device_id=${device}`, { method: 'PUT', body: { context_uri: uri, ...(offset ? { offset } : {}) } })
+          api(`/me/player/shuffle?state=true&device_id=${device}`, { method: 'PUT' }).catch(() => {})
+          if (alive) set({ ready: true, error: null })
+        } catch {
+          if (alive) set({ error: 'play' })
+        }
+      })
+      p.addListener('player_state_changed', (s) => {
+        if (!s || !alive) return
+        const t = s.track_window?.current_track
+        set({
+          paused: s.paused,
+          track: t ? { name: t.name, artist: t.artists.map((a) => a.name).join(', '), image: t.album?.images?.[0]?.url } : null,
+        })
+      })
+      p.addListener('initialization_error', () => alive && set({ error: 'init' }))
+      p.addListener('authentication_error', () => alive && set({ error: 'auth' }))
+      p.addListener('account_error', () => alive && set({ error: 'premium' }))
+      p.connect()
+    }).catch(() => alive && set({ error: 'sdk' }))
+    return () => {
+      alive = false
+      try { p?.disconnect() } catch { /* */ }
+      player.current = null
+    }
+  }, [uri, playlist])
+
+  const call = (fn) => { try { player.current?.activateElement?.() } catch { /* */ } return player.current && fn(player.current) }
+  return {
+    ...st,
+    toggle: () => call((p) => p.togglePlay()),
+    pause: () => call((p) => p.pause()),
+    resume: () => call((p) => p.resume()),
+    next: () => call((p) => p.nextTrack()),
+    prev: () => call((p) => p.previousTrack()),
+    setVolume: (v) => {
+      set({ volume: v })
+      try { localStorage.setItem(VOL_KEY, String(v)) } catch { /* */ }
+      call((p) => p.setVolume(v))
+    },
+  }
+}
+
+const SDK_ERRORS = {
+  auth: 'Lejárt a Spotify-kapcsolat – csatlakozz újra.',
+  premium: 'A saját lejátszóhoz Spotify Premium kell.',
+  play: 'Nem sikerült elindítani a lejátszást. Próbáld a lejátszás gombbal.',
+  init: 'Ez a böngésző nem támogatja a Spotify lejátszót.',
+  sdk: 'A Spotify lejátszó nem töltődött be. Ellenőrizd az internetkapcsolatot.',
+}
+
+function MusicBar({ m }) {
+  if (m.error && m.error !== 'play') {
+    return (
+      <div className="cr-mbar cr-mbar--error">
+        <span>{SDK_ERRORS[m.error] || SDK_ERRORS.sdk}</span>
+        {m.error === 'auth' && <button className="cr-pillbtn cr-pillbtn--sm" onClick={() => connect()}>Csatlakozás</button>}
+      </div>
+    )
+  }
+  return (
+    <div className="cr-mbar">
+      <span className="cr-mbar__art">{m.track?.image ? <img src={m.track.image} alt="" /> : <Icon.music />}</span>
+      <span className="cr-mbar__text">
+        <b>{m.track?.name || (m.ready ? '…' : 'Kapcsolódás a Spotify-hoz…')}</b>
+        <small>{m.track?.artist || (m.error === 'play' ? SDK_ERRORS.play : '')}</small>
+      </span>
+      <span className="cr-mbar__ctrls">
+        <button className="cr-mbtn" onClick={m.prev} aria-label="Előző szám"><Icon.prev /></button>
+        <button className="cr-mbtn cr-mbtn--main" onClick={m.toggle} aria-label={m.paused ? 'Zene indítása' : 'Zene szüneteltetése'}>
+          {m.paused ? <Icon.play /> : <Icon.pause />}
+        </button>
+        <button className="cr-mbtn" onClick={m.next} aria-label="Következő szám"><Icon.skip /></button>
+      </span>
+      <label className="cr-mbar__vol" title="Hangerő">
+        <Icon.sound />
+        <input type="range" min="0" max="1" step="0.05" value={m.volume} onChange={(e) => m.setVolume(Number(e.target.value))} aria-label="Hangerő" />
+      </label>
+    </div>
+  )
+}
+
 // ── Futó nézet: egyetlen elem, ami teljes képernyő és kompakt között vált ──
 // (így a zene váltáskor sem szakad meg)
 export function SessionPlayer({ session, onMode, onClose }) {
   const ch = MUSIC_CHANNELS.find((c) => c.id === session.music)
   const id = playlistId(session.link)
   const host = useRef(null)
-  const music = useSpotify(host, id ? `spotify:playlist:${id}` : null)
+  // Ha Spotify-fiókkal csatlakozva vagy: saját lejátszó; különben a beágyazott Spotify-sáv
+  const [useSdk] = useState(() => isConfigured() && isConnected())
+  const uri = id ? `spotify:playlist:${id}` : null
+  const sdk = useSdkPlayer(useSdk ? uri : null, id)
+  const embed = useSpotify(host, useSdk ? null : uri)
+  const music = useSdk ? sdk : embed
   const [done, setDone] = useState(false)
   const full = session.mode === 'full'
 
@@ -235,9 +391,10 @@ export function SessionPlayer({ session, onMode, onClose }) {
 
       {id && (
         <div className="cr-session__music">
-          {music.error
-            ? <p className="cr-hint">A Spotify-lejátszó nem töltődött be. Ellenőrizd az internetkapcsolatot.</p>
-            : <div ref={host} className="cr-session__embed" />}
+          {useSdk ? <MusicBar m={sdk} />
+            : embed.error
+              ? <p className="cr-hint">A Spotify-lejátszó nem töltődött be. Ellenőrizd az internetkapcsolatot.</p>
+              : <div ref={host} className="cr-session__embed" />}
         </div>
       )}
     </motion.div>,

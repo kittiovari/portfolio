@@ -122,6 +122,8 @@ export const Icon = {
   next: svg('M9 6l6 6-6 6'),
   expand: svg('M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5'),
   compact: svg('M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5'),
+  prev: svg('M7 6v12M18 6.5v11L9.5 12z'),
+  skip: svg('M17 6v12M6 6.5v11l8.5-5.5z'),
   music: svg(<><path d="M9 18V5.5l11-2V16" /><circle cx="6.5" cy="18" r="2.5" /><circle cx="17.5" cy="16" r="2.5" /></>),
 }
 

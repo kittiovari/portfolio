@@ -8,6 +8,7 @@ import ClassPage from './pages/ClassPage.jsx'
 // Az Osztályterem külön csomagban töltődik (a nyilvános oldalt nem lassítja)
 const Classroom = lazy(() => import('./pages/Classroom.jsx'))
 const ClassroomIndex = lazy(() => import('./pages/Classroom.jsx').then((m) => ({ default: m.ClassroomIndex })))
+const SpotifyCallback = lazy(() => import('./classroom/session.jsx').then((m) => ({ default: m.SpotifyCallback })))
 const lazyEl = (el) => <Suspense fallback={<div className="home" aria-busy="true" />}>{el}</Suspense>
 import { AREAS, fetchContent, refreshSession, unlockedLanguageAreas } from './lib/unlock.js'
 import { useProtectedContent } from './i18n/LanguageContext.jsx'
@@ -99,6 +100,7 @@ function App() {
         <Route path="/muveszetterapia" element={<Gated area="arttherapy" key="arttherapy"><Topic topic="arttherapy" /></Gated>} />
         {/* Tanári Osztályterem (pontozás, jelenlét, órai eszközök) – külön tanári jelszóval */}
         <Route path="/osztalyterem" element={<Gated area="teacher" key="teacher">{lazyEl(<ClassroomIndex />)}</Gated>} />
+        <Route path="/osztalyterem/spotify" element={lazyEl(<SpotifyCallback />)} />
         <Route path="/osztalyterem/:cls" element={<Gated area="teacher" key="teacher">{lazyEl(<Classroom />)}</Gated>} />
         <Route path="/cv" element={<CV />} />
         {/* Rövid / alternatív címek */}
