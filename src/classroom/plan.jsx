@@ -387,7 +387,7 @@ function PlanRow({ item, step, start, cls, review, maxMinutes = 45, open, onTogg
             <input value={item.aim} placeholder="Title" onChange={(e) => onChange({ aim: e.target.value })} aria-label="Title" />
           )}
         </span>
-        <span className="cr-prow__org" title={org?.label || ''}>{org && !compactOnly ? <>{org.icon}<small>{org.label}</small></> : null}</span>
+        <span className="cr-prow__org" title={org?.label || ''}>{org && !compactOnly ? <><OrgIcon id={org.id} /><small>{org.label}</small></> : null}</span>
         <span className="cr-prow__end">
           {item.resources?.length > 0 && <span className="cr-prow__count" title="Resources">📎{item.resources.length}</span>}
           {!compactOnly && (
@@ -415,20 +415,39 @@ function PlanRow({ item, step, start, cls, review, maxMinutes = 45, open, onTogg
 
       {open && !locked && !compactOnly && (
         <div className="cr-prow__details">
-          <label className="cr-pfield">
-            <span>{role === 'homework' ? 'Homework details' : 'Activity'}</span>
-            <textarea rows={3} value={item.activity || ''} placeholder={role === 'homework' ? 'Exercises, pages, deadline…' : 'What happens: instructions, pages, exercises…'} onChange={(e) => onChange({ activity: e.target.value })} />
-          </label>
+          {/* Leírás + források egy dobozban: szöveg, alatta az előnézetek, alul a csatolás */}
+          <div className={`cr-compose ${over ? 'is-over' : ''}`}>
+            <textarea rows={3} value={item.activity || ''}
+              placeholder={role === 'homework' ? 'Homework: exercises, pages, deadline…' : 'Activity: what happens, instructions, pages…'}
+              onChange={(e) => onChange({ activity: e.target.value })} aria-label={role === 'homework' ? 'Homework details' : 'Activity'} />
+            {item.resources?.length > 0 && (
+              <div className="cr-compose__res">{item.resources.map((r) => <Resource key={r.id} r={r} cls={cls} onRemove={() => removeRes(r)} />)}</div>
+            )}
+            {linkForm ? (
+              <form className="cr-compose__link" onSubmit={addLink}>
+                <input value={linkForm.url} onChange={(e) => setLinkForm({ ...linkForm, url: e.target.value })} placeholder="Paste a link – LearningApps, Quizlet, YouTube, Drive…" autoFocus aria-label="Link" />
+                <input value={linkForm.name} onChange={(e) => setLinkForm({ ...linkForm, name: e.target.value })} placeholder="Name (optional)" aria-label="Link name" />
+                <button type="submit" className="cr-btn cr-btn--primary cr-btn--sm" disabled={!normalizeUrl(linkForm.url)}>Add</button>
+                <button type="button" className="cr-btn cr-btn--sm" onClick={() => setLinkForm(null)}>Cancel</button>
+              </form>
+            ) : (
+              <div className="cr-compose__bar">
+                <button className="cr-compose__btn" onClick={() => setLinkForm({ url: '', name: '' })} title="Add a link">🔗 Link</button>
+                <button className="cr-compose__btn" onClick={() => fileRef.current?.click()} title="Attach a file, image or audio – or drop / paste it here">📎 File</button>
+                <input ref={fileRef} type="file" multiple hidden
+                  accept="image/*,audio/*,video/mp4,video/webm,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.odt,.txt,.zip"
+                  onChange={(e) => { const f = [...e.target.files]; e.target.value = ''; if (f.length) onFiles(f) }} />
+              </div>
+            )}
+          </div>
           {role !== 'homework' && <OrgPicker item={item} onChange={onChange} />}
           {role !== 'homework' && (
             <label className="cr-pfield">
-              <span>Equipment</span>
-              <input value={item.equipment || ''} placeholder="e.g. Coursebook, worksheet, laptop + speakers" onChange={(e) => onChange({ equipment: e.target.value })} />
+              <input value={item.equipment || ''} placeholder="Equipment: coursebook, worksheet, speakers…" onChange={(e) => onChange({ equipment: e.target.value })} aria-label="Equipment" />
             </label>
           )}
           {!role && (
             <div className="cr-pfield">
-              <span>Tags <small className="cr-muted">(choose any)</small></span>
               <div className="cr-pcard__skills">
                 {TASK_TAGS.map((t) => (
                   <button key={t.id} className={`cr-sk ${item.tags?.includes(t.id) ? 'is-on' : ''}`} style={{ '--sk': t.color }} onClick={() => toggleTag(t.id)} aria-pressed={item.tags?.includes(t.id)}>{t.label}</button>
@@ -436,26 +455,6 @@ function PlanRow({ item, step, start, cls, review, maxMinutes = 45, open, onTogg
               </div>
             </div>
           )}
-          <div className="cr-pfield">
-            <span>Resources</span>
-            {item.resources?.length > 0 && <div className="cr-pcard__res">{item.resources.map((r) => <Resource key={r.id} r={r} cls={cls} onRemove={() => removeRes(r)} />)}</div>}
-            {linkForm ? (
-              <form className="cr-pcard__linkform" onSubmit={addLink}>
-                <input value={linkForm.url} onChange={(e) => setLinkForm({ ...linkForm, url: e.target.value })} placeholder="https://… (LearningApps, Quizlet, YouTube, Drive…)" autoFocus aria-label="Link" />
-                <input value={linkForm.name} onChange={(e) => setLinkForm({ ...linkForm, name: e.target.value })} placeholder="Name (optional)" aria-label="Link name" />
-                <button type="submit" className="cr-btn cr-btn--primary cr-btn--sm" disabled={!normalizeUrl(linkForm.url)}>Add</button>
-                <button type="button" className="cr-btn cr-btn--sm" onClick={() => setLinkForm(null)}>Cancel</button>
-              </form>
-            ) : (
-              <div className="cr-pcard__addres">
-                <button className="cr-btn cr-btn--sm" onClick={() => setLinkForm({ url: '', name: '' })}>🔗 Link</button>
-                <button className="cr-btn cr-btn--sm" onClick={() => fileRef.current?.click()}>📎 File / image / audio</button>
-                <input ref={fileRef} type="file" multiple hidden
-                  accept="image/*,audio/*,video/mp4,video/webm,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.odt,.txt,.zip"
-                  onChange={(e) => { const f = [...e.target.files]; e.target.value = ''; if (f.length) onFiles(f) }} />
-              </div>
-            )}
-          </div>
           {draggable && (
             <div className="cr-prow__actions">
               <button className="cr-iconbtn cr-iconbtn--sm" disabled={index === 0} onClick={() => onMove(-1)} aria-label="Move up">↑</button>
@@ -470,14 +469,50 @@ function PlanRow({ item, step, start, cls, review, maxMinutes = 45, open, onTogg
   )
 }
 
+// Munkaforma-ikonok: babszem-figurák az oldal illusztrációinak stílusában
+const beanPath = (cx, base, w, h) => {
+  const l = cx - w / 2, r = cx + w / 2, t = base - h
+  return `M${l} ${base}C${l - 0.3} ${base - h * 0.6} ${l + w * 0.06} ${t + h * 0.12} ${cx} ${t}C${r - w * 0.06} ${t + h * 0.12} ${r + 0.3} ${base - h * 0.6} ${r} ${base}Z`
+}
+const Bean = ({ cx, base, w, h }) => {
+  const ey = base - h * 0.6
+  return (
+    <g>
+      <path d={beanPath(cx, base, w, h)} fill="var(--bean, #F3E3C8)" />
+      <circle cx={cx - w * 0.17} cy={ey} r="1.15" fill="currentColor" stroke="none" />
+      <circle cx={cx + w * 0.17} cy={ey} r="1.15" fill="currentColor" stroke="none" />
+      <path d={`M${cx - w * 0.15} ${ey + h * 0.16}q${w * 0.15} ${h * 0.09} ${w * 0.3} 0`} strokeWidth="1.3" />
+    </g>
+  )
+}
+export function OrgIcon({ id, className = 'cr-orgicon' }) {
+  const figures = {
+    frontal: (
+      <>
+        <rect x="2.5" y="3" width="15" height="11" rx="1.5" fill="#fff" />
+        <path d="M5.5 7h8M5.5 10.5h5.5" strokeWidth="1.3" opacity=".6" />
+        <path d="M19.5 17.5L15 12" strokeWidth="1.5" />
+        <Bean cx={27} base={29} w={13} h={22} />
+      </>
+    ),
+    individual: <Bean cx={20} base={29} w={14} h={24} />,
+    pairs: (<><Bean cx={13.5} base={29} w={12} h={21} /><Bean cx={26.5} base={29} w={12} h={23} /></>),
+    groups: (<><Bean cx={9} base={29} w={10.5} h={17} /><Bean cx={20} base={29} w={11} h={21} /><Bean cx={31} base={29} w={10.5} h={17} /></>),
+  }
+  return (
+    <svg className={className} viewBox="0 0 40 31" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {figures[id]}
+    </svg>
+  )
+}
+
 function OrgPicker({ item, onChange }) {
   return (
     <div className="cr-pfield">
-      <span>Organisation form</span>
       <div className="cr-pcard__kinds" role="radiogroup" aria-label="Organisation form">
         {ORG_FORMS.map((o) => (
           <button key={o.id} role="radio" aria-checked={item.org === o.id} className={item.org === o.id ? 'is-active' : ''}
-            onClick={() => onChange((it) => ({ org: it.org === o.id ? '' : o.id }))}>{o.icon} {o.label}</button>
+            onClick={() => onChange((it) => ({ org: it.org === o.id ? '' : o.id }))}><OrgIcon id={o.id} />{o.label}</button>
         ))}
       </div>
     </div>
@@ -539,13 +574,13 @@ export function PlanTimeline({ plan, cls, heading, startTime }) {
               {tags.length > 0 && <span className="cr-tcard__skills">{tags.map((t) => <span key={t.id} className="cr-tag" style={{ '--tg': t.color }}>{t.label}</span>)}</span>}
               {it.aim && <b className="cr-tcard__title">{it.aim}</b>}
               {it.activity && <p className="cr-tcard__note"><Linkify text={it.activity} /></p>}
+              {it.resources?.length > 0 && <div className="cr-tcard__res">{it.resources.map((r) => <Resource key={r.id} r={r} cls={cls} />)}</div>}
               {(org || it.equipment) && (
                 <p className="cr-tcard__meta">
-                  {org && <span>{org.icon} {org.label}</span>}
+                  {org && <span className="cr-tcard__org"><OrgIcon id={org.id} />{org.label}</span>}
                   {it.equipment && <span>🎒 {it.equipment}</span>}
                 </p>
               )}
-              {it.resources?.length > 0 && <div className="cr-tcard__res">{it.resources.map((r) => <Resource key={r.id} r={r} cls={cls} />)}</div>}
             </li>
           )
         })}

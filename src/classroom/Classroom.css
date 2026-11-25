@@ -904,3 +904,29 @@ span.cr-sk { cursor: default; }
 .cr-prow.is-struck { opacity: 0.55; }
 .cr-prow.is-struck .cr-prow__locked { text-decoration: line-through; font-weight: 500; color: var(--muted); }
 .cr-prow.is-struck .cr-prow__line { cursor: default; }
+
+/* Kevesebb vizuális zaj a részleteknél */
+.cr-prow__details { gap: 0.55rem; }
+.cr-pfield { gap: 0.25rem; }
+.cr-orgicon { width: 34px; height: 26px; flex-shrink: 0; color: #241422; }
+.cr-pcard__kinds button.is-active .cr-orgicon { --bean: #F7D569; }
+.cr-pcard__kinds button { display: inline-flex; align-items: center; gap: 0.3rem; }
+.cr-prow__org .cr-orgicon { width: 30px; height: 23px; }
+.cr-tcard__org { display: inline-flex; align-items: center; gap: 0.3rem; }
+.cr-tcard__org .cr-orgicon { width: 28px; height: 21px; }
+/* Kompakt címkék */
+.cr-prow__details .cr-pcard__skills { gap: 0.25rem; }
+.cr-prow__details .cr-sk { padding: 0.12rem 0.55rem; font-size: 0.72rem; font-weight: 600; border-width: 1px; line-height: 1.4; }
+
+/* Leírás + források egy dobozban */
+.cr-compose { border: 1px solid rgba(36, 20, 34, 0.16); border-radius: 14px; background: #fff; overflow: hidden; transition: border-color 0.15s, box-shadow 0.15s; }
+.cr-compose:focus-within { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(36, 20, 34, 0.08); }
+.cr-compose.is-over { border-style: dashed; border-color: var(--ink); }
+.cr-sheet .cr-compose textarea { display: block; width: 100%; border: none; border-radius: 0; box-shadow: none !important; padding: 0.6rem 0.8rem 0.3rem; font-size: 0.95rem; resize: vertical; }
+.cr-compose__res { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.3rem 0.8rem 0.6rem; }
+.cr-compose__res .cr-res__img img { max-width: 200px; max-height: 130px; }
+.cr-compose__bar { display: flex; gap: 0.2rem; padding: 0.25rem 0.4rem; border-top: 1px solid rgba(36, 20, 34, 0.07); background: #FCFAF7; }
+.cr-compose__btn { padding: 0.3rem 0.65rem; border: none; border-radius: 9px; background: transparent; font-size: 0.8rem; font-weight: 600; color: var(--muted); cursor: pointer; }
+.cr-compose__btn:hover { background: rgba(36, 20, 34, 0.06); color: var(--ink); }
+.cr-compose__link { display: flex; gap: 0.4rem; flex-wrap: wrap; padding: 0.45rem 0.5rem; border-top: 1px solid rgba(36, 20, 34, 0.07); background: #FCFAF7; }
+.cr-sheet .cr-compose__link input { flex: 1 1 180px; padding: 0.4rem 0.6rem; font-size: 0.88rem; }
