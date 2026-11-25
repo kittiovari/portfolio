@@ -934,7 +934,7 @@ span.cr-sk { cursor: default; }
 /* ── Tanári osztálynézet: óra-idővonal + feladathoz kötött pontozás ── */
 .cr-lboard { margin-top: 2rem; padding-top: 1.4rem; border-top: 1px solid var(--line); }
 .cr-lboard__head { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
-.cr-lboard__icon { font-size: 1.3rem; }
+.cr-lboard__icon { width: 34px; height: 34px; flex-shrink: 0; }
 .cr-lboard .cr-lpick { flex: 1; max-width: 420px; }
 .cr-lboard .cr-lpick__btn { justify-content: flex-start; background: rgba(255, 255, 255, 0.7); }
 .cr-lboard__none { flex: 1; font-family: var(--font-heading); }

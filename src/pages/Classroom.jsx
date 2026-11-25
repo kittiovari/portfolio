@@ -253,9 +253,6 @@ export default function Classroom() {
             </button>
           </div>
         )}
-        {!doc.students.length && view === 'students' && (
-          <p className="cr-hint cr-hint--center">Start by adding students – you can paste several names at once.</p>
-        )}
         {mode !== 'attendance' && (
           <LessonBoard key={cls} doc={doc} cls={cls} active={activeStep} onSelect={setActiveStep}
             onCheckHomework={() => setModal({ kind: 'homework', preselect: [] })}

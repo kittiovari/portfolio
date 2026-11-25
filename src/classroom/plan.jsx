@@ -360,7 +360,7 @@ function PlanRow({ item, step, start, cls, review, maxMinutes = 45, open, onTogg
       <div className="cr-prow__line" onClick={(e) => { if (!compactOnly && !e.target.closest('input, button, select, textarea, a')) onToggle() }}>
         {draggable
           ? <button className="cr-pcard__grip" onPointerDown={(e) => controls.start(e)} aria-label="Drag to reorder" title="Drag to reorder">⠿</button>
-          : <span className="cr-prow__pin" title="Fixed step" aria-hidden="true">📌</span>}
+          : <span className="cr-prow__pin" aria-hidden="true" />}
         <span className="cr-prow__step">{step}</span>
         <span className="cr-prow__time">
           <span className="cr-prow__min">
@@ -589,6 +589,22 @@ export function PlanTimeline({ plan, cls, heading, startTime }) {
   )
 }
 
+// Vonalrajzos naptár az oldal illusztrációinak stílusában (spirál, kiemelt nap)
+export function CalendarArt({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 40 40" fill="none" stroke="#241422" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="5" y="8" width="30" height="27" rx="5" fill="#FBF4DC" />
+      <path d="M5 16h30" />
+      <path d="M12 5v6M20 5v6M28 5v6" />
+      <g fill="#241422" stroke="none" opacity=".55">
+        <circle cx="12" cy="22" r="1.3" /><circle cx="20" cy="22" r="1.3" />
+        <circle cx="12" cy="29" r="1.3" /><circle cx="20" cy="29" r="1.3" /><circle cx="28" cy="29" r="1.3" />
+      </g>
+      <circle cx="28" cy="22" r="3.6" fill="#E0B33A" />
+    </svg>
+  )
+}
+
 // ── Tanári osztálynézet: az óra idővonala, feladathoz kötött pontozással ──
 // Választható órák: a már megtartott (betervezett) órák, az éppen aktuális óra,
 // és a következő, már előkészített órák.
@@ -620,7 +636,7 @@ export function LessonBoard({ doc, cls, active, onSelect, onEdit, onCheckHomewor
   return (
     <section className="cr-lboard" aria-label="Lesson timeline">
       <div className="cr-lboard__head">
-        <span className="cr-lboard__icon" aria-hidden="true">📅</span>
+        <CalendarArt className="cr-lboard__icon" />
         {options.length > 0 && key ? (
           <LessonPicker value={key} options={options.includes(key) ? options : [key, ...options]} nextKey={nowKey} planned={(k) => planned.includes(k)} onChange={changeLesson} />
         ) : (
@@ -632,13 +648,13 @@ export function LessonBoard({ doc, cls, active, onSelect, onEdit, onCheckHomewor
 
       {isPlanned ? (
         <>
-          <p className={`cr-lboard__hint ${active ? 'is-on' : ''}`}>
-            {active
-              ? active.role === 'hwreview'
+          {active && (
+            <p className="cr-lboard__hint is-on">
+              {active.role === 'hwreview'
                 ? <><button className="cr-btn cr-btn--primary cr-btn--sm" onClick={onCheckHomework}>✓ Check homework</button> <span>for <b>{active.title}</b></span> <button className="cr-link" onClick={() => onSelect(null)}>Stop</button></>
-                : <>Points now count for <b>{active.title}</b> <button className="cr-link" onClick={() => onSelect(null)}>Stop</button></>
-              : 'Tap a task to log the points you give during it.'}
-          </p>
+                : <>Points now count for <b>{active.title}</b> <button className="cr-link" onClick={() => onSelect(null)}>Stop</button></>}
+            </p>
+          )}
           <ol className="cr-timeline__track cr-lboard__track" ref={track}>
             {items.map((it, i) => {
               const start = addMinutes(time, acc)
