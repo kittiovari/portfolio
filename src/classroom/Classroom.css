@@ -685,3 +685,104 @@
 .cr-today__move .cr-iconbtn--sm { width: 26px; font-weight: 700; color: var(--muted); }
 .cr-today__move .cr-iconbtn--sm:disabled { opacity: 0.25; }
 .cr-plan__note { margin-top: 0.8rem; font-size: 0.8rem; }
+
+/* ── Óraterv-szerkesztő (tanár) ── */
+.cr-plan--xl { width: min(100%, 1040px); }
+.cr-plan--xl .cr-sheet__hero { flex-direction: row; justify-content: center; gap: 0.6rem; padding: 1rem 3.5rem; }
+.cr-plan--xl .cr-sheet__hero h2 { font-size: 1.35rem; }
+.cr-plan--xl .cr-sheet__heroicon svg { width: 26px; height: 26px; }
+.cr-plan--xl .cr-sheet__back { top: 50%; translate: 0 -50%; }
+.cr-plan--xl .cr-sheet__hero ~ .cr-sheet__close { top: 10px; }
+.cr-plan__days { display: flex; gap: 0.35rem; overflow-x: auto; padding: 0.6rem 0 0.2rem; scrollbar-width: thin; }
+.cr-sheet input.cr-plan__title:not([type='checkbox']) {
+  width: 100%; margin-top: 0.8rem; padding: 0.55rem 0.2rem; border: none; border-bottom: 2px solid rgba(36, 20, 34, 0.12);
+  border-radius: 0; background: transparent; font-family: var(--font-heading); font-size: 1.45rem; font-weight: 700;
+}
+.cr-sheet input.cr-plan__title:focus { box-shadow: none; border-bottom-color: var(--ink); }
+
+.cr-skillbar { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin: 0.9rem 0 0.4rem; padding: 0.6rem 0.7rem; border-radius: 16px; background: #FBF4DC; }
+.cr-skillbar.is-complete { background: rgba(78, 154, 106, 0.14); }
+.cr-skillbar__item { padding: 0.25rem 0.7rem; border-radius: 999px; font-size: 0.82rem; font-weight: 700; color: var(--muted); background: rgba(255, 255, 255, 0.7); border: 1.5px dashed rgba(36, 20, 34, 0.2); }
+.cr-skillbar__item.is-ok { color: #fff; background: var(--sk); border: 1.5px solid var(--sk); }
+.cr-skillbar__msg { flex: 1; min-width: 200px; font-size: 0.85rem; color: var(--muted); padding-left: 0.3rem; }
+
+.cr-pcards { list-style: none; display: flex; flex-direction: column; gap: 0.7rem; margin-top: 0.8rem; padding: 0; }
+.cr-pcard {
+  display: flex; gap: 0.5rem; padding: 0.8rem 0.9rem 0.9rem 0.5rem; border-radius: 20px; background: #fff;
+  border: 1px solid var(--line); box-shadow: 0 8px 20px -16px rgba(36, 20, 34, 0.4); position: relative;
+}
+.cr-pcard::before { content: ''; position: absolute; left: 0; top: 14px; bottom: 14px; width: 4px; border-radius: 0 4px 4px 0; background: #C9B8C6; }
+.cr-pcard--warmup::before { background: #E0915A; }
+.cr-pcard--homework::before { background: #5B8DB8; }
+.cr-pcard.is-done { opacity: 0.6; }
+.cr-pcard.is-over { outline: 2px dashed var(--ink); outline-offset: 2px; }
+.cr-pcard__side { display: flex; flex-direction: column; align-items: center; gap: 0.1rem; padding-top: 0.1rem; }
+.cr-pcard__grip { width: 28px; height: 28px; border: none; background: none; cursor: grab; font-size: 1.1rem; color: var(--muted); touch-action: none; border-radius: 8px; }
+.cr-pcard__grip:hover { background: rgba(36, 20, 34, 0.06); }
+.cr-pcard__grip:active { cursor: grabbing; }
+.cr-pcard__num { font-family: var(--font-heading); font-weight: 800; font-size: 1.1rem; }
+.cr-pcard__side .cr-iconbtn--sm { width: 26px; height: 24px; color: var(--muted); font-weight: 700; }
+.cr-pcard__side .cr-iconbtn--sm:disabled { opacity: 0.25; }
+.cr-pcard__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.45rem; }
+.cr-pcard__top { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+.cr-pcard__kinds { display: flex; gap: 0.2rem; padding: 3px; border-radius: 12px; background: rgba(36, 20, 34, 0.05); }
+.cr-pcard__kinds button { padding: 0.25rem 0.6rem; border: none; border-radius: 9px; background: transparent; font-size: 0.8rem; font-weight: 600; color: var(--muted); cursor: pointer; }
+.cr-pcard__kinds button.is-active { background: #fff; color: var(--ink); box-shadow: 0 1px 4px rgba(36, 20, 34, 0.15); }
+.cr-pcard__done { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; color: var(--muted); cursor: pointer; }
+.cr-sheet .cr-pcard input.cr-pcard__title:not([type='checkbox']) { padding: 0.35rem 0.4rem; border-color: transparent; font-weight: 700; font-size: 1.08rem; background: transparent; }
+.cr-sheet .cr-pcard textarea.cr-pcard__note { padding: 0.35rem 0.4rem; border-color: transparent; background: transparent; font-size: 0.95rem; min-height: 2.4em; }
+.cr-sheet .cr-pcard input.cr-pcard__title:hover, .cr-sheet .cr-pcard textarea.cr-pcard__note:hover { background: #FAF8F6; }
+.cr-sheet .cr-pcard input.cr-pcard__title:focus, .cr-sheet .cr-pcard textarea.cr-pcard__note:focus { background: #fff; border-color: rgba(36, 20, 34, 0.2); }
+.cr-pcard__skills { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+.cr-sk { padding: 0.2rem 0.65rem; border-radius: 999px; border: 1.5px solid var(--sk); background: #fff; color: var(--sk); font-size: 0.78rem; font-weight: 700; cursor: pointer; }
+.cr-sk.is-on { background: var(--sk); color: #fff !important; }
+.cr-sk--extra { border-style: dashed; }
+span.cr-sk { cursor: default; }
+.cr-pcard__res, .cr-tcard__res { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.cr-pcard__addres { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.cr-pcard__linkform { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.cr-sheet .cr-pcard__linkform input { flex: 1 1 200px; padding: 0.45rem 0.7rem; font-size: 0.9rem; }
+.cr-pcards__add { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-top: 0.9rem; }
+
+/* Források */
+.cr-res { position: relative; max-width: 100%; }
+.cr-res__rm { position: absolute; top: -8px; right: -8px; background: #fff !important; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2); width: 24px !important; height: 24px !important; }
+.cr-res__img { display: block; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: #FAF8F6; }
+.cr-res__img img { display: block; max-width: 260px; max-height: 170px; object-fit: contain; }
+.cr-res__audio { display: flex; flex-direction: column; gap: 0.3rem; padding: 0.5rem 0.6rem; border-radius: 12px; background: #F3EEF8; font-size: 0.82rem; font-weight: 600; max-width: 320px; }
+.cr-res__audio audio { width: 290px; max-width: 100%; height: 36px; }
+.cr-res__video { max-width: 320px; border-radius: 12px; }
+.cr-res__chip { display: inline-flex; align-items: center; gap: 0.45rem; max-width: 320px; padding: 0.45rem 0.8rem; border-radius: 12px; background: #F4F1EC; border: 1px solid var(--line); font-size: 0.88rem; font-weight: 600; color: var(--ink); }
+.cr-res__chip:hover { background: #fff; }
+.cr-res__chip--link { background: #E9F4EC; }
+.cr-res__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cr-res__chip small { color: var(--muted); font-weight: 500; white-space: nowrap; }
+
+/* ── Diákoknak: Padlet-szerű idővonal ── */
+.cr-timeline { margin-top: 1.4rem; }
+.cr-timeline__head h3 { font-family: var(--font-heading); font-size: 1.25rem; }
+.cr-timeline__head p { color: var(--muted); font-weight: 600; }
+.cr-timeline__track {
+  position: relative; list-style: none; display: flex; align-items: flex-start; gap: 1rem; overflow-x: auto; padding: 1rem 0.2rem 1.6rem; margin: 0;
+  scroll-snap-type: x proximity;
+}
+.cr-timeline__track::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0.7rem; height: 2px; background: repeating-linear-gradient(90deg, rgba(36, 20, 34, 0.25) 0 8px, transparent 8px 14px); }
+.cr-tcard {
+  position: relative; flex: 0 0 min(300px, 82vw); scroll-snap-align: start; display: flex; flex-direction: column; gap: 0.5rem;
+  padding: 1rem 1.1rem; border-radius: 20px; background: #fff; border: 1px solid var(--line); box-shadow: 0 10px 24px -18px rgba(36, 20, 34, 0.45);
+}
+.cr-tcard::after { content: ''; position: absolute; left: 50%; bottom: -1.32rem; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: var(--bg-primary); border: 2.5px solid var(--ink); z-index: 1; }
+.cr-tcard--warmup { background: #FFF1E7; }
+.cr-tcard--homework { background: #EAF2FA; }
+.cr-tcard.is-done { opacity: 0.65; }
+.cr-tcard__kind { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.cr-tcard__title { font-family: var(--font-heading); font-size: 1.1rem; line-height: 1.25; }
+.cr-tcard__note { white-space: pre-wrap; font-size: 0.92rem; line-height: 1.45; }
+.cr-tcard__note a { text-decoration: underline; }
+.cr-tcard__skills { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+.cr-tcard .cr-res__img img { max-width: 100%; }
+
+@media (max-width: 720px) {
+  .cr-pcard { flex-direction: column; padding-left: 0.9rem; }
+  .cr-pcard__side { flex-direction: row; }
+}

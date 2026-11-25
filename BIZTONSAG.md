@@ -76,3 +76,8 @@ Szabályok:
 - Az adatok (diáknevek, pontok, jelenlét) osztályonként egy dokumentumban, a Netlify Blobs `classroom` tárolóban, AES-256-GCM-mel titkosítva (CONTENT_KEY). Helyben: `.netlify/classroom-dev/` (gitignore-olt).
 - Csak a `kp_teacher` sütivel olvasható/írható (`/api/classroom/:cls`), a diákok csoportjelszava ehhez NEM ad hozzáférést.
 - Adattakarékosság: elég keresztnév + vezetéknév-kezdőbetű.
+
+## Osztályoldal és óraterv-források
+- `/api/classview/:cls`: a diákok csak olvasható nézete – a szerver szűr: pozitív pontok, csoportok, óraterv, utasítások. Fejlesztendő bejegyzés, jelenlét, „ne kerüljenek egy csoportba” párok NEM kerülnek ki.
+- `/api/classfile/:cls[/:id]`: óraterv-fájlok (kép, hang, videó, dokumentum, max. 5,5 MB). Feltöltés/törlés csak tanárként; letöltés az adott osztály jelszavával vagy tanárként. Titkosítva a Blobs `classroom` tárolóban, engedélyezett típuslistával, sandbox CSP-vel kiszolgálva.
+- Kredit: a fájlletöltés sávszélesség (20 kredit/GB). A böngésző 7 napig gyorsítótárazza; nagy videókhoz inkább linket érdemes használni.

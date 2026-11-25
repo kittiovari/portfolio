@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion'
 import Avatar, { ClassAvatar } from './Avatar.jsx'
 import { Sheet } from './ui.jsx'
 import { RANGES, rangeBounds, inRange, sortStudents, fullName } from './model.js'
+import { PlanTimeline, dayLabel } from './plan.jsx'
 import './Classroom.css'
 
 /*
@@ -49,22 +50,19 @@ export default function ClassBoard({ cls }) {
 
   return (
     <div className="cr cr-board">
-      {(data.today.length > 0 || data.directions.length > 0) && (
+      {data.plan?.items?.length > 0 && (
+        <PlanTimeline
+          plan={data.plan}
+          cls={cls}
+          heading={data.isToday === false && data.planDate ? `📅 Következő óra – ${dayLabel(data.planDate, { month: 'long', day: 'numeric', weekday: 'long' })}` : '📅 Mai óraterv'}
+        />
+      )}
+      {data.directions?.length > 0 && (
         <div className="cr-board__info">
-          {data.today.length > 0 && (
-            <div className="cr-board__card cr-board__card--today">
-              <h3>📅 {data.isToday === false && data.planDate
-                ? `Következő óra – ${new Date(data.planDate + 'T12:00').toLocaleDateString('hu-HU', { month: 'long', day: 'numeric', weekday: 'long' })}`
-                : 'Mai óraterv'}</h3>
-              <ul>{data.today.map((it) => <li key={it.id} className={it.done ? 'is-done' : ''}>{it.text}</li>)}</ul>
-            </div>
-          )}
-          {data.directions.length > 0 && (
-            <div className="cr-board__card">
-              <h3>📋 Utasítások</h3>
-              <ol>{data.directions.map((it, i) => <li key={i}>{it}</li>)}</ol>
-            </div>
-          )}
+          <div className="cr-board__card">
+            <h3>📋 Utasítások</h3>
+            <ol>{data.directions.map((it, i) => <li key={i}>{it}</li>)}</ol>
+          </div>
         </div>
       )}
 

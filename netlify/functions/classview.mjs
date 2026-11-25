@@ -21,7 +21,7 @@ export default async (req, context) => {
 
   try {
     const doc = await loadClass(cls)
-    if (!doc) return json(200, { students: [], events: [], groups: [], today: [], directions: [] }, { Vary: 'Cookie' })
+    if (!doc) return json(200, { students: [], events: [], groups: [], plan: { title: '', items: [] }, directions: [] }, { Vary: 'Cookie' })
 
     const students = (doc.students || []).map((s) => ({ id: s.id, first: s.first, last: s.last, avatar: s.avatar }))
     const ids = new Set(students.map((s) => s.id))
@@ -30,14 +30,27 @@ export default async (req, context) => {
       .map((e) => ({ id: e.id, s: e.s, n: e.n, i: e.i, v: e.v, t: e.t }))
     const groups = (doc.groups || []).map((g) => ({ id: g.id, name: g.name, ids: (g.ids || []).filter((id) => ids.has(id)) }))
     // A mai óraterv; ha mára nincs, a következő betervezett alkalomé (dátummal)
+    const getPlan = (k) => doc.plans?.[k] || (doc.today?.[k]?.length
+      ? { title: '', items: doc.today[k].map((it) => ({ id: it.id, kind: 'task', title: it.text, note: '', skills: [], resources: [], done: Boolean(it.done) })) }
+      : null)
     const todayKey = dayKey()
     let planDate = todayKey
-    if (!doc.today?.[todayKey]?.length) {
-      planDate = Object.keys(doc.today || {}).filter((k) => k > todayKey && doc.today[k]?.length).sort()[0] || todayKey
+    if (!getPlan(todayKey)?.items?.length) {
+      const keys = [...new Set([...Object.keys(doc.plans || {}), ...Object.keys(doc.today || {})])]
+      planDate = keys.filter((k) => k > todayKey && getPlan(k)?.items?.length).sort()[0] || todayKey
     }
-    const today = (doc.today?.[planDate] || []).map((it) => ({ id: it.id, text: it.text, done: Boolean(it.done) }))
+    const p = getPlan(planDate)
+    const plan = p ? {
+      title: String(p.title || ''),
+      items: (p.items || []).map((it) => ({
+        id: it.id, kind: it.kind, title: it.title, note: it.note, skills: it.skills || [], done: Boolean(it.done),
+        resources: (it.resources || []).map((r) => (r.type === 'file'
+          ? { id: r.id, type: 'file', fileId: r.fileId, name: r.name, mime: r.mime, size: r.size }
+          : { id: r.id, type: 'link', url: r.url, name: r.name })),
+      })),
+    } : { title: '', items: [] }
 
-    return json(200, { students, events, groups, today, planDate, isToday: planDate === todayKey, directions: doc.directions || [] }, { Vary: 'Cookie' })
+    return json(200, { students, events, groups, plan, planDate, isToday: planDate === todayKey, directions: doc.directions || [] }, { Vary: 'Cookie' })
   } catch (err) {
     console.error('classview failed', cls, err?.message)
     return json(500, { error: 'store' })

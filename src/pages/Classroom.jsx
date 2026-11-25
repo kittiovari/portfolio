@@ -6,11 +6,12 @@ import Avatar, { ClassAvatar } from '../classroom/Avatar.jsx'
 import { Icon, play, isMuted, setMuted } from '../classroom/ui.jsx'
 import { TargetModal, AddStudents, GroupEditor } from '../classroom/StudentModal.jsx'
 import {
-  Toolkit, RandomTool, GroupMakerTool, DirectionsTool, TpsTool, PlanTool,
+  Toolkit, RandomTool, GroupMakerTool, DirectionsTool, TpsTool,
 } from '../classroom/tools.jsx'
+import { PlanEditor } from '../classroom/plan.jsx'
 import { SessionSetup, SessionPlayer } from '../classroom/session.jsx'
 import { useClassroom } from '../classroom/useClassroom.js'
-import { ATTENDANCE, CLASSES, dayKey, fullName, pointsBy, sortStudents, uid } from '../classroom/model.js'
+import { ATTENDANCE, CLASSES, dayKey, fullName, getPlan, pointsBy, sortStudents, uid } from '../classroom/model.js'
 import '../components/PasswordModal.css'
 import '../classroom/Classroom.css'
 
@@ -193,7 +194,7 @@ export default function Classroom() {
         {mode === 'normal' && (
           <button className="cr-planchip" onClick={() => setModal({ kind: 'tool', id: 'today' })}>
             <span aria-hidden="true">📅</span>
-            {(doc.today?.[today] || []).length ? `Mai óraterv · ${doc.today[today].length} pont` : 'Óraterv'}
+            {getPlan(doc, today).items.length ? `Mai óraterv · ${getPlan(doc, today).items.length} feladat` : 'Óraterv'}
           </button>
         )}
         {mode === 'attendance' && <p className="cr-modehint">Jelenlét – kattints egy diákra: jelen → hiányzik → késett → korábban távozott</p>}
@@ -308,7 +309,7 @@ export default function Classroom() {
         {modal?.kind === 'tool' && modal.id === 'groups' && <GroupMakerTool key="groups" doc={doc} update={update} onClose={() => { closeModal(); setView('groups') }} onBack={backToKit} />}
         {modal?.kind === 'tool' && modal.id === 'directions' && <DirectionsTool key="dir" doc={doc} update={update} onClose={closeModal} onBack={backToKit} />}
         {modal?.kind === 'tool' && modal.id === 'tps' && <TpsTool key="tps" doc={doc} update={update} onClose={closeModal} onBack={backToKit} />}
-        {modal?.kind === 'tool' && modal.id === 'today' && <PlanTool key="today" doc={doc} update={update} onClose={closeModal} onBack={modal.fromKit ? backToKit : undefined} />}
+        {modal?.kind === 'tool' && modal.id === 'today' && <PlanEditor key="today" doc={doc} update={update} cls={cls} onClose={closeModal} onBack={modal.fromKit ? backToKit : undefined} />}
       </AnimatePresence>
 
       {/* Időzítő és zene: futás közben teljes képernyő ↔ kompakt */}

@@ -61,3 +61,37 @@ export async function loadClass(cls) {
 export async function saveClass(cls, doc) {
   await writeRaw(`class-${cls}`, seal(Buffer.from(JSON.stringify(doc), 'utf8')))
 }
+
+async function deleteRaw(key) {
+  if (isNetlify()) {
+    const store = await getStoreSafe()
+    if (!store) throw new Error('blobs unavailable')
+    await store.delete(key)
+    return
+  }
+  await fs.rm(path.join(DEV_DIR, `${key}.enc`), { force: true })
+}
+
+// ── Óraterv-források (feltöltött fájlok) ──
+// Egy blob = titkosított [4 bájt meta-hossz][meta JSON][fájl tartalma]
+export const FILE_ID = /^[A-Za-z0-9_-]{12,40}$/
+const fileKey = (cls, id) => `file-${cls}-${id}`
+
+export async function saveFile(cls, id, data, meta) {
+  const m = Buffer.from(JSON.stringify(meta), 'utf8')
+  const len = Buffer.alloc(4)
+  len.writeUInt32BE(m.length)
+  await writeRaw(fileKey(cls, id), seal(Buffer.concat([len, m, data])))
+}
+
+export async function loadFile(cls, id) {
+  const raw = await readRaw(fileKey(cls, id))
+  if (!raw) return null
+  const buf = open(raw)
+  const n = buf.readUInt32BE(0)
+  return { meta: JSON.parse(buf.subarray(4, 4 + n).toString('utf8')), data: buf.subarray(4 + n) }
+}
+
+export async function deleteFile(cls, id) {
+  await deleteRaw(fileKey(cls, id))
+}

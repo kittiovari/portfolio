@@ -129,6 +129,42 @@ export function rangeBounds(id, now = new Date()) {
 
 export const inRange = (t, [from, to]) => t >= from.getTime() && t < to.getTime()
 
+// ── Óraterv ──
+// doc.plans[YYYY-MM-DD] = { title, items: [{ id, kind, title, note, skills[], resources[], done }] }
+// resource: { id, type: 'link' | 'file', url?, fileId?, name, mime?, size? }
+export const SKILLS = [
+  { id: 'R', label: 'Reading', hu: 'Olvasás', color: '#5B8DB8' },
+  { id: 'L', label: 'Listening', hu: 'Hallás utáni értés', color: '#8A6BBE' },
+  { id: 'S', label: 'Speaking', hu: 'Beszéd', color: '#D9774F' },
+  { id: 'W', label: 'Writing', hu: 'Írás', color: '#4E9A6A' },
+]
+export const EXTRA_TAGS = [
+  { id: 'G', label: 'Grammar' },
+  { id: 'V', label: 'Vocabulary' },
+]
+export const KINDS = [
+  { id: 'warmup', label: 'Bemelegítés', icon: '🔥' },
+  { id: 'task', label: 'Feladat', icon: '📝' },
+  { id: 'homework', label: 'Házi feladat', icon: '🏠' },
+]
+
+// A régi, egyszerű napirendet (doc.today) is óratervként adja vissza
+export function getPlan(doc, key) {
+  if (doc.plans?.[key]) return doc.plans[key]
+  const old = doc.today?.[key]
+  if (old?.length) {
+    return { title: '', items: old.map((it) => ({ id: it.id, kind: 'task', title: it.text, note: '', skills: [], resources: [], done: Boolean(it.done) })) }
+  }
+  return { title: '', items: [] }
+}
+export const plannedDays = (doc) =>
+  [...new Set([...Object.keys(doc.plans || {}), ...Object.keys(doc.today || {})])].filter((k) => getPlan(doc, k).items.length).sort()
+
+export function skillCoverage(plan) {
+  const have = new Set(plan.items.flatMap((it) => it.skills || []))
+  return SKILLS.map((s) => ({ ...s, ok: have.has(s.id) }))
+}
+
 // ── Jelenlét ──
 export const ATTENDANCE = {
   present: { label: 'Jelen', next: 'absent' },

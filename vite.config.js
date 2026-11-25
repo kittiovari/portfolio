@@ -12,6 +12,7 @@ const API_ROUTES = [
   { re: /^\/api\/content\/([^/]+)$/, fn: 'content', keys: ['area'] },
   { re: /^\/api\/classroom\/([^/]+)$/, fn: 'classroom', keys: ['cls'] },
   { re: /^\/api\/classview\/([^/]+)$/, fn: 'classview', keys: ['cls'] },
+  { re: /^\/api\/classfile\/([^/]+)(?:\/([^/]+))?$/, fn: 'classfile', keys: ['cls', 'id'] },
   { re: /^\/api\/asset\/([^/]+)\/([^/]+)$/, fn: 'asset', keys: ['area', 'name'] },
 ]
 
@@ -29,7 +30,7 @@ function netlifyFunctionsDev() {
 
         try {
           const match = url.pathname.match(route.re)
-          const params = Object.fromEntries(route.keys.map((k, i) => [k, decodeURIComponent(match[i + 1])]))
+          const params = Object.fromEntries(route.keys.map((k, i) => [k, match[i + 1] === undefined ? undefined : decodeURIComponent(match[i + 1])]))
           const chunks = []
           for await (const c of req) chunks.push(c)
           const request = new Request(url, {
