@@ -284,6 +284,43 @@ function ChangeList({ doc, now, before, label }) {
   )
 }
 
+// ── Tanéveken átívelő nézet: minden adat + tanévenkénti összevetés ──
+function AllYears({ doc, ids, multi, publicView }) {
+  const idSet = new Set(ids)
+  const events = doc.events.filter((e) => idSet.has(e.s))
+  const years = []
+  for (let o = 0; o > -12; o--) {
+    const b = periodBounds(doc, 'year', o)
+    const m = metrics(doc, ids, b.from, b.to)
+    if (m.events) years.push({ ...b, m })
+    else if (o < 0 && !events.some((e) => e.t < b.from.getTime())) break
+  }
+  return (
+    <>
+      <Totals events={events} />
+      <div className="cr-compare">
+        <h4>Year by year</h4>
+        <ul className="cr-compare__rows">
+          {years.map(({ label, m }, i) => {
+            const prev = years[i + 1]?.m
+            const p = prev ? pctChange(m.net, prev.net) : null
+            return (
+              <li key={label}>
+                <span>{label.replace('School year ', '')}</span>
+                <b>{r1(m.net)}</b>
+                <small className={p == null ? '' : p >= 0 ? 'is-pos' : 'is-neg'}>{p == null ? '' : `${p >= 0 ? '▲' : '▼'} ${Math.abs(p)}%`}</small>
+                <small className="cr-muted">{!publicView && m.hwRate != null ? `hw ${m.hwRate}%` : `${r1(m.active)}× active`}</small>
+              </li>
+            )
+          })}
+        </ul>
+      </div>
+      <Donut slices={slicesOf(doc, events)} />
+      <TrackedStats doc={doc} events={events} multi={multi} />
+    </>
+  )
+}
+
 // ── Egy óra részletes listája ──
 function LessonView({ doc, update, ids, multi }) {
   const idSet = useMemo(() => new Set(ids), [ids])
@@ -469,7 +506,9 @@ const VIEWS = [
 ]
 
 export function ReportPanel({ doc, update, ids, isClass = false, studentId = null, publicView = false }) {
-  const views = isClass ? [{ id: 'overview', label: 'Overview' }, ...VIEWS] : VIEWS
+  const yearStart = periodBounds(doc, 'year', 0).from.getTime()
+  const hasPast = doc.events.some((e) => e.t < yearStart)
+  const views = [...(isClass ? [{ id: 'overview', label: 'Overview' }] : []), ...VIEWS, ...(hasPast ? [{ id: 'all', label: 'All years' }] : [])]
   const [view, setView] = useState(views[0].id)
   const multi = ids.length > 1
   return (
@@ -479,6 +518,7 @@ export function ReportPanel({ doc, update, ids, isClass = false, studentId = nul
       </div>
       {view === 'overview' && <Overview doc={doc} update={update} publicView={publicView} />}
       {view === 'lesson' && <LessonView doc={doc} update={update} ids={ids} multi={multi} />}
+      {view === 'all' && <AllYears doc={doc} ids={ids} multi={multi} publicView={publicView} />}
       {['week', 'month', 'semester', 'year'].includes(view) && <PeriodView key={view} doc={doc} ids={ids} view={view} multi={multi} publicView={publicView} />}
       {studentId && view !== 'lesson' && !publicView && <Alerts doc={doc} update={update} ids={[studentId]} all />}
     </div>

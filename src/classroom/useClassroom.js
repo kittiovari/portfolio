@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { emptyClass, migrateToEnglish, ensureSkills, ensureCodes } from './model.js'
 
+// Tömörített küldés (gzip), ha a böngésző tudja – így évekig elfér az adat
+async function packBody(text) {
+  if (typeof CompressionStream === 'undefined' || text.length < 4096) return { headers: { 'Content-Type': 'application/json' }, body: text }
+  const stream = new Blob([text]).stream().pipeThrough(new CompressionStream('gzip'))
+  const body = await new Response(stream).arrayBuffer()
+  return { headers: { 'Content-Type': 'application/octet-stream', 'X-Body-Encoding': 'gzip' }, body }
+}
+
 // Az osztály adatainak betöltése és automatikus mentése a szerverre.
 // Minden módosítás azonnal látszik (optimista frissítés); a mentés kis
 // késleltetéssel, összevonva megy. Ha közben másik eszközön is mentettek
@@ -72,8 +80,7 @@ export function useClassroom(cls) {
       const res = await fetch(`/api/classroom/${cls}`, {
         method: 'PUT',
         credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ doc: sent }),
+        ...(await packBody(JSON.stringify({ doc: sent }))),
       })
       if (res.status === 409) {
         const data = await res.json().catch(() => ({}))

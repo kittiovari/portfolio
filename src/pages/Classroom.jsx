@@ -12,6 +12,7 @@ import { PlanEditor, ClassSettings, LessonBoard } from '../classroom/plan.jsx'
 import { SessionSetup, SessionPlayer } from '../classroom/session.jsx'
 import { useClassroom } from '../classroom/useClassroom.js'
 import { SkillArt } from '../classroom/art.jsx'
+import { useArchives } from '../classroom/upkeep.jsx'
 import SeasonScene from '../classroom/SeasonScene.jsx'
 import Deskmates from '../classroom/Deskmates.jsx'
 import { ATTENDANCE, CLASSES, dayKey, fullName, pickName, getPlan, stepSkills, withSkeleton, skillByKey, lessonLabel, nextLessonKey, pointsBy, sortStudents, uid } from '../classroom/model.js'
@@ -39,7 +40,9 @@ export default function Classroom() {
   const { cls } = useParams()
   const navigate = useNavigate()
   const meta = CLASSES.find((c) => c.id === cls)
-  const { doc, status, update, retry } = useClassroom(meta ? cls : '9b')
+  const { doc, status, update, retry, reload } = useClassroom(meta ? cls : '9b')
+  // az archivált tanévek eseményei is a riportokba kerülnek (tanéveken átívelő kép)
+  const archives = useArchives(meta ? cls : '9b', doc?.previousYears || [])
 
   const [view, setView] = useState('students') // students | groups
   const [mode, setMode] = useState('normal') // normal | attendance | select
@@ -345,7 +348,7 @@ export default function Classroom() {
       {/* Modálok és eszközök */}
       <AnimatePresence>
         {modal?.kind === 'target' && (
-          <TargetModal key="target" doc={doc} target={modal.target} points={points} update={update} onClose={closeModal}
+          <TargetModal key="target" doc={archives.events.length ? { ...doc, events: [...archives.events, ...doc.events] } : doc} target={modal.target} points={points} update={update} onClose={closeModal}
             absentIds={doc.students.filter((s) => absent(s.id)).map((s) => s.id)}
             onAward={(ids, sk, label) => award(modal.target.type === 'class' ? presentIds : ids, sk, label)} />
         )}
@@ -407,7 +410,7 @@ export default function Classroom() {
         {modal?.kind === 'tool' && modal.id === 'directions' && <DirectionsTool key="dir" doc={doc} update={update} onClose={closeModal} onBack={backToKit} />}
         {modal?.kind === 'tool' && modal.id === 'tps' && <TpsTool key="tps" doc={doc} update={update} onClose={closeModal} onBack={backToKit} />}
         {modal?.kind === 'tool' && modal.id === 'today' && <PlanEditor key="today" doc={doc} update={update} cls={cls} initialKey={modal.key} onClose={closeModal} onBack={modal.fromKit ? backToKit : undefined} onOpenSettings={() => setModal({ kind: 'settings' })} />}
-        {modal?.kind === 'settings' && <ClassSettings key="settings" doc={doc} update={update} onClose={closeModal} className={meta.label} />}
+        {modal?.kind === 'settings' && <ClassSettings key="settings" doc={doc} update={update} onClose={closeModal} className={meta.label} cls={cls} onReload={reload} />}
       </AnimatePresence>
 
       {/* Időzítő és zene: futás közben teljes képernyő ↔ kompakt */}

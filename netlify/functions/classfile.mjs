@@ -6,7 +6,7 @@
 // A fájlok titkosítva (AES-256-GCM) kerülnek a Netlify Blobs tárolóba.
 import crypto from 'node:crypto'
 import { hasSession, json, sameOrigin } from '../lib/security.mjs'
-import { isClass, saveFile, loadFile, deleteFile, FILE_ID } from '../lib/classroomStore.mjs'
+import { isClass, saveFile, loadFile, deleteFile, FILE_ID, fileExists, indexAdd, indexRemove, loadFileIndex, rebuildFileIndex } from '../lib/classroomStore.mjs'
 
 const MAX_BYTES = 5.5 * 1024 * 1024 // a Netlify-függvények kéréshatára alatt
 // Engedett típusok: képek, hang, videó, gyakori dokumentumok
@@ -18,6 +18,12 @@ export default async (req, context) => {
   const teacher = hasSession(req, 'teacher')
 
   try {
+    // GET /api/classfile/:cls (azonosító nélkül) → a fájlok listája (csak tanár, Tárhely panel)
+    if (req.method === 'GET' && !id) {
+      if (!teacher) return json(401, { error: 'locked' })
+      const list = (await loadFileIndex(cls)) || (await rebuildFileIndex(cls))
+      return json(200, { files: list }, { 'Cache-Control': 'no-store' })
+    }
     if (req.method === 'GET') {
       if (!teacher && !hasSession(req, `language-${cls}`)) return json(401, { error: 'locked' })
       if (!FILE_ID.test(id || '')) return json(404, { error: 'file' })
@@ -46,6 +52,7 @@ export default async (req, context) => {
     if (req.method === 'DELETE') {
       if (!FILE_ID.test(id || '')) return json(404, { error: 'file' })
       await deleteFile(cls, id)
+      await indexRemove(cls, id)
       return json(200, { ok: true })
     }
 
@@ -59,8 +66,12 @@ export default async (req, context) => {
       let name = 'fajl'
       try { name = decodeURIComponent(req.headers.get('x-file-name') || 'fajl') } catch { /* */ }
       name = name.replace(/[\\/\r\n"]/g, '_').slice(0, 120)
-      const fileId = crypto.randomBytes(12).toString('base64url')
-      await saveFile(cls, fileId, data, { name, type, size: data.length, at: Date.now() })
+      // tartalom szerinti azonosító: ugyanaz a fájl csak egyszer tárolódik
+      const fileId = 'h' + crypto.createHash('sha256').update(data).digest('base64url').slice(0, 27)
+      if (!(await fileExists(cls, fileId))) {
+        await saveFile(cls, fileId, data, { name, type, size: data.length, at: Date.now() })
+        await indexAdd(cls, { id: fileId, name, type, size: data.length, at: Date.now() })
+      }
       return json(200, { id: fileId, name, type, size: data.length })
     }
 

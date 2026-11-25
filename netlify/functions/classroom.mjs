@@ -2,10 +2,23 @@
 // PUT /api/classroom/:cls  { doc } → mentés. A doc.rev egyezzen a tárolttal,
 //   különben 409 (másik eszközön közben módosult) és visszaküldjük a frisset.
 // Csak a tanári (teacher) munkamenet-sütivel érhető el.
+import zlib from 'node:zlib'
 import { hasSession, json, sameOrigin } from '../lib/security.mjs'
 import { isClass, loadClass, saveClass } from '../lib/classroomStore.mjs'
 
-const MAX_BYTES = 900 * 1024
+// A kliens tömörítve (gzip) küldi a dokumentumot: így évekig elfér a teljes
+// eseménynapló. Tömörítve max. 5 MB, kibontva max. 40 MB.
+const MAX_BYTES = 5 * 1024 * 1024
+const MAX_PLAIN = 40 * 1024 * 1024
+// válasz tömörítve, ha a böngésző kéri
+function gz(req, status, body) {
+  const text = JSON.stringify(body)
+  if (!/gzip/.test(req.headers.get('accept-encoding') || '') || text.length < 2048) return json(status, body, { Vary: 'Cookie, Accept-Encoding' })
+  return new Response(zlib.gzipSync(text), {
+    status,
+    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Content-Encoding': 'gzip', 'Cache-Control': 'no-store', Vary: 'Cookie, Accept-Encoding' },
+  })
+}
 
 export default async (req, context) => {
   const cls = context?.params?.cls
@@ -14,13 +27,19 @@ export default async (req, context) => {
 
   try {
     if (req.method === 'GET') {
-      return json(200, { doc: await loadClass(cls) }, { Vary: 'Cookie' })
+      return gz(req, 200, { doc: await loadClass(cls) })
     }
     if (req.method !== 'PUT') return json(405, { error: 'method' }, { Allow: 'GET, PUT' })
     if (!sameOrigin(req)) return json(403, { error: 'origin' })
 
-    const text = await req.text()
-    if (text.length > MAX_BYTES) return json(413, { error: 'too-large' })
+    const raw = Buffer.from(await req.arrayBuffer())
+    if (raw.length > MAX_BYTES) return json(413, { error: 'too-large' })
+    let text
+    try {
+      text = req.headers.get('x-body-encoding') === 'gzip' ? zlib.gunzipSync(raw, { maxOutputLength: MAX_PLAIN }).toString('utf8') : raw.toString('utf8')
+    } catch {
+      return json(413, { error: 'too-large' })
+    }
     let body
     try {
       body = JSON.parse(text)
@@ -34,7 +53,7 @@ export default async (req, context) => {
 
     const current = await loadClass(cls)
     const currentRev = current?.rev ?? 0
-    if ((doc.rev ?? 0) !== currentRev) return json(409, { error: 'conflict', doc: current })
+    if ((doc.rev ?? 0) !== currentRev) return gz(req, 409, { error: 'conflict', doc: current })
 
     const next = { ...doc, rev: currentRev + 1, savedAt: Date.now() }
     await saveClass(cls, next)

@@ -110,3 +110,64 @@ export async function withSchool(doc) {
   const school = await loadSchool().catch(() => null)
   return school ? { ...doc, calendar: school.calendar || doc.calendar, shortDays: school.shortDays || doc.shortDays } : doc
 }
+
+// ── Fájl-index osztályonként (a Tárhely panelhez: név, típus, méret, idő) ──
+const indexKey = (cls) => `fileindex-${cls}`
+export async function loadFileIndex(cls) {
+  const raw = await readRaw(indexKey(cls))
+  return raw ? JSON.parse(open(raw).toString('utf8')) : null
+}
+async function writeFileIndex(cls, list) {
+  await writeRaw(indexKey(cls), seal(Buffer.from(JSON.stringify(list), 'utf8')))
+}
+export async function indexAdd(cls, entry) {
+  const list = (await loadFileIndex(cls)) || []
+  if (!list.some((x) => x.id === entry.id)) list.push(entry)
+  await writeFileIndex(cls, list)
+}
+export async function indexRemove(cls, id) {
+  const list = (await loadFileIndex(cls)) || []
+  await writeFileIndex(cls, list.filter((x) => x.id !== id))
+}
+// az index újraépítése a tárolóból (ha még nincs – a régebben feltöltött fájlokhoz)
+export async function rebuildFileIndex(cls) {
+  const prefix = `file-${cls}-`
+  let keys = []
+  if (isNetlify()) {
+    const store = await getStoreSafe()
+    const { blobs } = await store.list({ prefix })
+    keys = blobs.map((b) => b.key)
+  } else {
+    try { keys = (await fs.readdir(DEV_DIR)).filter((f) => f.startsWith(prefix)).map((f) => f.replace(/\.enc$/, '')) } catch { keys = [] }
+  }
+  const list = []
+  for (const k of keys) {
+    const id = k.slice(prefix.length)
+    const f = await loadFile(cls, id).catch(() => null)
+    if (f) list.push({ id, name: f.meta.name, type: f.meta.type, size: f.meta.size ?? f.data.length, at: f.meta.at || 0 })
+  }
+  await writeFileIndex(cls, list)
+  return list
+}
+export const fileExists = async (cls, id) => Boolean(await readRaw(fileKey(cls, id)))
+
+// ── Tanévek archívuma: a lezárt tanév teljes dokumentuma, csak olvasásra ──
+const archiveKey = (cls, year) => `archive-${cls}-${year}`
+export async function loadArchive(cls, year) {
+  const raw = await readRaw(archiveKey(cls, year))
+  return raw ? JSON.parse(open(raw).toString('utf8')) : null
+}
+export async function saveArchive(cls, year, doc) {
+  await writeRaw(archiveKey(cls, year), seal(Buffer.from(JSON.stringify(doc), 'utf8')))
+}
+export async function listArchiveYears(cls) {
+  const prefix = `archive-${cls}-`
+  let keys = []
+  if (isNetlify()) {
+    const store = await getStoreSafe()
+    keys = (await store.list({ prefix })).blobs.map((b) => b.key)
+  } else {
+    try { keys = (await fs.readdir(DEV_DIR)).filter((f) => f.startsWith(prefix)).map((f) => f.replace(/\.enc$/, '')) } catch { keys = [] }
+  }
+  return keys.map((k) => k.slice(prefix.length)).filter((y) => /^\d{4}$/.test(y)).sort()
+}

@@ -3,6 +3,7 @@ import { Reorder, useDragControls } from 'framer-motion'
 import { Sheet, Icon } from './ui.jsx'
 import { Art, SkillArt, fileArt } from './art.jsx'
 import { KretaSheet } from './kreta.jsx'
+import { YearPanel, FilesPanel } from './upkeep.jsx'
 import {
   LESSON_MIN, ORG_FORMS, TAGS, WEEKDAYS, addMinutes, dayKey, getPlan, lessonLabel, lessonTimeline, newItem, nextLessonKey,
   splitKey, tagOf, uid, previousHomework, withSkeleton, TASK_TAGS, plannedKeys, stepSkills,
@@ -70,9 +71,9 @@ async function uploadFile(cls, file) {
   return { id: uid(), type: 'file', fileId: f.id, name: f.name, mime: f.type, size: f.size }
 }
 
-const removeFile = (cls, r) => {
-  if (r.type === 'file' && r.fileId) fetch(fileUrl(cls, r.fileId), { method: 'DELETE', credentials: 'same-origin' }).catch(() => {})
-}
+// A fájl a tárolóban marad (más óra vagy egy archivált tanév is hivatkozhat rá);
+// a nem használt fájlokat a Class settings → Files panelen lehet törölni.
+const removeFile = () => {}
 
 const normalizeUrl = (u) => {
   const s = u.trim()
@@ -178,7 +179,7 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings, 
     setOpen(it.id)
   }
   const removeItem = (it) => {
-    if (it.resources?.length && !window.confirm('This step and its uploaded files will be deleted. Continue?')) return
+    if (it.resources?.length && !window.confirm('Delete this step? (Its files stay in Class settings → Files.)')) return
     it.resources?.forEach((r) => removeFile(cls, r))
     setPlan((p) => ({ ...p, items: p.items.filter((x) => x.id !== it.id) }))
   }
@@ -559,7 +560,7 @@ function OrgPicker({ item, onChange }) {
 
 // ── Osztálybeállítások: heti órarend (csengetési rend alapján), rövidített napok, tanév rendje ──
 const SCHOOL_DAYS = WEEKDAYS.filter((w) => w.id <= 5)
-export function ClassSettings({ doc, update, onClose, className = '' }) {
+export function ClassSettings({ doc, update, onClose, className = '', cls, onReload }) {
   const sched = doc.schedule || []
   const has = (day, p) => sched.some((s) => s.day === day && (s.period === p || (!Number.isInteger(s.period) && s.time === BELLS.normal[p][0])))
   const toggle = (day, p) => update((d) => {
@@ -663,6 +664,9 @@ export function ClassSettings({ doc, update, onClose, className = '' }) {
       <button className="cr-btn cr-btn--sm" onClick={() => setUnits((l) => [...l, { id: uid(), name: '', from: '', to: '' }])}>
         <Icon.plus />Add unit
       </button>
+
+      <YearPanel doc={doc} cls={cls} onReload={() => { onClose(); onReload?.() }} />
+      <FilesPanel doc={doc} cls={cls} />
     </Sheet>
   )
 }
