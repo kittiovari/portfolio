@@ -79,11 +79,11 @@ export default function ClassBoard({ cls }) {
           <p className="cr-hint cr-hint--center">Your points will appear here soon.</p>
         ) : view === 'students' ? (
           <div className="cr-grid">
-            <button className="cr-tile cr-tile--class" onClick={() => setOpen({ ids: students.map((s) => s.id), title: 'Whole class' })}>
+            <button className="cr-tile cr-tile--class" onClick={() => setOpen({ ids: students.map((s) => s.id), title: 'Everyone' })}>
               <span className="cr-tile__art"><ClassAvatar /></span>
               <span className="cr-badge">{total}</span>
               <span className="cr-tile__last">&nbsp;</span>
-              <span className="cr-tile__first">Class</span>
+              <span className="cr-tile__first">Everyone</span>
             </button>
             {students.map((s) => (
               <button key={s.id} className="cr-tile" onClick={() => setOpen({ ids: [s.id], title: fullName(s), student: s })}>

@@ -4,6 +4,7 @@ import { Sheet, Icon } from './ui.jsx'
 import {
   LESSON_MIN, ORG_FORMS, TAGS, WEEKDAYS, addMinutes, dayKey, getPlan, lessonLabel, lessonTimeline, newItem, nextLessonKey,
   splitKey, tagOf, uid, previousHomework, withSkeleton, TASK_TAGS, plannedKeys,
+  BELLS, isShortDay, lessonStart, lessonLength, breakOn,
 } from './model.js'
 
 /*
@@ -129,7 +130,10 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings, 
   const plan = withSkeleton(getPlan(doc, key))
   const { date, time } = splitKey(key)
   const prevHw = previousHomework(doc, key)
-  const length = doc.lessonLength || LESSON_MIN
+  const length = lessonLength(doc, key)
+  const start0 = lessonStart(doc, key)
+  const short = time ? isShortDay(doc, date) : false
+  const holiday = breakOn(doc, date)
   // az áthúzott (házi nélküli) Homework review nem számít bele az időbe
   const mins = (it) => (it.role === 'hwreview' && !prevHw ? 0 : Number(it.minutes) || 0)
   const total = plan.items.reduce((s, it) => s + mins(it), 0)
@@ -200,7 +204,7 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings, 
   // kezdési időpontok a teljes sorrend szerint
   let acc = 0
   const startOf = {}
-  plan.items.forEach((it) => { startOf[it.id] = addMinutes(time, acc); acc += mins(it) })
+  plan.items.forEach((it) => { startOf[it.id] = addMinutes(start0, acc); acc += mins(it) })
   const stepNo = Object.fromEntries(plan.items.map((it, i) => [it.id, i + 1]))
 
   const row = (it, extra = {}) => (
@@ -222,7 +226,7 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings, 
         <div className="cr-plan__lesson">
           {hasSchedule ? (
             <LessonPicker
-              value={key} nextKey={nextKey}
+              doc={doc} value={key} nextKey={nextKey}
               options={upcoming.includes(key) ? upcoming : [key, ...upcoming]}
               planned={(k) => Boolean(doc.plans?.[k])}
               onChange={(k) => { setKey(k); setOpen(null) }}
@@ -236,6 +240,17 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings, 
         </div>
         <button className="cr-iconbtn" onClick={() => step(1)} aria-label="Next lesson"><Icon.next /></button>
       </div>
+      {(time || holiday) && (
+        <div className="cr-plan__daybar">
+          {holiday && <span className="cr-plan__holiday">🌴 {holiday.name || 'Break'} – no school</span>}
+          {time && (
+            <button className={`cr-plan__short ${short ? 'is-on' : ''}`} aria-pressed={short}
+              onClick={() => update((d) => ({ ...d, shortDays: short ? (d.shortDays || []).filter((x) => x !== date) : [...new Set([...(d.shortDays || []), date])] }))}>
+              <span className="cr-plan__switch" aria-hidden="true" />Shortened day (35 min)
+            </button>
+          )}
+        </div>
+      )}
       {!hasSchedule && (
         <p className="cr-hint cr-hint--center">
           Tip: add your weekly timetable in <button className="cr-link" onClick={onOpenSettings}>Class settings</button> to step from lesson to lesson.
@@ -277,7 +292,7 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings, 
 }
 
 // Óraválasztó: egyedi gomb + lenyíló lista (a natív select helyett)
-export function LessonPicker({ value, options, nextKey, planned, onChange }) {
+export function LessonPicker({ value, options, nextKey, planned, onChange, doc = null }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
   useEffect(() => {
@@ -288,7 +303,7 @@ export function LessonPicker({ value, options, nextKey, planned, onChange }) {
     document.addEventListener('keydown', esc, true)
     return () => { document.removeEventListener('mousedown', close); document.removeEventListener('keydown', esc, true) }
   }, [open])
-  const label = (k) => lessonLabel(k, { weekday: 'long', day: 'numeric', month: 'long' })
+  const label = (k) => lessonLabel(k, { weekday: 'long', day: 'numeric', month: 'long' }, doc)
   return (
     <div className="cr-lpick" ref={ref}>
       <button className="cr-lpick__btn" onClick={() => setOpen((o) => !o)} aria-haspopup="listbox" aria-expanded={open}>
@@ -519,36 +534,95 @@ function OrgPicker({ item, onChange }) {
   )
 }
 
-// ── Osztálybeállítások: heti órarend, óra hossza ──
-export function ClassSettings({ doc, update, onClose }) {
-  const sched = [...(doc.schedule || [])].sort((a, b) => a.day - b.day || a.time.localeCompare(b.time))
-  const set = (fn) => update((d) => ({ ...d, schedule: fn(d.schedule || []) }))
-  const length = doc.lessonLength || LESSON_MIN
+// ── Osztálybeállítások: heti órarend (csengetési rend alapján), rövidített napok, tanév rendje ──
+const SCHOOL_DAYS = WEEKDAYS.filter((w) => w.id <= 5)
+export function ClassSettings({ doc, update, onClose, className = '' }) {
+  const sched = doc.schedule || []
+  const has = (day, p) => sched.some((s) => s.day === day && (s.period === p || (!Number.isInteger(s.period) && s.time === BELLS.normal[p][0])))
+  const toggle = (day, p) => update((d) => {
+    const list = d.schedule || []
+    const match = (s) => s.day === day && (s.period === p || (!Number.isInteger(s.period) && s.time === BELLS.normal[p][0]))
+    return { ...d, schedule: list.some(match) ? list.filter((s) => !match(s)) : [...list, { id: uid(), day, period: p }] }
+  })
+  const cal = doc.calendar || {}
+  const setCal = (patch) => update((d) => ({ ...d, calendar: { ...(d.calendar || {}), ...(typeof patch === 'function' ? patch(d.calendar || {}) : patch) } }))
+  const shortDays = [...(doc.shortDays || [])].sort()
+  const [newShort, setNewShort] = useState('')
+  const count = sched.length
+
   return (
-    <Sheet title="Class settings" onClose={onClose} className="cr-settings">
-      <h3 className="cr-settings__h">Weekly timetable</h3>
-      <p className="cr-hint">Your lessons with this class each week. The lesson planner uses these to step from lesson to lesson.</p>
-      <ul className="cr-sched">
-        {sched.map((s) => (
-          <li key={s.id}>
-            <select value={s.day} onChange={(e) => set((l) => l.map((x) => (x.id === s.id ? { ...x, day: Number(e.target.value) } : x)))} aria-label="Day">
-              {WEEKDAYS.map((w) => <option key={w.id} value={w.id}>{w.label}</option>)}
-            </select>
-            <input type="time" value={s.time} step="300" onChange={(e) => e.target.value && set((l) => l.map((x) => (x.id === s.id ? { ...x, time: e.target.value } : x)))} aria-label="Start time" />
-            <span className="cr-muted">– {addMinutes(s.time, length)}</span>
-            <span className="cr-spacer" />
-            <button className="cr-iconbtn cr-iconbtn--sm" onClick={() => set((l) => l.filter((x) => x.id !== s.id))} aria-label="Remove lesson"><Icon.close /></button>
+    <Sheet title={`${className ? `${className} – ` : ''}Class settings`} onClose={onClose} wide className="cr-settings">
+      <h3 className="cr-settings__h">Weekly timetable <small className="cr-muted">· {count} lesson{count === 1 ? '' : 's'} a week</small></h3>
+      <div className="cr-ttable-wrap">
+        <table className="cr-ttable">
+          <thead>
+            <tr><th /><th />{SCHOOL_DAYS.map((w) => <th key={w.id}>{w.short}</th>)}</tr>
+          </thead>
+          <tbody>
+            {BELLS.normal.map(([from, to], p) => (
+              <tr key={p}>
+                <th className="cr-ttable__p">{p}.</th>
+                <td className="cr-ttable__time">{from}–{to}</td>
+                {SCHOOL_DAYS.map((w) => {
+                  const on = has(w.id, p)
+                  return (
+                    <td key={w.id}>
+                      <button className={`cr-ttable__cell ${on ? 'is-on' : ''}`} onClick={() => toggle(w.id, p)} aria-pressed={on}
+                        aria-label={`${w.label}, period ${p} (${from})`}>{on ? '✓' : ''}</button>
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {sched.filter((x) => !Number.isInteger(x.period) && !BELLS.normal.some(([t]) => t === x.time)).length > 0 && (
+        <div className="cr-chiplist cr-chiplist--other">
+          <span className="cr-muted">Other times:</span>
+          {sched.filter((x) => !Number.isInteger(x.period) && !BELLS.normal.some(([t]) => t === x.time)).map((x) => (
+            <span key={x.id} className="cr-chipx">
+              {WEEKDAYS.find((w) => w.id === x.day)?.short} {x.time}
+              <button className="cr-iconbtn cr-iconbtn--sm" aria-label="Remove" onClick={() => update((d) => ({ ...d, schedule: (d.schedule || []).filter((y) => y.id !== x.id) }))}><Icon.close /></button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      <h3 className="cr-settings__h">Shortened days <small className="cr-muted">· 35-minute lessons</small></h3>
+      <div className="cr-chiplist">
+        {shortDays.map((d) => (
+          <span key={d} className="cr-chipx">
+            {lessonLabel(d, { weekday: 'short', day: 'numeric', month: 'short' })}
+            <button className="cr-iconbtn cr-iconbtn--sm" aria-label="Remove" onClick={() => update((x) => ({ ...x, shortDays: (x.shortDays || []).filter((y) => y !== d) }))}><Icon.close /></button>
+          </span>
+        ))}
+        <form className="cr-chiplist__add" onSubmit={(e) => { e.preventDefault(); if (newShort) { update((x) => ({ ...x, shortDays: [...new Set([...(x.shortDays || []), newShort])] })); setNewShort('') } }}>
+          <input type="date" value={newShort} onChange={(e) => setNewShort(e.target.value)} aria-label="Shortened day" />
+          <button className="cr-btn cr-btn--sm" type="submit" disabled={!newShort}><Icon.plus />Add</button>
+        </form>
+      </div>
+
+      <h3 className="cr-settings__h">School year</h3>
+      <div className="cr-year">
+        <label className="cr-year__f"><span>First day</span><input type="date" value={cal.start || ''} onChange={(e) => setCal({ start: e.target.value })} /></label>
+        <label className="cr-year__f"><span>Last day</span><input type="date" value={cal.end || ''} onChange={(e) => setCal({ end: e.target.value })} /></label>
+      </div>
+      <ul className="cr-breaks">
+        {(cal.breaks || []).map((b) => (
+          <li key={b.id}>
+            <input value={b.name} placeholder="Break, e.g. Winter break" onChange={(e) => setCal((c) => ({ breaks: c.breaks.map((x) => (x.id === b.id ? { ...x, name: e.target.value } : x)) }))} aria-label="Break name" />
+            <input type="date" value={b.from || ''} onChange={(e) => setCal((c) => ({ breaks: c.breaks.map((x) => (x.id === b.id ? { ...x, from: e.target.value, to: x.to && x.to >= e.target.value ? x.to : e.target.value } : x)) }))} aria-label="From" />
+            <span className="cr-muted">–</span>
+            <input type="date" value={b.to || ''} min={b.from || undefined} onChange={(e) => setCal((c) => ({ breaks: c.breaks.map((x) => (x.id === b.id ? { ...x, to: e.target.value } : x)) }))} aria-label="To" />
+            <button className="cr-iconbtn cr-iconbtn--sm" aria-label="Remove break" onClick={() => setCal((c) => ({ breaks: c.breaks.filter((x) => x.id !== b.id) }))}><Icon.close /></button>
           </li>
         ))}
       </ul>
-      <button className="cr-btn" onClick={() => set((l) => [...l, { id: uid(), day: (sched[sched.length - 1]?.day % 5 || 0) + 1, time: sched[sched.length - 1]?.time || '08:00' }])}>
-        <Icon.plus />Add weekly lesson
+      <button className="cr-btn cr-btn--sm" onClick={() => setCal((c) => ({ breaks: [...(c.breaks || []), { id: uid(), name: '', from: '', to: '' }] }))}>
+        <Icon.plus />Add break / day off
       </button>
-      <h3 className="cr-settings__h">Lesson length</h3>
-      <label className="cr-field cr-field--inline">
-        <span>Minutes per lesson</span>
-        <input type="number" min="20" max="120" step="5" value={length} onChange={(e) => update((d) => ({ ...d, lessonLength: Math.max(20, Math.min(120, Number(e.target.value) || LESSON_MIN)) }))} />
-      </label>
     </Sheet>
   )
 }
@@ -638,7 +712,7 @@ export function LessonBoard({ doc, cls, active, onSelect, onEdit, onCheckHomewor
       <div className="cr-lboard__head">
         <CalendarArt className="cr-lboard__icon" />
         {options.length > 0 && key ? (
-          <LessonPicker value={key} options={options.includes(key) ? options : [key, ...options]} nextKey={nowKey} planned={(k) => planned.includes(k)} onChange={changeLesson} />
+          <LessonPicker doc={doc} value={key} options={options.includes(key) ? options : [key, ...options]} nextKey={nowKey} planned={(k) => planned.includes(k)} onChange={changeLesson} />
         ) : (
           <b className="cr-lboard__none">No lessons yet</b>
         )}
@@ -655,7 +729,7 @@ export function LessonBoard({ doc, cls, active, onSelect, onEdit, onCheckHomewor
           )}
           <ol className="cr-timeline__track cr-lboard__track" ref={track}>
             {items.map((it, i) => {
-              const start = addMinutes(time, acc)
+              const start = addMinutes(lessonStart(doc, key), acc)
               acc += it.role === 'hwreview' && !prevHw ? 0 : Number(it.minutes) || 0
               const title = it.role === 'hwreview'
                 ? `Homework review: ${prevHw.items.map((h) => h.aim).filter(Boolean).join(' · ') || 'homework'}`

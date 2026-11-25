@@ -216,7 +216,7 @@ export default function Classroom() {
             >
               <span className="cr-tile__art"><ClassAvatar /></span>
               {mode === 'normal' && <span className={`cr-badge ${classTotal < 0 ? 'is-neg' : ''}`}>{classTotal}</span>}
-              <span className="cr-tile__first">{mode === 'select' ? (selected.size === presentIds.length && presentIds.length ? 'Nobody' : 'Everyone') : 'Class'}</span>
+              <span className="cr-tile__first">{mode === 'select' ? (selected.size === presentIds.length && presentIds.length ? 'Nobody' : 'Everyone') : 'Everyone'}</span>
             </button>
             {sortStudents(doc.students).map(studentTile)}
             {mode === 'normal' && (
@@ -327,7 +327,7 @@ export default function Classroom() {
         {modal?.kind === 'tool' && modal.id === 'directions' && <DirectionsTool key="dir" doc={doc} update={update} onClose={closeModal} onBack={backToKit} />}
         {modal?.kind === 'tool' && modal.id === 'tps' && <TpsTool key="tps" doc={doc} update={update} onClose={closeModal} onBack={backToKit} />}
         {modal?.kind === 'tool' && modal.id === 'today' && <PlanEditor key="today" doc={doc} update={update} cls={cls} initialKey={modal.key} onClose={closeModal} onBack={modal.fromKit ? backToKit : undefined} onOpenSettings={() => setModal({ kind: 'settings' })} />}
-        {modal?.kind === 'settings' && <ClassSettings key="settings" doc={doc} update={update} onClose={closeModal} />}
+        {modal?.kind === 'settings' && <ClassSettings key="settings" doc={doc} update={update} onClose={closeModal} className={meta.label} />}
       </AnimatePresence>
 
       {/* Időzítő és zene: futás közben teljes képernyő ↔ kompakt */}

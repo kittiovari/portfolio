@@ -71,7 +71,12 @@ export default async (req, context) => {
       })),
     } : { title: '', items: [] }
     const planDate = planKey ? planKey.slice(0, 10) : null
-    const planTime = planKey && planKey.includes('@') ? planKey.split('@')[1] : null
+    // rövidített napon a rövidített csengetési rend szerinti kezdés
+    const NORMAL = ['07:05', '07:50', '08:45', '09:40', '10:35', '11:40', '12:45', '13:35', '14:25', '15:15']
+    const SHORT = ['07:10', '07:50', '08:35', '09:20', '10:05', '10:50', '11:45', '12:40', '13:20', '14:00']
+    const keyTime = planKey && planKey.includes('@') ? planKey.split('@')[1] : null
+    const pIdx = keyTime ? NORMAL.indexOf(keyTime) : -1
+    const planTime = keyTime && pIdx >= 0 && (doc.shortDays || []).includes(planDate) ? SHORT[pIdx] : keyTime
 
     return json(200, { students, events, groups, plan, planDate, planTime, isToday: planDate === todayKey, directions: doc.directions || [] }, { Vary: 'Cookie' })
   } catch (err) {

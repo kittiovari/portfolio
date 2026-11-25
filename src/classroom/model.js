@@ -234,15 +234,50 @@ export function getPlan(doc, key) {
 export const plannedKeys = (doc) =>
   [...new Set([...Object.keys(doc.plans || {}), ...Object.keys(doc.today || {})])].filter((k) => getPlan(doc, k).items.length || doc.plans?.[k]?.title).sort()
 
+// ── Csengetési rend (0–9. óra): normál 45 perces és rövidített 35 perces ──
+export const BELLS = {
+  normal: [['07:05', '07:45'], ['07:50', '08:35'], ['08:45', '09:30'], ['09:40', '10:25'], ['10:35', '11:20'],
+    ['11:40', '12:25'], ['12:45', '13:30'], ['13:35', '14:20'], ['14:25', '15:10'], ['15:15', '16:00']],
+  short: [['07:10', '07:45'], ['07:50', '08:25'], ['08:35', '09:10'], ['09:20', '09:55'], ['10:05', '10:40'],
+    ['10:50', '11:25'], ['11:45', '12:20'], ['12:40', '13:15'], ['13:20', '13:55'], ['14:00', '14:35']],
+}
+export const SHORT_MIN = 35
+export const periodOfTime = (time) => BELLS.normal.findIndex(([start]) => start === time)
+// órarendi bejegyzés → kezdés (a kulcsban mindig a normál rend kezdése szerepel, így stabil)
+const entryTime = (s) => (Number.isInteger(s.period) ? BELLS.normal[s.period][0] : s.time)
+
+export const isShortDay = (doc, date) => (doc.shortDays || []).includes(date)
+// Tanítási nap? (a tanév kezdete–vége között, nem szünetben)
+export function isSchoolDay(doc, date) {
+  const c = doc.calendar || {}
+  if (c.start && date < c.start) return false
+  if (c.end && date > c.end) return false
+  return !(c.breaks || []).some((b) => b.from && b.to && date >= b.from && date <= b.to)
+}
+export const breakOn = (doc, date) => (doc.calendar?.breaks || []).find((b) => b.from && b.to && date >= b.from && date <= b.to)
+
+// Az óra tényleges kezdése és hossza (rövidített napon a rövidített rend szerint)
+export function lessonStart(doc, key) {
+  const { date, time } = splitKey(key)
+  if (!time) return null
+  const p = periodOfTime(time)
+  return p >= 0 && isShortDay(doc, date) ? BELLS.short[p][0] : time
+}
+export const lessonLength = (doc, key) => (isShortDay(doc, splitKey(key).date) ? SHORT_MIN : doc.lessonLength || LESSON_MIN)
+export const periodOfKey = (key) => { const t = splitKey(key).time; return t ? periodOfTime(t) : -1 }
+
 // Az órarend szerinti órák egy időablakban (kulcsok, időrendben)
 export function scheduledLessons(doc, fromDate, days) {
-  const sched = [...(doc.schedule || [])].sort((a, b) => a.day - b.day || a.time.localeCompare(b.time))
+  const sched = [...(doc.schedule || [])].map((s) => ({ ...s, t: entryTime(s) })).filter((s) => s.t)
+    .sort((a, b) => a.day - b.day || a.t.localeCompare(b.t))
   if (!sched.length) return []
   const out = []
   const d = parseDate(fromDate)
   for (let i = 0; i < days; i++) {
     const wd = d.getDay() === 0 ? 7 : d.getDay()
-    for (const s of sched) if (s.day === wd) out.push(lessonKey(dayKey(d), s.time))
+    const date = dayKey(d)
+    // szünetben és a tanéven kívül nincs óra
+    if (isSchoolDay(doc, date)) for (const s of sched) if (s.day === wd) out.push(lessonKey(date, s.t))
     d.setDate(d.getDate() + 1)
   }
   return out
@@ -262,12 +297,11 @@ export function lessonTimeline(doc) {
 export function nextLessonKey(doc, now = new Date()) {
   const today = dayKey(now)
   const nowTime = `${z2(now.getHours())}:${z2(now.getMinutes())}`
-  const len = doc.lessonLength || LESSON_MIN
   return lessonTimeline(doc).find((k) => {
     const { date, time } = splitKey(k)
     if (date > today) return true
     if (date < today) return false
-    return !time || addMinutes(time, len) > nowTime
+    return !time || addMinutes(lessonStart(doc, k), lessonLength(doc, k)) > nowTime
   }) || null
 }
 
@@ -281,10 +315,15 @@ export function previousHomework(doc, key) {
   return null
 }
 
-export const lessonLabel = (key, opts = { weekday: 'short', day: 'numeric', month: 'short' }) => {
+// Felirat: dátum · kezdés (· „short”). doc nélkül a kulcsban lévő időt írja ki.
+export const lessonLabel = (key, opts = { weekday: 'short', day: 'numeric', month: 'short' }, doc = null) => {
   const { date, time } = splitKey(key)
   const d = parseDate(date).toLocaleDateString('en-GB', opts)
-  return time ? `${d} · ${time}` : d
+  if (!time) return d
+  const p = periodOfTime(time)
+  const start = doc ? lessonStart(doc, key) : time
+  const short = doc && isShortDay(doc, date) ? ' · short' : ''
+  return `${d} · ${p >= 0 ? `${p}. · ` : ''}${start}${short}`
 }
 
 // ── Jelenlét ──

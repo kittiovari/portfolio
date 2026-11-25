@@ -18,7 +18,7 @@ export function TargetModal({ doc, target, points, onAward, update, onClose, ini
   const total = target.type === 'student'
     ? points[student.id] || 0
     : ids.reduce((sum, id) => sum + (points[id] || 0), 0)
-  const title = student ? fullName(student) : target.type === 'class' ? 'Whole class' : target.title
+  const title = student ? fullName(student) : target.type === 'class' ? 'Everyone' : target.title
 
   const tabs = [
     { id: 'give', label: 'Give points', icon: <Icon.plus /> },
@@ -45,7 +45,7 @@ export function TargetModal({ doc, target, points, onAward, update, onClose, ini
         <div className="cr-target__content">
           {tab === 'give' && (homeworkMode
             ? <HomeworkCheck doc={doc} onGive={(sk) => { onAward(ids, sk, title); onClose() }} />
-            : <GivePoints doc={doc} update={update} onGive={(sk) => { onAward(ids, sk, title); onClose() }} />)}
+            : <GivePoints doc={doc} update={update} editable={target.type === 'class'} onGive={(sk) => { onAward(ids, sk, title); onClose() }} />)}
           {tab === 'report' && <Report doc={doc} ids={ids} title={title} update={update} />}
           {tab === 'custom' && student && <Customize student={student} update={update} onClose={onClose} />}
         </div>
@@ -106,7 +106,8 @@ function HomeworkCheck({ doc, onGive }) {
   )
 }
 
-function GivePoints({ doc, update, onGive }) {
+// A pontszabályok csak az Everyone (egész osztály) menüben szerkeszthetők
+function GivePoints({ doc, update, onGive, editable = false }) {
   const [kind, setKind] = useState('positive')
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState(null) // { id?, name, icon, value }
@@ -169,9 +170,11 @@ function GivePoints({ doc, update, onGive }) {
         <button className={kind === 'positive' ? 'is-active' : ''} onClick={() => setKind('positive')}>Positive</button>
         <button className={kind === 'negative' ? 'is-active' : ''} onClick={() => setKind('negative')}>Needs work</button>
         <span className="cr-spacer" />
-        <button className={`cr-link ${editing ? 'is-on' : ''}`} onClick={() => setEditing((v) => !v)}>
-          <Icon.pencil />{editing ? 'Done' : 'Edit'}
-        </button>
+        {editable && (
+          <button className={`cr-link ${editing ? 'is-on' : ''}`} onClick={() => setEditing((v) => !v)}>
+            <Icon.pencil />{editing ? 'Done' : 'Edit'}
+          </button>
+        )}
       </div>
       <div className={`cr-skills ${editing ? 'is-editing' : ''}`}>
         {list.map((s) => (
@@ -186,10 +189,12 @@ function GivePoints({ doc, update, onGive }) {
             {editing && <span className="cr-skill__edit"><Icon.pencil /></span>}
           </button>
         ))}
-        <button className="cr-skill cr-skill--add" onClick={() => setForm({ name: '', icon: '', value: kind === 'positive' ? 1 : -1 })}>
-          <span className="cr-skill__plus"><Icon.plus /></span>
-          <span className="cr-skill__name">New skill</span>
-        </button>
+        {editable && (
+          <button className="cr-skill cr-skill--add" onClick={() => setForm({ name: '', icon: '', value: kind === 'positive' ? 1 : -1 })}>
+            <span className="cr-skill__plus"><Icon.plus /></span>
+            <span className="cr-skill__name">New skill</span>
+          </button>
+        )}
       </div>
     </>
   )
