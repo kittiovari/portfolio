@@ -51,7 +51,7 @@ export default async (req, context) => {
       }
       return []
     })()
-    const resolveKeep = (it) => it.role === 'reflection' || it.auto === 'hwreview' ? prevHw.length > 0 || it.role === 'reflection' : (!it.role || hasContent(it))
+    const resolveKeep = (it) => it.role === 'attendance' ? false : it.role === 'reflection' || it.auto === 'hwreview' ? prevHw.length > 0 || it.role === 'reflection' : (!it.role || hasContent(it))
     const resolve = (it) => (it.auto === 'hwreview' ? {
       ...it,
       aim: prevHw.length ? `Homework review: ${prevHw.map((h) => h.aim).filter(Boolean).join(' · ')}` : 'Homework review',

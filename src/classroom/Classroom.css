@@ -1022,3 +1022,7 @@ span.cr-sk { cursor: default; }
 .cr-plan__holiday { padding: 0.2rem 0.7rem; border-radius: 999px; background: #E8F2EA; font-size: 0.82rem; font-weight: 600; }
 
 .cr-chiplist--other { justify-content: center; margin-top: 0.5rem; }
+
+.cr-pick.is-late { border-color: #E0B33A; background: rgba(224, 179, 58, 0.12); }
+.cr-pick__mark.is-late { background: #C99B22; font-weight: 600; }
+.cr-hwwiz__sum .is-late { color: #A67C12; }

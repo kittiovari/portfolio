@@ -138,7 +138,7 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings, 
   const mins = (it) => (it.role === 'hwreview' && !prevHw ? 0 : Number(it.minutes) || 0)
   const total = plan.items.reduce((s, it) => s + mins(it), 0)
   const left = length - total
-  const head = plan.items.filter((it) => it.role === 'warmer' || it.role === 'hwreview')
+  const head = plan.items.filter((it) => it.role === 'attendance' || it.role === 'warmer' || it.role === 'hwreview')
   const middle = plan.items.filter((it) => !it.role)
   const tail = plan.items.filter((it) => it.role === 'homework' || it.role === 'reflection')
 
@@ -180,7 +180,7 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings, 
     it.resources?.forEach((r) => removeFile(cls, r))
     setPlan((p) => ({ ...p, items: p.items.filter((x) => x.id !== it.id) }))
   }
-  const reorderMiddle = (mid) => setPlan((p) => ({ ...p, items: [...p.items.filter((x) => x.role === 'warmer' || x.role === 'hwreview'), ...mid, ...p.items.filter((x) => x.role === 'homework' || x.role === 'reflection')] }))
+  const reorderMiddle = (mid) => setPlan((p) => ({ ...p, items: [...p.items.filter((x) => x.role === 'attendance' || x.role === 'warmer' || x.role === 'hwreview'), ...mid, ...p.items.filter((x) => x.role === 'homework' || x.role === 'reflection')] }))
   const moveMiddle = (i, dir) => {
     const a = [...middle]
     ;[a[i + dir], a[i]] = [a[i], a[i + dir]]
@@ -328,7 +328,7 @@ export function LessonPicker({ value, options, nextKey, planned, onChange, doc =
   )
 }
 
-const ROLE_LABEL = { warmer: 'Warmer', hwreview: 'Homework review', homework: 'Future homework', reflection: 'Self-reflection' }
+const ROLE_LABEL = { attendance: 'Attendance', warmer: 'Warmer', hwreview: 'Homework review', homework: 'Future homework', reflection: 'Self-reflection' }
 const roleLabel = (it) => ROLE_LABEL[it.role] || ''
 const AIM_PLACEHOLDER = {
   warmer: 'Warmer – e.g. Quizlet game, picture talk',
@@ -343,7 +343,7 @@ function PlanRow({ item, step, start, cls, review, maxMinutes = 45, open, onTogg
   const role = item.role
   const locked = role === 'hwreview'
   const struck = locked && !review // nem volt házi az előző órán: áthúzva
-  const compactOnly = role === 'reflection' || struck // csak cím + idő, nem nyitható
+  const compactOnly = role === 'reflection' || role === 'attendance' || struck // csak cím + idő, nem nyitható
   const canFiles = !locked && !compactOnly
   const org = ORG_FORMS.find((o) => o.id === item.org)
   const reviewAim = locked ? (review ? review.items.map((h) => h.aim).filter(Boolean).join(' · ') || 'homework' : 'no homework set in the previous lesson') : null
@@ -356,7 +356,7 @@ function PlanRow({ item, step, start, cls, review, maxMinutes = 45, open, onTogg
     setLinkForm(null)
   }
   const removeRes = (r) => { removeFile(cls, r); onChange((it) => ({ resources: (it.resources || []).filter((x) => x.id !== r.id) })) }
-  const shownTags = role === 'reflection' || struck ? [] : role ? [tagOf(role === 'warmer' ? 'warmer' : role === 'hwreview' ? 'hwreview' : role === 'homework' ? 'homework' : 'reflection')] : (item.tags || []).map(tagOf).filter(Boolean)
+  const shownTags = role === 'reflection' || role === 'attendance' || struck ? [] : role ? [tagOf(role === 'warmer' ? 'warmer' : role === 'hwreview' ? 'hwreview' : role === 'homework' ? 'homework' : 'reflection')] : (item.tags || []).map(tagOf).filter(Boolean)
 
   const Wrap = draggable ? Reorder.Item : 'li'
   const wrapProps = draggable
@@ -397,7 +397,7 @@ function PlanRow({ item, step, start, cls, review, maxMinutes = 45, open, onTogg
               ? <span className="cr-prow__locked">Homework review</span>
               : <span className="cr-prow__locked" title={`From ${lessonLabel(review.key)}`}>🔒 {reviewAim}</span>
           ) : compactOnly ? (
-            <span className="cr-prow__locked">Self-reflection</span>
+            <span className="cr-prow__locked">{role === 'attendance' ? 'Attendance' : 'Self-reflection'}</span>
           ) : (
             <input value={item.aim} placeholder="Title" onChange={(e) => onChange({ aim: e.target.value })} aria-label="Title" />
           )}
@@ -679,10 +679,21 @@ export function CalendarArt({ className = '' }) {
   )
 }
 
+// Jelenlét összesítése egy napra
+function attSummary(doc, date) {
+  const a = doc.attendance?.[date]
+  if (!a || !Object.keys(a).length) return 'Not taken yet'
+  const v = Object.values(a)
+  const present = v.filter((x) => x === 'present' || x === 'left').length
+  const absent = v.filter((x) => x === 'absent').length
+  const late = v.filter((x) => x === 'late').length
+  return `${present} here · ${absent} absent${late ? ` · ${late} late` : ''}`
+}
+
 // ── Tanári osztálynézet: az óra idővonala, feladathoz kötött pontozással ──
 // Választható órák: a már megtartott (betervezett) órák, az éppen aktuális óra,
 // és a következő, már előkészített órák.
-export function LessonBoard({ doc, cls, active, onSelect, onEdit, onCheckHomework }) {
+export function LessonBoard({ doc, cls, active, onSelect, onEdit, onCheckHomework, onTakeAttendance }) {
   const today = dayKey()
   const nowKey = nextLessonKey(doc)
   const planned = plannedKeys(doc)
@@ -727,6 +738,11 @@ export function LessonBoard({ doc, cls, active, onSelect, onEdit, onCheckHomewor
               <button className="cr-btn cr-btn--primary cr-btn--sm" onClick={onCheckHomework}>✓ Check homework</button>
             </p>
           )}
+          {active?.role === 'attendance' && (
+            <p className="cr-lboard__hint is-on">
+              <button className="cr-btn cr-btn--primary cr-btn--sm" onClick={() => onTakeAttendance(splitKey(key).date)}>✓ Take attendance</button>
+            </p>
+          )}
           <ol className="cr-timeline__track cr-lboard__track" ref={track}>
             {items.map((it, i) => {
               const start = addMinutes(lessonStart(doc, key), acc)
@@ -748,7 +764,8 @@ export function LessonBoard({ doc, cls, active, onSelect, onEdit, onCheckHomewor
                     <b className="cr-tcard__title">{title}</b>
                     {org && <span className="cr-tcard__org"><OrgIcon id={org.id} />{org.label}</span>}
                     <span className={`cr-lcard__pts ${evs.length ? 'has' : ''}`}>
-                      {evs.length ? `${sum > 0 ? '+' : ''}${sum} pts · ${kids} student${kids === 1 ? '' : 's'}` : sel ? 'Give points above ↑' : 'No points yet'}
+                      {it.role === 'attendance' ? attSummary(doc, splitKey(key).date)
+                        : evs.length ? `${sum > 0 ? '+' : ''}${sum} pts · ${kids} student${kids === 1 ? '' : 's'}` : sel ? 'Give points above ↑' : 'No points yet'}
                     </span>
                   </button>
                 </li>

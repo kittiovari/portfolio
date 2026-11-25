@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { profileArt } from '../components/AreaIllustrations.jsx'
 import Avatar, { ClassAvatar } from '../classroom/Avatar.jsx'
 import { Icon, play, isMuted, setMuted } from '../classroom/ui.jsx'
-import { TargetModal, AddStudents, GroupEditor, HomeworkWizard } from '../classroom/StudentModal.jsx'
+import { TargetModal, AddStudents, GroupEditor, HomeworkWizard, AttendanceWizard } from '../classroom/StudentModal.jsx'
 import {
   Toolkit, RandomTool, GroupMakerTool, DirectionsTool, TpsTool,
 } from '../classroom/tools.jsx'
@@ -89,6 +89,8 @@ export default function Classroom() {
       setSelected((set) => { const n = new Set(set); n.has(s.id) ? n.delete(s.id) : n.add(s.id); return n })
     } else if (activeStep?.role === 'hwreview') {
       setModal({ kind: 'homework', preselect: [s.id] })
+    } else if (activeStep?.role === 'attendance') {
+      setModal({ kind: 'attendance', date: activeStep.key.slice(0, 10) })
     } else {
       setModal({ kind: 'target', target: { type: 'student', id: s.id } })
     }
@@ -211,7 +213,7 @@ export default function Classroom() {
               className={`cr-tile cr-tile--class ${mode !== 'normal' ? 'is-dim' : ''}`}
               onClick={() => mode === 'select'
                 ? setSelected(selected.size === presentIds.length ? new Set() : new Set(presentIds))
-                : mode === 'normal' && setModal(activeStep?.role === 'hwreview' ? { kind: 'homework', preselect: [] } : { kind: 'target', target: { type: 'class' } })}
+                : mode === 'normal' && setModal(activeStep?.role === 'hwreview' ? { kind: 'homework', preselect: [] } : activeStep?.role === 'attendance' ? { kind: 'attendance', date: activeStep.key.slice(0, 10) } : { kind: 'target', target: { type: 'class' } })}
               disabled={mode === 'attendance'}
             >
               <span className="cr-tile__art"><ClassAvatar /></span>
@@ -256,6 +258,7 @@ export default function Classroom() {
         {mode !== 'attendance' && (
           <LessonBoard key={cls} doc={doc} cls={cls} active={activeStep} onSelect={setActiveStep}
             onCheckHomework={() => setModal({ kind: 'homework', preselect: [] })}
+            onTakeAttendance={(date) => setModal({ kind: 'attendance', date })}
             onEdit={(k) => setModal({ kind: 'tool', id: 'today', key: k })} />
         )}
       </main>
@@ -265,7 +268,6 @@ export default function Classroom() {
         {mode === 'normal' && (
           <>
             <button className="cr-dockbtn" onClick={() => setModal({ kind: 'toolkit' })}><Icon.grid />Toolkit</button>
-            <button className="cr-dockbtn" onClick={startAttendance} disabled={!doc.students.length}><Icon.clock />Attendance</button>
             <button className="cr-dockbtn" onClick={() => { setSelected(new Set()); setMode('select') }} disabled={!doc.students.length}><Icon.checkbox />Select multiple</button>
             <button className="cr-dockbtn" onClick={() => setModal({ kind: 'tool', id: 'random' })} disabled={!doc.students.length}><Icon.shuffle />Random</button>
             <button className="cr-dockbtn" onClick={() => setModal({ kind: 'tool', id: 'session' })}><Icon.timer />Timer & music</button>
@@ -301,6 +303,10 @@ export default function Classroom() {
         {modal?.kind === 'target' && (
           <TargetModal key="target" doc={doc} target={modal.target} points={points} update={update} onClose={closeModal}
             onAward={(ids, sk, label) => award(modal.target.type === 'class' ? presentIds : ids, sk, label)} />
+        )}
+        {modal?.kind === 'attendance' && (
+          <AttendanceWizard key="attendance" doc={doc} date={modal.date} onClose={closeModal}
+            onSave={(map) => { update((d) => ({ ...d, attendance: { ...d.attendance, [modal.date]: map } })); closeModal() }} />
         )}
         {modal?.kind === 'homework' && (
           <HomeworkWizard key="homework" doc={doc} presentIds={presentIds} preselect={modal.preselect || []} onClose={closeModal}

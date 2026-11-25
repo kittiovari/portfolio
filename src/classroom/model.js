@@ -151,6 +151,7 @@ export const ORG_FORMS = [
   { id: 'groups', label: 'In groups', icon: '👥' },
 ]
 export const TAGS = [
+  { id: 'attendance', label: 'Attendance', color: '#6F8FAF' },
   { id: 'warmer', label: 'Warmer', color: '#E0915A' },
   { id: 'hwreview', label: 'Homework review', color: '#9A7B5B' },
   { id: 'reading', label: 'Reading', color: '#5B8DB8' },
@@ -165,7 +166,7 @@ export const TAGS = [
 ]
 export const tagOf = (id) => TAGS.find((t) => t.id === id)
 // A saját (középső) feladatoknál választható címkék – a fix lépések címkéi nélkül
-export const TASK_TAGS = TAGS.filter((t) => !['warmer', 'hwreview', 'homework', 'reflection'].includes(t.id))
+export const TASK_TAGS = TAGS.filter((t) => !['attendance', 'warmer', 'hwreview', 'homework', 'reflection'].includes(t.id))
 
 const z2 = (n) => String(n).padStart(2, '0')
 export const lessonKey = (date, time) => (time ? `${date}@${time}` : date)
@@ -181,6 +182,7 @@ export const addMinutes = (time, min) => {
 // ── Fix váz: Warmer, Homework review | saját feladatok | Future homework, Self-reflection ──
 // A fix lépések azonosítója rögzített (role), így üres tervnél is stabilan megjelennek.
 export const FIXED = {
+  attendance: { minutes: 2, aim: 'Attendance', org: 'frontal', tags: ['attendance'] },
   warmer: { minutes: 5, aim: '', org: 'frontal', tags: ['warmer'] },
   hwreview: { minutes: 5, aim: '', org: 'frontal', tags: ['hwreview'], auto: 'hwreview' },
   homework: { minutes: 3, aim: '', org: 'frontal', tags: ['homework'] },
@@ -201,11 +203,12 @@ export function withSkeleton(plan) {
     const [it] = items.splice(i, 1)
     return { ...it, role, id: it.id || `fixed-${role}` }
   }
+  const attendance = take('attendance', null)
   const warmer = take('warmer', (it, i) => i === 0 && it.tags?.length === 1 && it.tags[0] === 'warmer')
   const hwreview = take('hwreview', (it) => it.auto === 'hwreview')
   const reflection = take('reflection', (it) => it.tags?.includes('reflection') && /self-reflection/i.test(it.aim || ''))
   const homework = take('homework', null)
-  return { ...plan, items: [warmer, { ...hwreview, auto: 'hwreview' }, ...items, homework, reflection] }
+  return { ...plan, items: [attendance, warmer, { ...hwreview, auto: 'hwreview' }, ...items, homework, reflection] }
 }
 export const isFixed = (it) => Boolean(it.role)
 const hasContent = (it) => Boolean((it.aim || '').trim() || (it.activity || '').trim() || it.resources?.length)

@@ -506,3 +506,81 @@ export function HomeworkWizard({ doc, presentIds, preselect = [], onSave, onClos
     </Sheet>
   )
 }
+
+// ── Jelenlét (Attendance) – két lépésben, mint a házi-ellenőrzés ──
+// 1. Ki van itt?  2. A többiek hiányoznak – akire rákattintasz, az késett (late).
+export function AttendanceWizard({ doc, date, preselect = null, onSave, onClose }) {
+  const all = sortStudents(doc.students)
+  const prev = doc.attendance?.[date] || {}
+  const hasPrev = Object.keys(prev).length > 0
+  const [step, setStep] = useState(1)
+  const [here, setHere] = useState(() => new Set(preselect?.length ? preselect
+    : hasPrev ? all.filter((s) => prev[s.id] && prev[s.id] !== 'absent' && prev[s.id] !== 'late').map((s) => s.id) : all.map((s) => s.id)))
+  const [late, setLate] = useState(() => new Set(all.filter((s) => prev[s.id] === 'late').map((s) => s.id)))
+  const rest = all.filter((s) => !here.has(s.id))
+  const toggle = (setter, id) => setter((p) => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n })
+  const save = () => {
+    const map = {}
+    for (const s of all) map[s.id] = here.has(s.id) ? (prev[s.id] === 'left' ? 'left' : 'present') : late.has(s.id) ? 'late' : 'absent'
+    onSave(map)
+  }
+  const absentN = rest.filter((s) => !late.has(s.id)).length
+  const lateN = rest.length - absentN
+
+  return (
+    <Sheet title="Take attendance" onClose={onClose} className="cr-hwwiz">
+      <ol className="cr-hwwiz__steps">
+        <li className={step === 1 ? 'is-current' : 'is-done'}>1. Who's here?</li>
+        <li className={step === 2 ? 'is-current' : ''}>2. Who's absent?</li>
+      </ol>
+      {step === 1 ? (
+        <>
+          <p className="cr-hwwiz__q">Who's here?</p>
+          <div className="cr-hwwiz__quick">
+            <button className="cr-btn cr-btn--sm" onClick={() => setHere(new Set(all.map((s) => s.id)))}>Everyone</button>
+            <button className="cr-btn cr-btn--sm" onClick={() => setHere(new Set())}>Nobody</button>
+            <span className="cr-muted">{here.size} / {all.length} here</span>
+          </div>
+          <div className="cr-pickgrid">
+            {all.map((s) => (
+              <button type="button" key={s.id} className={`cr-pick ${here.has(s.id) ? 'is-active is-yes' : ''}`} onClick={() => toggle(setHere, s.id)} aria-pressed={here.has(s.id)}>
+                <Avatar a={s.avatar} /><span>{s.first}</span>
+                {here.has(s.id) && <i className="cr-pick__mark is-yes">✓</i>}
+              </button>
+            ))}
+          </div>
+          <div className="cr-form__actions">
+            <span className="cr-spacer" />
+            <button className="cr-btn" onClick={onClose}>Cancel</button>
+            <button className="cr-btn cr-btn--primary" onClick={() => (rest.length ? setStep(2) : save())}>{rest.length ? 'Next' : 'Save'}</button>
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="cr-hwwiz__q">So these students are absent?</p>
+          <div className="cr-pickgrid">
+            {rest.map((s) => {
+              const l = late.has(s.id)
+              return (
+                <button type="button" key={s.id} className={`cr-pick ${l ? 'is-active is-late' : 'is-active is-no'}`} onClick={() => toggle(setLate, s.id)} aria-pressed={!l}>
+                  <Avatar a={s.avatar} /><span>{s.first}</span>
+                  <i className={`cr-pick__mark ${l ? 'is-late' : 'is-no'}`}>{l ? 'late' : '✗'}</i>
+                </button>
+              )
+            })}
+          </div>
+          <p className="cr-hwwiz__sum">
+            <span className="is-yes">✓ {here.size} here</span>
+            <span className="is-no">✗ {absentN} absent</span>
+            {lateN > 0 && <span className="is-late">{lateN} late</span>}
+          </p>
+          <div className="cr-form__actions">
+            <button className="cr-btn" onClick={() => setStep(1)}>Back</button>
+            <span className="cr-spacer" />
+            <button className="cr-btn cr-btn--primary" onClick={save}>Save</button>
+          </div>
+        </>
+      )}
+    </Sheet>
+  )
+}
