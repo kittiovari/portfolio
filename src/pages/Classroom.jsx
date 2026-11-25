@@ -240,11 +240,17 @@ export default function Classroom() {
                       {members.slice(0, 5).map((s) => <Avatar key={s.id} a={s.avatar} />)}
                       {members.length > 5 && <span className="cr-group__more">+{members.length - 5}</span>}
                     </span>
-                    <span className={`cr-badge ${total < 0 ? 'is-neg' : ''}`}>{total}</span>
-                    <b>{g.name}</b>
+                    <span className="cr-group__name">
+                      <b>{g.name}</b>
+                      <span className={`cr-badge ${total < 0 ? 'is-neg' : ''}`}>{total}</span>
+                    </span>
                     <small>{members.map((s) => s.first).join(', ') || 'empty'}</small>
                   </button>
-                  <button className="cr-iconbtn cr-group__edit" aria-label="Edit group" onClick={() => setModal({ kind: 'group', group: g })}><Icon.pencil /></button>
+                  <span className="cr-group__actions">
+                    <button className="cr-iconbtn cr-iconbtn--sm" aria-label="Edit group" title="Edit" onClick={() => setModal({ kind: 'group', group: g })}><Icon.pencil /></button>
+                    <button className="cr-iconbtn cr-iconbtn--sm" aria-label="Delete group" title="Delete"
+                      onClick={() => { if (window.confirm(`Delete ${g.name}? Students and their points stay.`)) update((d) => ({ ...d, groups: d.groups.filter((x) => x.id !== g.id) })) }}><Icon.trash /></button>
+                  </span>
                 </div>
               )
             })}
@@ -253,6 +259,11 @@ export default function Classroom() {
               <span className="cr-tile__first">New group</span>
               <small className="cr-muted">or: Toolkit → Group maker</small>
             </button>
+            {doc.groups.length > 1 && (
+              <button className="cr-link cr-groups__clear" onClick={() => { if (window.confirm('Delete all groups? Students and their points stay.')) update((d) => ({ ...d, groups: [] })) }}>
+                <Icon.trash />Delete all groups
+              </button>
+            )}
           </div>
         )}
         {mode !== 'attendance' && (

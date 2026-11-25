@@ -1026,3 +1026,11 @@ span.cr-sk { cursor: default; }
 .cr-pick.is-late { border-color: #E0B33A; background: rgba(224, 179, 58, 0.12); }
 .cr-pick__mark.is-late { background: #C99B22; font-weight: 600; }
 .cr-hwwiz__sum .is-late { color: #A67C12; }
+
+/* Csoportkártya: név + pont egy sorban, szerkesztés/törlés a sarokban */
+.cr-group__name { display: flex; align-items: center; gap: 0.5rem; }
+.cr-group__main .cr-group__name .cr-badge { position: static; min-width: 28px; height: 26px; font-size: 0.85rem; box-shadow: none; }
+.cr-group__faces { padding-right: 3.2rem; }
+.cr-group__actions { position: absolute; top: 8px; right: 8px; display: flex; gap: 0.1rem; }
+.cr-group__actions .cr-iconbtn--sm:hover { background: rgba(36, 20, 34, 0.08); }
+.cr-groups__clear { grid-column: 1 / -1; justify-self: center; margin-top: 0.4rem; }
