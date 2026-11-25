@@ -8,6 +8,7 @@ export const AREAS = {
   'language-9d': { path: '/nyelvoktatas/9d' },
   arttherapy: { path: '/muveszetterapia' },
   ux: { path: '/ux' },
+  teacher: { path: '/osztalyterem' },
 }
 
 // A Nyelvoktatás csempe mögötti csoportok (profilválasztó a jelszómodalban)

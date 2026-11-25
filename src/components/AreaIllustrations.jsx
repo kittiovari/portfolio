@@ -408,4 +408,5 @@ export const areaArt = {
   language: LanguageArt,
   arttherapy: ArtTherapyArt,
   ux: UXArt,
+  teacher: LanguageArt,
 }

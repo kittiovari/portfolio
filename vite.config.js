@@ -10,6 +10,7 @@ const API_ROUTES = [
   { re: /^\/api\/unlock$/, fn: 'unlock', keys: [] },
   { re: /^\/api\/session$/, fn: 'session', keys: [] },
   { re: /^\/api\/content\/([^/]+)$/, fn: 'content', keys: ['area'] },
+  { re: /^\/api\/classroom\/([^/]+)$/, fn: 'classroom', keys: ['cls'] },
   { re: /^\/api\/asset\/([^/]+)\/([^/]+)$/, fn: 'asset', keys: ['area', 'name'] },
 ]
 

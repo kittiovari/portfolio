@@ -29,7 +29,14 @@ async function readFirst(rel) {
 const SAFE_NAME = /^[A-Za-z0-9._\-]+$/
 
 export async function readArea(area) {
-  const buf = await readFirst(path.join(area, 'content.json.enc'))
+  let buf
+  try {
+    buf = await readFirst(path.join(area, 'content.json.enc'))
+  } catch (err) {
+    // Tartalom nélküli terület (pl. teacher): üres objektum
+    if (err?.code === 'ENOENT') return {}
+    throw err
+  }
   return JSON.parse(open(buf).toString('utf8'))
 }
 

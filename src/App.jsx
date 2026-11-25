@@ -1,10 +1,14 @@
-import { useCallback, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import Landing from './pages/Landing.jsx'
 import UX from './pages/UX.jsx'
 import Topic from './pages/Topic.jsx'
 import CV from './pages/CV.jsx'
 import ClassPage from './pages/ClassPage.jsx'
+// Az Osztályterem külön csomagban töltődik (a nyilvános oldalt nem lassítja)
+const Classroom = lazy(() => import('./pages/Classroom.jsx'))
+const ClassroomIndex = lazy(() => import('./pages/Classroom.jsx').then((m) => ({ default: m.ClassroomIndex })))
+const lazyEl = (el) => <Suspense fallback={<div className="home" aria-busy="true" />}>{el}</Suspense>
 import { AREAS, fetchContent, refreshSession, unlockedLanguageAreas } from './lib/unlock.js'
 import { useProtectedContent } from './i18n/LanguageContext.jsx'
 
@@ -93,6 +97,9 @@ function App() {
         <Route path="/nyelvoktatas/9b" element={<Gated area="language-9b" key="language-9b"><ClassPage id="9b" /></Gated>} />
         <Route path="/nyelvoktatas/9d" element={<Gated area="language-9d" key="language-9d"><ClassPage id="9d" /></Gated>} />
         <Route path="/muveszetterapia" element={<Gated area="arttherapy" key="arttherapy"><Topic topic="arttherapy" /></Gated>} />
+        {/* Tanári Osztályterem (pontozás, jelenlét, órai eszközök) – külön tanári jelszóval */}
+        <Route path="/osztalyterem" element={<Gated area="teacher" key="teacher">{lazyEl(<ClassroomIndex />)}</Gated>} />
+        <Route path="/osztalyterem/:cls" element={<Gated area="teacher" key="teacher">{lazyEl(<Classroom />)}</Gated>} />
         <Route path="/cv" element={<CV />} />
         {/* Rövid / alternatív címek */}
         <Route path="/oktatas" element={<Navigate to="/nyelvoktatas" replace />} />

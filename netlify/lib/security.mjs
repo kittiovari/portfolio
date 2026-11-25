@@ -5,7 +5,8 @@ import crypto from 'node:crypto'
 
 // ── Területek ──────────────────────────────────────────────
 // A nyelvoktatás osztályonként külön terület: saját jelszó, süti és tartalom
-export const AREAS = ['language-9b', 'language-9d', 'arttherapy', 'ux']
+// teacher: a tanári Osztályterem (pontozás, jelenlét) – csak a tanár jelszavával
+export const AREAS = ['language-9b', 'language-9d', 'arttherapy', 'ux', 'teacher']
 export const isArea = (a) => AREAS.includes(a)
 export const hashEnv = (area) => `PASS_HASH_${area.toUpperCase().replace(/-/g, '_')}`
 
