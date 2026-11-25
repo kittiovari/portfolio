@@ -12,7 +12,9 @@ export function kretaSteps(doc, key) {
   const plan = withSkeleton(getPlan(doc, key))
   const prev = previousHomework(doc, key)
   const out = []
+  const moved = []
   for (const it of plan.items) {
+    if (it.moved) { moved.push((it.aim || '').trim() || 'Feladat'); continue }
     if (it.role === 'attendance' || it.role === 'reflection') continue
     if (it.role === 'hwreview') {
       if (!prev) continue
@@ -27,7 +29,7 @@ export function kretaSteps(doc, key) {
     const t = (it.aim || '').trim()
     out.push({ id: it.id, title: PREFIX[it.role] ? `${PREFIX[it.role]}${t ? `: ${t}` : ''}` : t || 'Feladat', text: (it.activity || '').trim(), resources: it.resources || [] })
   }
-  return { title: (plan.title || '').trim(), steps: out }
+  return { title: (plan.title || '').trim(), steps: out, moved }
 }
 
 // A kiemelt (3/5/10+) számok – összhangban az osztályriporttal
@@ -49,7 +51,7 @@ export function kretaText(doc, key) {
   const day = new Date(y, m - 1, d).toLocaleDateString('hu-HU', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })
   const p = periodOfKey(key)
   const start = lessonStart(doc, key) || splitKey(key).time
-  const { title, steps } = kretaSteps(doc, key)
+  const { title, steps, moved } = kretaSteps(doc, key)
   const lines = [`${day}${p >= 0 ? ` – ${p}. óra` : ''}${start ? ` (${start})` : ''}`]
   if (title) lines.push(`Téma: ${title}`)
   lines.push('')
@@ -60,6 +62,7 @@ export function kretaText(doc, key) {
       lines.push(r.type === 'file' ? `   Melléklet: ${r.name} (letöltve)` : `   Forrás: ${r.name && r.name !== r.url ? `${r.name} – ` : ''}${r.url}`)
     }
   })
+  if (moved.length) lines.push('', `A következő órára maradt: ${moved.join('; ')}`)
   const hl = highlights(doc)
   lines.push('', 'Beváltott pontok / kiemelések:')
   if (hl.length) hl.forEach((x) => lines.push(`   ${x}`))

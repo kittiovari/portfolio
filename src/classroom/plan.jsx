@@ -6,6 +6,7 @@ import {
   LESSON_MIN, ORG_FORMS, TAGS, WEEKDAYS, addMinutes, dayKey, getPlan, lessonLabel, lessonTimeline, newItem, nextLessonKey,
   splitKey, tagOf, uid, previousHomework, withSkeleton, TASK_TAGS, plannedKeys, stepSkills,
   BELLS, isShortDay, lessonStart, lessonLength, breakOn,
+  moveToNext, undoMove, nextKeyAfter,
 } from './model.js'
 
 /*
@@ -781,7 +782,7 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
           <ol className="cr-timeline__track cr-lboard__track" ref={track}>
             {items.map((it, i) => {
               const start = addMinutes(lessonStart(doc, key), acc)
-              acc += it.role === 'hwreview' && !prevHw ? 0 : Number(it.minutes) || 0
+              acc += (it.role === 'hwreview' && !prevHw) || it.moved ? 0 : Number(it.minutes) || 0
               const title = it.role === 'hwreview'
                 ? `Homework review: ${prevHw.items.map((h) => h.aim).filter(Boolean).join(' · ') || 'homework'}`
                 : it.aim || ROLE_LABEL[it.role] || `Task ${i + 1}`
@@ -792,11 +793,12 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
               const kids = new Set(evs.map((e) => e.s)).size
               const sel = active?.key === key && active?.itemId === it.id
               return (
-                <li key={it.id} data-step={it.id} className={`cr-tcard cr-lcard ${sel ? 'is-selected' : ''}`} style={{ '--tg': tags[0]?.color || '#C9B8C6' }}>
+                <li key={it.id} data-step={it.id} className={`cr-tcard cr-lcard ${sel ? 'is-selected' : ''} ${it.moved ? 'is-moved' : ''}`} style={{ '--tg': tags[0]?.color || '#C9B8C6' }}>
                   <button className="cr-lcard__btn" onClick={() => onSelect(sel ? null : { key, itemId: it.id, title, role: it.role || null })} aria-pressed={sel}>
                     <span className="cr-tcard__kind">{i + 1} · {it.minutes} min{start ? ` · ${start}` : ''}</span>
                     {tags.length > 0 && <span className="cr-tcard__skills">{tags.map((t) => <span key={t.id} className="cr-tag" style={{ '--tg': t.color }}>{t.label}</span>)}</span>}
                     <b className="cr-tcard__title">{title}</b>
+                    {it.from && <small className="cr-lcard__from">↪ from {lessonLabel(it.from, undefined, doc)}</small>}
                     <span className={`cr-lcard__pts ${evs.length ? 'has' : ''}`}>
                       {it.role === 'attendance' ? attSummary(doc, splitKey(key).date)
                         : evs.length ? `${sum > 0 ? '+' : ''}${sum} pts · ${kids} student${kids === 1 ? '' : 's'}` : sel ? 'Give points above ↑' : 'No points yet'}
@@ -817,8 +819,16 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
                       </div>
                     )
                   })()}
+                  {/* nem maradt rá idő → a következő órára (visszavonható) */}
+                  {it.moved ? (
+                    <p className="cr-lcard__moved">→ Moved to {lessonLabel(it.moved, undefined, doc)} <button className="cr-link" onClick={() => { if (sel) onSelect(null); update((d) => undoMove(d, key, it.id)) }}>Undo</button></p>
+                  ) : !it.role && nextKeyAfter(doc, key) && (
+                    <button className="cr-link cr-lcard__next" title="No time left? Move this task to the next lesson" onClick={() => { if (sel) onSelect(null); update((d) => moveToNext(d, key, it.id)) }}>
+                      → Next lesson
+                    </button>
+                  )}
                   {/* munkaforma – óra közben is átállítható */}
-                  {it.role !== 'attendance' && it.role !== 'reflection' && it.role !== 'homework' && (
+                  {!it.moved && it.role !== 'attendance' && it.role !== 'reflection' && it.role !== 'homework' && (
                     <div className="cr-lcard__org" role="radiogroup" aria-label="Organisation form">
                       {ORG_FORMS.map((o) => (
                         <button key={o.id} role="radio" aria-checked={it.org === o.id} title={o.label}
@@ -828,7 +838,7 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
                       ))}
                     </div>
                   )}
-                  {(it.org === 'pairs' || it.org === 'groups') && it.role !== 'attendance' && (
+                  {!it.moved && (it.org === 'pairs' || it.org === 'groups') && it.role !== 'attendance' && (
                     <button className="cr-btn cr-btn--sm cr-lcard__action cr-lcard__action--light" onClick={() => {
                       onSelect({ key, itemId: it.id, title, role: it.role || null })
                       onMakeGroups(it.org === 'pairs' ? 2 : null, splitKey(key).date)
@@ -837,7 +847,7 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
                     </button>
                   )}
                   {/* pontadás ehhez a lépéshez */}
-                  {stepSkills(doc, it).length > 0 && (
+                  {!it.moved && stepSkills(doc, it).length > 0 && (
                     <button className="cr-btn cr-btn--primary cr-btn--sm cr-lcard__action" onClick={() => {
                       const step = { key, itemId: it.id, title, role: it.role || null }
                       onSelect(step)

@@ -1361,3 +1361,10 @@ span.cr-sk { cursor: default; }
 .cr-codeform input { font: 700 1.4rem ui-monospace, Consolas, monospace; letter-spacing: 0.25em; text-align: center; padding: 0.6rem; }
 .cr-codeform__err { color: #B4443B; font-size: 0.88rem; margin: 0.3rem 0 0; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* Áttolt feladat */
+.cr-lcard.is-moved { opacity: 0.6; }
+.cr-lcard.is-moved .cr-tcard__title { text-decoration: line-through; }
+.cr-lcard__moved { margin: 0.4rem 0 0; font-size: 0.82rem; color: var(--muted); }
+.cr-lcard__next { align-self: flex-start; font-size: 0.8rem; margin-top: 0.3rem; }
+.cr-lcard__from { display: block; font-size: 0.75rem; color: #A67C12; margin-top: 0.15rem; }

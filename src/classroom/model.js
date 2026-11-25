@@ -384,6 +384,33 @@ export function lessonTimeline(doc) {
   return [...new Set([...sched, ...planned])].sort()
 }
 
+// Feladat áttolása a következő órára: az eredeti helyén áthúzva marad (moved),
+// a következő óra feladatai elejére másolat kerül (from/fromId) – visszavonható
+export function nextKeyAfter(doc, key) { return lessonTimeline(doc).find((k) => k > key && splitKey(k).date >= splitKey(key).date && k !== key) || null }
+export function moveToNext(doc, key, itemId) {
+  const to = nextKeyAfter(doc, key)
+  if (!to) return doc
+  const cur = withSkeleton(getPlan(doc, key))
+  const it = cur.items.find((x) => x.id === itemId)
+  if (!it || it.role || it.moved) return doc
+  const { moved, ...rest } = it // eslint-disable-line no-unused-vars
+  const copy = { ...rest, id: uid(), done: false, from: key, fromId: it.id }
+  const nxt = withSkeleton(getPlan(doc, to))
+  const at = nxt.items.findIndex((x) => !x.role)
+  const pos = at >= 0 ? at : nxt.items.findIndex((x) => x.role === 'homework')
+  const items = [...nxt.items]; items.splice(pos, 0, copy)
+  return { ...doc, plans: { ...(doc.plans || {}), [key]: { ...cur, items: cur.items.map((x) => (x.id === itemId ? { ...x, moved: to } : x)) }, [to]: { ...nxt, items } } }
+}
+export function undoMove(doc, key, itemId) {
+  const cur = withSkeleton(getPlan(doc, key))
+  const it = cur.items.find((x) => x.id === itemId)
+  if (!it?.moved) return doc
+  const to = it.moved
+  const plans = { ...(doc.plans || {}), [key]: { ...cur, items: cur.items.map((x) => (x.id === itemId ? (({ moved, ...r }) => r)(x) : x)) } } // eslint-disable-line no-unused-vars
+  if (plans[to]) plans[to] = { ...plans[to], items: (plans[to].items || []).filter((x) => !(x.from === key && x.fromId === itemId)) }
+  return { ...doc, plans }
+}
+
 // A következő (vagy most zajló) óra kulcsa
 export function nextLessonKey(doc, now = new Date()) {
   const today = dayKey(now)

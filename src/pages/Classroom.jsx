@@ -89,7 +89,8 @@ export default function Classroom() {
 
   const presentIds = doc ? doc.students.filter((s) => !absent(s.id)).map((s) => s.id) : []
   // a csoportok csak arra a napra érvényesek, amikor készültek – minden új órán üresen indul
-  const groupsToday = doc && doc.groupsDate === today ? doc.groups : []
+  // a csoportok a mai vagy egy előre megtervezett (későbbi) óra napjára érvényesek
+  const groupsToday = doc && doc.groupsDate && doc.groupsDate >= today ? doc.groups : []
 
   // ── Pontadás: mindig egy kijelölt lépéshez (feladathoz) kötve ──
   const [notice, setNotice] = useState(null)
