@@ -1215,3 +1215,22 @@ span.cr-sk { cursor: default; }
 .cr-unit.is-on { border-color: #3F7D4E; background: rgba(63, 125, 78, 0.08); }
 .cr-unit:disabled { opacity: 0.4; cursor: not-allowed; }
 .cr-pickgrid--sub { opacity: 0.85; }
+
+/* Óraterv felül */
+.cr-main--board { padding-top: 0.6rem; padding-bottom: 0; }
+.cr-main--board .cr-lboard { margin-top: 0.4rem; padding-top: 0; border-top: none; }
+.cr-main--board + .cr-subbar { border-top: 1px solid var(--line); margin: 0 auto; width: min(100% - 2rem, 1240px); }
+/* Class panel: pontszabályok és tagok */
+.cr-rules { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+.cr-rules__ctx { padding: 0.8rem; border-radius: 16px; background: #FAF8F6; }
+.cr-rules__ctx h3 { font-family: var(--font-heading); font-size: 1rem; margin-bottom: 0.4rem; }
+.cr-rules__row { display: flex; align-items: center; gap: 0.4rem; padding: 0.2rem 0; }
+.cr-rules__icon { width: 1.6rem; text-align: center; }
+.cr-sheet input.cr-rules__name:not([type='checkbox']) { flex: 1; min-width: 0; padding: 0.3rem 0.5rem; font-size: 0.88rem; border-color: transparent; background: transparent; }
+.cr-sheet input.cr-rules__name:focus { background: #fff; border-color: rgba(36, 20, 34, 0.2); }
+.cr-sheet input.cr-rules__val:not([type='checkbox']) { width: 58px; padding: 0.3rem; text-align: center; font-weight: 700; color: #3F7D4E; }
+.cr-sheet input.cr-rules__val.is-neg { color: #B4443B; }
+.cr-members__list { list-style: none; display: flex; flex-direction: column; gap: 0.3rem; padding: 0; margin: 0 0 1rem; }
+.cr-members__list li { display: flex; align-items: center; gap: 0.5rem; padding: 0.2rem 0.4rem; border-radius: 12px; background: #FAF8F6; }
+.cr-members__list .cr-avatar { width: 30px; height: 34px; flex-shrink: 0; }
+.cr-sheet .cr-members__list input { flex: 1; min-width: 0; padding: 0.3rem 0.5rem; font-size: 0.9rem; }

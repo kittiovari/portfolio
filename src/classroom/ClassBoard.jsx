@@ -83,7 +83,7 @@ export default function ClassBoard({ cls }) {
               <span className="cr-tile__art"><ClassAvatar /></span>
               <span className="cr-badge">{total}</span>
               <span className="cr-tile__last">&nbsp;</span>
-              <span className="cr-tile__first">Everyone</span>
+              <span className="cr-tile__first">Class</span>
             </button>
             {students.map((s) => (
               <button key={s.id} className="cr-tile" onClick={() => setOpen({ ids: [s.id], title: fullName(s), student: s })}>

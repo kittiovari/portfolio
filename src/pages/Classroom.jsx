@@ -53,6 +53,12 @@ export default function Classroom() {
 
   useEffect(() => { try { localStorage.setItem('cr-class', cls) } catch { /* */ } }, [cls])
   useEffect(() => { setMode('normal'); setSelected(new Set()); setModal(null); setActiveStep(null) }, [cls])
+  // kijelölt feladat → a diáknézet a munkaformát követi (pár → Pairs, csoport → Groups)
+  const stepOrgNow = activeStep && doc ? (withSkeleton(getPlan(doc, activeStep.key)).items.find((x) => x.id === activeStep.itemId)?.org || '') : ''
+  useEffect(() => {
+    if (!activeStep) return
+    setView(stepOrgNow === 'pairs' ? 'pairs' : stepOrgNow === 'groups' ? 'groups' : 'students')
+  }, [activeStep?.key, activeStep?.itemId, stepOrgNow]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!toast) return
     const id = setTimeout(() => setToast(null), 2200)
@@ -211,6 +217,17 @@ export default function Classroom() {
     <div className={`cr cr--${mode}`}>
       {header}
 
+      <div className="cr-main cr-main--board">
+        {(
+          <LessonBoard key={cls} doc={doc} update={update} cls={cls} active={activeStep} onSelect={setActiveStep}
+            onMakeGroups={(size, date) => setModal({ kind: 'tool', id: 'groups', size, date, fromBoard: true })}
+            onCheckHomework={() => setModal({ kind: 'homework', preselect: [] })}
+            onTakeAttendance={(date, key, itemId) => setModal({ kind: 'attendance', date, key, itemId })}
+            onGivePoints={(step) => givePoints([], step)}
+            onEdit={(k) => setModal({ kind: 'tool', id: 'today', key: k })} />
+        )}
+      </div>
+
       <div className="cr-subbar">
         <div className="cr-seg" role="tablist" aria-label="View">
           <button role="tab" aria-selected={view === 'students'} className={view === 'students' ? 'is-active' : ''} onClick={() => setView('students')}>Students</button>
@@ -222,7 +239,7 @@ export default function Classroom() {
       </div>
 
       <main className="cr-main">
-        {view === 'students' ? (
+        {view === 'students' ? (activeStep ? null : (
           <div className="cr-grid">
             <button
               className={`cr-tile cr-tile--class ${mode !== 'normal' ? 'is-dim' : ''}`}
@@ -233,7 +250,7 @@ export default function Classroom() {
             >
               <span className="cr-tile__art"><ClassAvatar /></span>
               {mode === 'normal' && <span className={`cr-badge ${classTotal < 0 ? 'is-neg' : ''}`}>{classTotal}</span>}
-              <span className="cr-tile__first">{mode === 'select' ? (selected.size === presentIds.length && presentIds.length ? 'Nobody' : 'Everyone') : 'Everyone'}</span>
+              <span className="cr-tile__first">{mode === 'select' ? (selected.size === presentIds.length && presentIds.length ? 'Nobody' : 'Everyone') : 'Class'}</span>
             </button>
             {sortStudents(doc.students).map(studentTile)}
             {mode === 'normal' && (
@@ -243,7 +260,7 @@ export default function Classroom() {
               </button>
             )}
           </div>
-        ) : view === 'pairs' ? (
+        )) : view === 'pairs' ? (
           <Deskmates doc={doc} update={update} points={points}
             onGive={(ids) => givePoints(ids)} />
         ) : (
@@ -283,14 +300,6 @@ export default function Classroom() {
               </button>
             )}
           </div>
-        )}
-        {mode !== 'attendance' && (
-          <LessonBoard key={cls} doc={doc} update={update} cls={cls} active={activeStep} onSelect={setActiveStep}
-            onMakeGroups={(size, date) => setModal({ kind: 'tool', id: 'groups', size, date, fromBoard: true })}
-            onCheckHomework={() => setModal({ kind: 'homework', preselect: [] })}
-            onTakeAttendance={(date, key, itemId) => setModal({ kind: 'attendance', date, key, itemId })}
-            onGivePoints={(step) => givePoints([], step)}
-            onEdit={(k) => setModal({ kind: 'tool', id: 'today', key: k })} />
         )}
       </main>
 

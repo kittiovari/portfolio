@@ -63,4 +63,6 @@ function sendStatus(res, code) {
 
 export default defineConfig({
   plugins: [react(), netlifyFunctionsDev()],
+  // OneDrive-mappában a fájlváltozást csak polling-gal veszi észre megbízhatóan
+  server: { watch: { usePolling: true, interval: 300 } },
 })

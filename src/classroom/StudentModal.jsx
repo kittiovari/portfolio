@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import Avatar, { ClassAvatar } from './Avatar.jsx'
 import { Sheet, Icon } from './ui.jsx'
 import {
-  AVATAR, RANGES, sortStudents, pickName, rangeBounds, inRange, fullName, uid, parseName, randomAvatar, toCsv, download, dayKey,
+  AVATAR, RANGES, sortStudents, pickName, POINT_RULES, RULE_LABELS, rangeBounds, inRange, fullName, uid, parseName, randomAvatar, toCsv, download, dayKey,
 } from './model.js'
 
 /*
@@ -11,18 +11,18 @@ import {
 */
 export function TargetModal({ doc, target, points, onAward, update, onClose, initialTab = 'give', homeworkMode = false, absentIds = [] }) {
   const student = target.type === 'student' ? doc.students.find((s) => s.id === target.id) : null
-  const [tab, setTab] = useState(target.type === 'class' ? 'rules' : initialTab === 'give' ? 'report' : initialTab)
+  const [tab, setTab] = useState(initialTab === 'give' ? 'report' : initialTab)
   if (target.type === 'student' && !student) return null
 
   const ids = target.type === 'student' ? [student.id] : target.type === 'multi' ? target.ids : doc.students.map((s) => s.id)
   const total = target.type === 'student'
     ? points[student.id] || 0
     : ids.reduce((sum, id) => sum + (points[id] || 0), 0)
-  const title = student ? fullName(student) : target.type === 'class' ? 'Everyone' : target.title
+  const title = student ? fullName(student) : target.type === 'class' ? 'Class' : target.title
 
   const tabs = [
-    ...(target.type === 'class' ? [{ id: 'rules', label: 'Point rules', icon: <Icon.pencil /> }] : []),
     { id: 'report', label: 'Report', icon: <Icon.list /> },
+    ...(target.type === 'class' ? [{ id: 'rules', label: 'Point rules', icon: <Icon.pencil /> }, { id: 'members', label: 'Students', icon: <Icon.people /> }] : []),
     ...(student ? [{ id: 'custom', label: 'Customise', icon: <Icon.pencil /> }] : []),
   ]
 
@@ -44,7 +44,8 @@ export function TargetModal({ doc, target, points, onAward, update, onClose, ini
           ))}
         </nav>
         <div className="cr-target__content">
-          {tab === 'rules' && <GivePoints doc={doc} update={update} editable rulesOnly onGive={() => {}} />}
+          {tab === 'rules' && <PointRules doc={doc} update={update} />}
+          {tab === 'members' && <ClassMembers doc={doc} update={update} />}
           {tab === 'report' && <Report doc={doc} ids={ids} title={title} update={update} />}
           {tab === 'custom' && student && <Customize student={student} update={update} onClose={onClose} />}
         </div>
@@ -239,7 +240,6 @@ function Report({ doc, ids, title, update }) {
           {RANGES.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
         </select>
         <span className="cr-spacer" />
-        <button className="cr-btn" onClick={exportCsv} disabled={!events.length}><Icon.download />Export (CSV)</button>
       </div>
 
       {!events.length ? (
@@ -710,5 +710,72 @@ export function PointsWizard({ doc, skills, stepTitle, presentIds, preselect = [
         </>
       )}
     </Sheet>
+  )
+}
+
+// ── Class panel: pontszabályok – minden szempont listázva, a pontérték helyben módosítható ──
+export function PointRules({ doc, update }) {
+  const all = [...(doc.skills?.positive || []), ...(doc.skills?.negative || [])]
+  const byKey = (k) => all.find((x) => x.key === k)
+  const setSkill = (id, patch) => update((d) => ({
+    ...d,
+    skills: {
+      positive: d.skills.positive.map((k) => (k.id === id ? { ...k, ...patch } : k)),
+      negative: d.skills.negative.map((k) => (k.id === id ? { ...k, ...patch } : k)),
+    },
+  }))
+  return (
+    <div className="cr-rules">
+      {Object.entries(POINT_RULES).map(([ctx, keys]) => (
+        <section key={ctx} className="cr-rules__ctx">
+          <h3>{RULE_LABELS[ctx]}</h3>
+          {keys.map(byKey).filter(Boolean).map((k) => (
+            <div key={k.id} className="cr-rules__row">
+              <span className="cr-rules__icon" aria-hidden="true">{k.icon}</span>
+              <input className="cr-rules__name" value={k.name} onChange={(e) => setSkill(k.id, { name: e.target.value })} aria-label="Name" />
+              <input className={`cr-rules__val ${k.value < 0 ? 'is-neg' : ''}`} type="number" min={k.value < 0 ? -10 : 1} max={k.value < 0 ? -1 : 10} value={k.value}
+                onChange={(e) => { const v = Math.round(Number(e.target.value) || 0); if (v) setSkill(k.id, { value: k.value < 0 ? -Math.abs(v) : Math.abs(v) }) }} aria-label="Points" />
+            </div>
+          ))}
+        </section>
+      ))}
+    </div>
+  )
+}
+
+// ── Class panel: tagok – szerkesztés, törlés, felvétel ──
+export function ClassMembers({ doc, update }) {
+  const [text, setText] = useState('')
+  const parsed = text.split(/\r?\n/).map(parseName).filter(Boolean)
+  const setStudent = (id, patch) => update((d) => ({ ...d, students: d.students.map((s) => (s.id === id ? { ...s, ...patch } : s)) }))
+  const remove = (s) => {
+    if (!window.confirm(`Remove ${fullName(s)} from the class? Their points are deleted too.`)) return
+    update((d) => ({
+      ...d,
+      students: d.students.filter((x) => x.id !== s.id),
+      events: d.events.filter((e) => e.s !== s.id),
+      groups: d.groups.map((g) => ({ ...g, ids: g.ids.filter((id) => id !== s.id) })),
+      deskmates: (d.deskmates || []).map((x) => x.filter((id) => id !== s.id)).filter((x) => x.length),
+    }))
+  }
+  return (
+    <div className="cr-members">
+      <ul className="cr-members__list">
+        {sortStudents(doc.students).map((s) => (
+          <li key={s.id}>
+            <Avatar a={s.avatar} />
+            <input value={s.last} placeholder="Surname" onChange={(e) => setStudent(s.id, { last: e.target.value })} aria-label="Surname" />
+            <input value={s.first} placeholder="First name" onChange={(e) => setStudent(s.id, { first: e.target.value })} aria-label="First name" />
+            <button className="cr-iconbtn cr-iconbtn--sm" onClick={() => remove(s)} aria-label={`Remove ${fullName(s)}`}><Icon.trash /></button>
+          </li>
+        ))}
+      </ul>
+      <form className="cr-form" onSubmit={(e) => { e.preventDefault(); if (!parsed.length) return; update((d) => ({ ...d, students: [...d.students, ...parsed.map((p) => ({ id: uid(), ...p, avatar: randomAvatar() }))] })); setText('') }}>
+        <label className="cr-field"><span>Add students – one per line (Surname First name)</span>
+          <textarea rows={3} value={text} onChange={(e) => setText(e.target.value)} placeholder={'Kovács Anna\nNagy Bence'} />
+        </label>
+        <div className="cr-form__actions"><span className="cr-spacer" /><button className="cr-btn cr-btn--primary" type="submit" disabled={!parsed.length}><Icon.plus />Add {parsed.length || ''}</button></div>
+      </form>
+    </div>
   )
 }
