@@ -29,7 +29,7 @@ export default async (req, context) => {
         headers: {
           'Content-Type': meta.type || 'application/octet-stream',
           'Content-Length': String(data.length),
-          'Content-Disposition': `inline; filename*=UTF-8''${encodeURIComponent(meta.name || 'fajl')}`,
+          'Content-Disposition': `${new URL(req.url).searchParams.has('dl') ? 'attachment' : 'inline'}; filename*=UTF-8''${encodeURIComponent(meta.name || 'fajl')}`,
           // Az azonosító egyedi, a tartalom sosem változik → a böngésző nyugodtan
           // megjegyezheti (kevesebb letöltés = kevesebb Netlify-sávszélesség)
           'Cache-Control': 'private, max-age=604800, immutable',

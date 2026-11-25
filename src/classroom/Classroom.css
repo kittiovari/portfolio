@@ -1340,3 +1340,7 @@ span.cr-sk { cursor: default; }
   .cr-navbtn { white-space: nowrap; }
   .cr-target__content { padding: 1rem 1.2rem 1.4rem; }
 }
+
+/* E-Kréta kivonat */
+.cr-kreta__text { white-space: pre-wrap; word-break: break-word; font: 0.88rem/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; background: #FAF8F6; border-radius: 14px; padding: 0.9rem 1rem; margin: 0 0 1rem; max-height: 55vh; overflow: auto; }
+.cr-lboard__head { flex-wrap: wrap; }

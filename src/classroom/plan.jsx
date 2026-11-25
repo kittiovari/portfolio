@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Reorder, useDragControls } from 'framer-motion'
 import { Sheet, Icon } from './ui.jsx'
+import { KretaSheet } from './kreta.jsx'
 import {
   LESSON_MIN, ORG_FORMS, TAGS, WEEKDAYS, addMinutes, dayKey, getPlan, lessonLabel, lessonTimeline, newItem, nextLessonKey,
   splitKey, tagOf, uid, previousHomework, withSkeleton, TASK_TAGS, plannedKeys, stepSkills,
@@ -738,6 +739,7 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
   const options = [...new Set([...planned, ...(current ? [current] : [])])].sort()
   const initial = current || planned.find((k) => !nowKey || k >= nowKey) || planned[planned.length - 1] || nowKey
   const [key, setKey] = useState(initial)
+  const [kreta, setKreta] = useState(false)
   const track = useRef(null)
 
   const plan = key ? withSkeleton(getPlan(doc, key)) : { title: '', items: [] }
@@ -769,7 +771,9 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
           <b className="cr-lboard__none">No lessons yet</b>
         )}
         <button className="cr-btn cr-btn--sm" onClick={() => onEdit(key)}><Icon.pencil />{isPlanned ? 'Edit plan' : 'Plan this lesson'}</button>
+        {isPlanned && <button className="cr-btn cr-btn--sm" onClick={() => setKreta(true)} title="Copy for E-Kréta, download files"><Icon.download />E-Kréta</button>}
       </div>
+      {kreta && key && <KretaSheet doc={doc} cls={cls} lessonKey={key} onClose={() => setKreta(false)} />}
       {plan.title && <p className="cr-lboard__title">{plan.title}</p>}
 
       {isPlanned ? (
