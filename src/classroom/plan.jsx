@@ -3,7 +3,7 @@ import { Reorder, useDragControls } from 'framer-motion'
 import { Sheet, Icon } from './ui.jsx'
 import {
   LESSON_MIN, ORG_FORMS, TAGS, WEEKDAYS, addMinutes, dayKey, getPlan, lessonLabel, lessonTimeline, newItem, nextLessonKey,
-  reflectionItem, splitKey, tagOf, uid, warmerItem, hwReviewItem, previousHomework,
+  splitKey, tagOf, uid, previousHomework, withSkeleton, TASK_TAGS,
 } from './model.js'
 
 /*
@@ -117,60 +117,54 @@ export function Linkify({ text }) {
   return parts.map((p, i) => (/^https?:\/\//.test(p) ? <a key={i} href={p} target="_blank" rel="noopener noreferrer">{hostOf(p)}</a> : p))
 }
 
-// ── Tanári szerkesztő: kompakt sorok, kattintásra kinyíló részletek ──
+// ── Tanári szerkesztő ──
+// Fix váz: 1. Warmer, 2. Homework review | saját feladatok (húzhatók) | Future homework, Self-reflection
 export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings }) {
   const timeline = lessonTimeline(doc)
   const hasSchedule = (doc.schedule || []).length > 0
   const [key, setKey] = useState(() => nextLessonKey(doc) || dayKey())
-  const [open, setOpen] = useState(null) // kinyitott sor azonosítója
+  const [open, setOpen] = useState(null)
   const [busy, setBusy] = useState(0)
   const [error, setError] = useState('')
-  const plan = getPlan(doc, key)
+  const plan = withSkeleton(getPlan(doc, key))
   const { date, time } = splitKey(key)
   const prevHw = previousHomework(doc, key)
-  const hasReview = plan.items.some((it) => it.auto === 'hwreview')
   const length = doc.lessonLength || LESSON_MIN
   const total = plan.items.reduce((s, it) => s + (Number(it.minutes) || 0), 0)
   const left = length - total
+  const head = plan.items.filter((it) => it.role === 'warmer' || it.role === 'hwreview')
+  const middle = plan.items.filter((it) => !it.role)
+  const tail = plan.items.filter((it) => it.role === 'homework' || it.role === 'reflection')
 
-  // léptetés: órarend szerint, különben naponként
   const idx = timeline.indexOf(key)
   const step = (dir) => {
+    setOpen(null)
     if (hasSchedule && timeline.length) {
       const i = idx >= 0 ? idx + dir : dir > 0 ? timeline.findIndex((k) => k > key) : timeline.filter((k) => k < key).length - 1
-      if (timeline[i]) { setKey(timeline[i]); setOpen(null) }
+      if (timeline[i]) setKey(timeline[i])
       return
     }
     const d = new Date(`${date}T12:00`)
     d.setDate(d.getDate() + dir)
     setKey(dayKey(d))
-    setOpen(null)
   }
   const nextKey = nextLessonKey(doc)
   const upcoming = timeline.filter((k) => !nextKey || k >= nextKey).slice(0, 12)
 
   const setPlan = (fn) => update((d) => {
-    const next = fn(getPlan(d, key))
-    const plans = { ...(d.plans || {}) }
-    if (next.items.length || next.title) plans[key] = next
-    else delete plans[key]
+    const next = withSkeleton(fn(withSkeleton(getPlan(d, key))))
+    const plans = { ...(d.plans || {}), [key]: next }
     const today = { ...(d.today || {}) }
-    // a régi, csak dátumos terv átkerült az órarendi órához
     if (time && plans[date] && key !== date) delete plans[date]
     delete today[date]
     return { ...d, plans, today }
   })
-  // patch lehet objektum vagy függvény (mindig a legfrissebb sorból számol)
   const setItem = (id, patch) => setPlan((p) => ({ ...p, items: p.items.map((it) => (it.id === id ? { ...it, ...(typeof patch === 'function' ? patch(it) : patch) } : it)) }))
   const addItem = () => {
     const it = newItem()
     setPlan((p) => {
       const items = [...p.items]
-      if (!items.length) return { ...p, items: [warmerItem(), ...(prevHw ? [hwReviewItem()] : []), it, reflectionItem()] }
-      // a záró önreflexió mindig az utolsó marad
-      const last = items[items.length - 1]
-      if (last.tags?.includes('reflection')) items.splice(items.length - 1, 0, it)
-      else items.push(it)
+      items.splice(items.findIndex((x) => x.role === 'homework'), 0, it) // a Future homework elé
       return { ...p, items }
     })
     setOpen(it.id)
@@ -179,6 +173,12 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings }
     if (it.resources?.length && !window.confirm('This step and its uploaded files will be deleted. Continue?')) return
     it.resources?.forEach((r) => removeFile(cls, r))
     setPlan((p) => ({ ...p, items: p.items.filter((x) => x.id !== it.id) }))
+  }
+  const reorderMiddle = (mid) => setPlan((p) => ({ ...p, items: [...p.items.filter((x) => x.role === 'warmer' || x.role === 'hwreview'), ...mid, ...p.items.filter((x) => x.role === 'homework' || x.role === 'reflection')] }))
+  const moveMiddle = (i, dir) => {
+    const a = [...middle]
+    ;[a[i + dir], a[i]] = [a[i], a[i + dir]]
+    reorderMiddle(a)
   }
   const addFiles = async (itemId, files) => {
     setError('')
@@ -195,13 +195,25 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings }
     }
   }
 
-  // kezdési időpontok lépésenként
+  // kezdési időpontok a teljes sorrend szerint
   let acc = 0
-  const starts = plan.items.map((it) => { const s = addMinutes(time, acc); acc += Number(it.minutes) || 0; return s })
+  const startOf = {}
+  plan.items.forEach((it) => { startOf[it.id] = addMinutes(time, acc); acc += Number(it.minutes) || 0 })
+  const stepNo = Object.fromEntries(plan.items.map((it, i) => [it.id, i + 1]))
+
+  const row = (it, extra = {}) => (
+    <PlanRow
+      key={it.id} item={it} step={stepNo[it.id]} start={startOf[it.id]} cls={cls}
+      review={it.role === 'hwreview' ? prevHw : undefined}
+      open={open === it.id} onToggle={() => setOpen(open === it.id ? null : it.id)}
+      onChange={(patch) => setItem(it.id, patch)}
+      onFiles={(files) => addFiles(it.id, files)}
+      {...extra}
+    />
+  )
 
   return (
     <Sheet title="Lesson plan" color="#E0B33A" icon={<Icon.sun />} onClose={onClose} onBack={onBack} wide className="cr-sheet--darktext cr-plan cr-plan--xl">
-      {/* Melyik óra? – órarend szerint léptetve */}
       <div className="cr-plan__nav">
         <button className="cr-iconbtn" onClick={() => step(-1)} aria-label="Previous lesson"><Icon.back /></button>
         <div className="cr-plan__lesson">
@@ -210,7 +222,7 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings }
               {!upcoming.includes(key) && <option value={key}>{lessonLabel(key, { weekday: 'long', day: 'numeric', month: 'long' })}</option>}
               {upcoming.map((k) => (
                 <option key={k} value={k}>
-                  {lessonLabel(k, { weekday: 'long', day: 'numeric', month: 'long' })}{k === nextKey ? ' (next)' : ''}{getPlan(doc, k).items.length ? ' ✓' : ''}
+                  {lessonLabel(k, { weekday: 'long', day: 'numeric', month: 'long' })}{k === nextKey ? ' (next)' : ''}{doc.plans?.[k] ? ' ✓' : ''}
                 </option>
               ))}
             </select>
@@ -232,11 +244,10 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings }
       <input className="cr-plan__title" value={plan.title || ''} placeholder="Lesson title, e.g. Unit 5 – Past simple"
         onChange={(e) => setPlan((p) => ({ ...p, title: e.target.value }))} aria-label="Lesson title" />
 
-      {/* Időkeret: 45 perc */}
       <div className={`cr-timebar ${left < 0 ? 'is-over' : left === 0 ? 'is-full' : ''}`}>
         <div className="cr-timebar__track" aria-hidden="true">
           {plan.items.map((it) => (
-            <span key={it.id} style={{ flexGrow: Number(it.minutes) || 0, background: tagOf(it.tags?.[0])?.color || '#C9B8C6' }} title={`${it.aim || 'Step'} – ${it.minutes} min`} />
+            <span key={it.id} style={{ flexGrow: Number(it.minutes) || 0, background: tagOf(it.tags?.[0])?.color || '#C9B8C6' }} title={`${it.aim || roleLabel(it) || 'Step'} – ${it.minutes} min`} />
           ))}
           {left > 0 && <span className="cr-timebar__free" style={{ flexGrow: left }} />}
         </div>
@@ -248,55 +259,41 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings }
       {error && <p className="cr-hint is-neg" role="alert">{error}</p>}
       {busy > 0 && <p className="cr-hint" role="status">Uploading… ({busy})</p>}
 
-      {plan.items.length > 0 && (
-        <div className="cr-prow cr-prow--head" aria-hidden="true">
-          <span /><span>Step</span><span>Time</span><span>Aim</span><span>Form</span><span />
-        </div>
-      )}
-      <Reorder.Group as="ol" axis="y" values={plan.items} onReorder={(items) => setPlan((p) => ({ ...p, items }))} className="cr-prows">
-        {plan.items.map((it, i) => (
-          <PlanRow
-            key={it.id} item={it} index={i} count={plan.items.length} start={starts[i]} cls={cls}
-            review={it.auto === 'hwreview' ? prevHw : undefined}
-            open={open === it.id} onToggle={() => setOpen(open === it.id ? null : it.id)}
-            onChange={(patch) => setItem(it.id, patch)}
-            onRemove={() => removeItem(it)}
-            onMove={(dir) => setPlan((p) => { const a = [...p.items]; [a[i + dir], a[i]] = [a[i], a[i + dir]]; return { ...p, items: a } })}
-            onFiles={(files) => addFiles(it.id, files)}
-          />
-        ))}
+      <ol className="cr-prows">{head.map((it) => row(it))}</ol>
+      <Reorder.Group as="ol" axis="y" values={middle} onReorder={reorderMiddle} className="cr-prows cr-prows--middle">
+        {middle.map((it, i) => row(it, {
+          draggable: true, index: i, count: middle.length,
+          onMove: (dir) => moveMiddle(i, dir),
+          onRemove: () => removeItem(it),
+        }))}
       </Reorder.Group>
-
       <div className="cr-pcards__add">
         <button className="cr-btn cr-btn--primary" onClick={addItem}><Icon.plus />Add task</button>
-        {prevHw && !hasReview && plan.items.length > 0 && (
-          <button className="cr-btn" onClick={() => setPlan((p) => {
-            const items = [...p.items]
-            const at = items[0]?.tags?.includes('warmer') ? 1 : 0
-            items.splice(at, 0, hwReviewItem())
-            return { ...p, items }
-          })}><Icon.plus />Homework review ({lessonLabel(prevHw.key)})</button>
-        )}
       </div>
-      <p className="cr-hint cr-plan__note">Click a row to edit details. Drag ⠿ to reorder. Add resources with Link / File, by dropping a file on the row, or pasting a screenshot (Ctrl+V). Students see the next lesson's plan on the class page.</p>
+      <ol className="cr-prows">{tail.map((it) => row(it))}</ol>
     </Sheet>
   )
 }
 
-function PlanRow({ item, index, count, start, cls, review, open, onToggle, onChange, onRemove, onMove, onFiles }) {
-  const locked = item.auto === 'hwreview'
-  // a házi-ellenőrzés tartalma: az előző óra „Future homework” lépései (csak olvasható)
-  const reviewAim = locked ? (review ? `Homework review: ${review.items.map((h) => h.aim).filter(Boolean).join(' · ') || 'homework'}` : 'Homework review (no homework set in the previous lesson)') : null
+const ROLE_LABEL = { warmer: 'Warmer', hwreview: 'Homework review', homework: 'Future homework', reflection: 'Self-reflection' }
+const roleLabel = (it) => ROLE_LABEL[it.role] || ''
+const AIM_PLACEHOLDER = {
+  warmer: 'Warmer – e.g. Quizlet game, picture talk',
+  homework: 'Future homework – e.g. WB p3/5–6',
+}
+
+function PlanRow({ item, step, start, cls, review, open, onToggle, onChange, onFiles, draggable, index, count, onMove, onRemove }) {
   const controls = useDragControls()
   const fileRef = useRef(null)
   const [linkForm, setLinkForm] = useState(null)
   const [over, setOver] = useState(false)
+  const role = item.role
+  const locked = role === 'hwreview'
+  const compactOnly = role === 'reflection' // csak cím + idő, nem nyitható
+  const canFiles = !locked && !compactOnly
   const org = ORG_FORMS.find((o) => o.id === item.org)
-  const toggleTag = (id) => onChange((it) => {
-    const tags = it.tags?.includes(id) ? it.tags.filter((t) => t !== id) : [...(it.tags || []), id]
-    // az önreflexió mindig rövid (1–2 perc)
-    return id === 'reflection' && !it.tags?.includes(id) ? { tags, minutes: Math.min(Number(it.minutes) || 2, 2) } : { tags }
-  })
+  const reviewAim = locked ? (review ? review.items.map((h) => h.aim).filter(Boolean).join(' · ') || 'homework' : 'no homework set in the previous lesson') : null
+  const toggleTag = (id) => onChange((it) => ({ tags: it.tags?.includes(id) ? it.tags.filter((t) => t !== id) : [...(it.tags || []), id] }))
   const addLink = (e) => {
     e.preventDefault()
     const url = normalizeUrl(linkForm.url)
@@ -305,22 +302,27 @@ function PlanRow({ item, index, count, start, cls, review, open, onToggle, onCha
     setLinkForm(null)
   }
   const removeRes = (r) => { removeFile(cls, r); onChange((it) => ({ resources: (it.resources || []).filter((x) => x.id !== r.id) })) }
+  const shownTags = role ? [tagOf(role === 'warmer' ? 'warmer' : role === 'hwreview' ? 'hwreview' : role === 'homework' ? 'homework' : 'reflection')] : (item.tags || []).map(tagOf).filter(Boolean)
+
+  const Wrap = draggable ? Reorder.Item : 'li'
+  const wrapProps = draggable
+    ? { as: 'li', value: item, dragListener: false, dragControls: controls, layout: 'position', transition: { layout: { duration: 0.14, ease: 'easeOut' } } }
+    : {}
 
   return (
-    <Reorder.Item
-      value={item} dragListener={false} dragControls={controls}
-      // csak pozíció-animáció (nincs nyújtás), gyorsan
-      layout="position" transition={{ layout: { duration: 0.14, ease: 'easeOut' } }}
-      className={`cr-prow ${open ? 'is-open' : ''} ${locked ? 'is-locked' : ''} ${over ? 'is-over' : ''}`}
-      onPaste={(e) => { const files = [...(e.clipboardData?.files || [])]; if (files.length && !locked) { e.preventDefault(); onFiles(files) } }}
-      onDragOver={(e) => { if (!locked && e.dataTransfer?.types?.includes('Files')) { e.preventDefault(); setOver(true) } }}
+    <Wrap
+      {...wrapProps}
+      className={`cr-prow ${open ? 'is-open' : ''} ${role ? `is-fixed is-${role}` : ''} ${over ? 'is-over' : ''}`}
+      onPaste={(e) => { const files = [...(e.clipboardData?.files || [])]; if (files.length && canFiles) { e.preventDefault(); onFiles(files) } }}
+      onDragOver={(e) => { if (canFiles && e.dataTransfer?.types?.includes('Files')) { e.preventDefault(); setOver(true) } }}
       onDragLeave={() => setOver(false)}
-      onDrop={(e) => { if (e.dataTransfer?.files?.length) { e.preventDefault(); setOver(false); onFiles([...e.dataTransfer.files]) } }}
+      onDrop={(e) => { if (canFiles && e.dataTransfer?.files?.length) { e.preventDefault(); setOver(false); onFiles([...e.dataTransfer.files]) } }}
     >
-      {/* Kompakt sor */}
-      <div className="cr-prow__line" onClick={(e) => { if (!e.target.closest('input, button, select, textarea, a')) onToggle() }}>
-        <button className="cr-pcard__grip" onPointerDown={(e) => controls.start(e)} aria-label="Drag to reorder" title="Drag to reorder">⠿</button>
-        <span className="cr-prow__step">{index + 1}</span>
+      <div className="cr-prow__line" onClick={(e) => { if (!compactOnly && !e.target.closest('input, button, select, textarea, a')) onToggle() }}>
+        {draggable
+          ? <button className="cr-pcard__grip" onPointerDown={(e) => controls.start(e)} aria-label="Drag to reorder" title="Drag to reorder">⠿</button>
+          : <span className="cr-prow__pin" title="Fixed step" aria-hidden="true">📌</span>}
+        <span className="cr-prow__step">{step}</span>
         <span className="cr-prow__time">
           <span className="cr-prow__min">
             <input type="number" min="1" max="45" value={item.minutes} onChange={(e) => onChange({ minutes: Math.max(0, Math.min(90, Number(e.target.value) || 0)) })} aria-label="Minutes" />
@@ -329,25 +331,30 @@ function PlanRow({ item, index, count, start, cls, review, open, onToggle, onCha
           {start && <small className="cr-prow__clock">{start}</small>}
         </span>
         <span className="cr-prow__aim">
-          {item.tags?.length > 0 && (
+          {shownTags.length > 0 && (
             <span className="cr-prow__tags">
-              {item.tags.map((t) => tagOf(t)).filter(Boolean).map((t) => <span key={t.id} className="cr-tag" style={{ '--tg': t.color }}>{t.label}</span>)}
+              {shownTags.map((t) => <span key={t.id} className="cr-tag" style={{ '--tg': t.color }}>{t.label}</span>)}
             </span>
           )}
-          {locked
-            ? <span className="cr-prow__locked" title={review ? `From ${lessonLabel(review.key)}` : ''}>🔒 {reviewAim}</span>
-            : <input value={item.aim} placeholder="Aim – what students will be able to do" onChange={(e) => onChange({ aim: e.target.value })} aria-label="Aim" />}
+          {locked ? (
+            <span className="cr-prow__locked" title={review ? `From ${lessonLabel(review.key)}` : ''}>🔒 {reviewAim}</span>
+          ) : compactOnly ? (
+            <span className="cr-prow__locked">Self-reflection</span>
+          ) : (
+            <input value={item.aim} placeholder={AIM_PLACEHOLDER[role] || 'Aim – what students will be able to do'} onChange={(e) => onChange({ aim: e.target.value })} aria-label="Aim" />
+          )}
         </span>
-        <span className="cr-prow__org" title={org?.label || ''}>{org ? <>{org.icon}<small>{org.label}</small></> : <small>–</small>}</span>
+        <span className="cr-prow__org" title={org?.label || ''}>{org && !compactOnly ? <>{org.icon}<small>{org.label}</small></> : null}</span>
         <span className="cr-prow__end">
           {item.resources?.length > 0 && <span className="cr-prow__count" title="Resources">📎{item.resources.length}</span>}
-          <button className="cr-iconbtn cr-iconbtn--sm cr-prow__toggle" onClick={onToggle} aria-expanded={open} aria-label={open ? 'Collapse' : 'Edit details'}>
-            <Icon.next />
-          </button>
+          {!compactOnly && (
+            <button className="cr-iconbtn cr-iconbtn--sm cr-prow__toggle" onClick={onToggle} aria-expanded={open} aria-label={open ? 'Collapse' : 'Edit details'}>
+              <Icon.next />
+            </button>
+          )}
         </span>
       </div>
 
-      {/* Részletek */}
       {open && locked && (
         <div className="cr-prow__details">
           <p className="cr-hint">🔒 Copied from the previous lesson's <b>Future homework</b>{review ? ` (${lessonLabel(review.key, { weekday: 'long', day: 'numeric', month: 'long' })})` : ''}. Edit it there.</p>
@@ -359,53 +366,33 @@ function PlanRow({ item, index, count, start, cls, review, open, onToggle, onCha
               {h.resources?.length > 0 && <div className="cr-pcard__res">{h.resources.map((r) => <Resource key={r.id} r={r} cls={cls} />)}</div>}
             </div>
           ))}
-          <div className="cr-pfield">
-            <span>Organisation form</span>
-            <div className="cr-pcard__kinds" role="radiogroup" aria-label="Organisation form">
-              {ORG_FORMS.map((o) => (
-                <button key={o.id} role="radio" aria-checked={item.org === o.id} className={item.org === o.id ? 'is-active' : ''}
-                  onClick={() => onChange((it) => ({ org: it.org === o.id ? '' : o.id }))}>{o.icon} {o.label}</button>
-              ))}
-            </div>
-          </div>
-          <div className="cr-prow__actions">
-            <button className="cr-iconbtn cr-iconbtn--sm" disabled={index === 0} onClick={() => onMove(-1)} aria-label="Move up">↑</button>
-            <button className="cr-iconbtn cr-iconbtn--sm" disabled={index === count - 1} onClick={() => onMove(1)} aria-label="Move down">↓</button>
-            <span className="cr-spacer" />
-            <button className="cr-btn cr-btn--danger cr-btn--sm" onClick={onRemove}><Icon.trash />Delete step</button>
-          </div>
+          <OrgPicker item={item} onChange={onChange} />
         </div>
       )}
-      {open && !locked && (
+
+      {open && !locked && !compactOnly && (
         <div className="cr-prow__details">
           <label className="cr-pfield">
-            <span>Activity</span>
-            <textarea rows={3} value={item.activity || ''} placeholder="What happens: instructions, pages, exercises…" onChange={(e) => onChange({ activity: e.target.value })} />
+            <span>{role === 'homework' ? 'Homework details' : 'Activity'}</span>
+            <textarea rows={3} value={item.activity || ''} placeholder={role === 'homework' ? 'Exercises, pages, deadline…' : 'What happens: instructions, pages, exercises…'} onChange={(e) => onChange({ activity: e.target.value })} />
           </label>
-          <div className="cr-pfield">
-            <span>Organisation form</span>
-            <div className="cr-pcard__kinds" role="radiogroup" aria-label="Organisation form">
-              {ORG_FORMS.map((o) => (
-                <button key={o.id} role="radio" aria-checked={item.org === o.id} className={item.org === o.id ? 'is-active' : ''}
-                  onClick={() => onChange((it) => ({ org: it.org === o.id ? '' : o.id }))}>{o.icon} {o.label}</button>
-              ))}
+          {role !== 'homework' && <OrgPicker item={item} onChange={onChange} />}
+          {role !== 'homework' && (
+            <label className="cr-pfield">
+              <span>Equipment</span>
+              <input value={item.equipment || ''} placeholder="e.g. Coursebook, worksheet, laptop + speakers" onChange={(e) => onChange({ equipment: e.target.value })} />
+            </label>
+          )}
+          {!role && (
+            <div className="cr-pfield">
+              <span>Tags <small className="cr-muted">(choose any)</small></span>
+              <div className="cr-pcard__skills">
+                {TASK_TAGS.map((t) => (
+                  <button key={t.id} className={`cr-sk ${item.tags?.includes(t.id) ? 'is-on' : ''}`} style={{ '--sk': t.color }} onClick={() => toggleTag(t.id)} aria-pressed={item.tags?.includes(t.id)}>{t.label}</button>
+                ))}
+              </div>
             </div>
-          </div>
-          <label className="cr-pfield">
-            <span>Equipment</span>
-            <input value={item.equipment || ''} placeholder="e.g. Coursebook, worksheet, laptop + speakers" onChange={(e) => onChange({ equipment: e.target.value })} />
-          </label>
-          <div className="cr-pfield">
-            <span>Tags</span>
-            <div className="cr-pcard__skills">
-              {TAGS.map((t, ti) => (
-                <span key={t.id} className="cr-tagwrap">
-                  {t.group && TAGS[ti - 1]?.group !== t.group && <small className="cr-tagwrap__group">{t.group}:</small>}
-                  <button className={`cr-sk ${item.tags?.includes(t.id) ? 'is-on' : ''}`} style={{ '--sk': t.color }} onClick={() => toggleTag(t.id)} aria-pressed={item.tags?.includes(t.id)}>{t.label}</button>
-                </span>
-              ))}
-            </div>
-          </div>
+          )}
           <div className="cr-pfield">
             <span>Resources</span>
             {item.resources?.length > 0 && <div className="cr-pcard__res">{item.resources.map((r) => <Resource key={r.id} r={r} cls={cls} onRemove={() => removeRes(r)} />)}</div>}
@@ -426,15 +413,31 @@ function PlanRow({ item, index, count, start, cls, review, open, onToggle, onCha
               </div>
             )}
           </div>
-          <div className="cr-prow__actions">
-            <button className="cr-iconbtn cr-iconbtn--sm" disabled={index === 0} onClick={() => onMove(-1)} aria-label="Move up">↑</button>
-            <button className="cr-iconbtn cr-iconbtn--sm" disabled={index === count - 1} onClick={() => onMove(1)} aria-label="Move down">↓</button>
-            <span className="cr-spacer" />
-            <button className="cr-btn cr-btn--danger cr-btn--sm" onClick={onRemove}><Icon.trash />Delete step</button>
-          </div>
+          {draggable && (
+            <div className="cr-prow__actions">
+              <button className="cr-iconbtn cr-iconbtn--sm" disabled={index === 0} onClick={() => onMove(-1)} aria-label="Move up">↑</button>
+              <button className="cr-iconbtn cr-iconbtn--sm" disabled={index === count - 1} onClick={() => onMove(1)} aria-label="Move down">↓</button>
+              <span className="cr-spacer" />
+              <button className="cr-btn cr-btn--danger cr-btn--sm" onClick={onRemove}><Icon.trash />Delete step</button>
+            </div>
+          )}
         </div>
       )}
-    </Reorder.Item>
+    </Wrap>
+  )
+}
+
+function OrgPicker({ item, onChange }) {
+  return (
+    <div className="cr-pfield">
+      <span>Organisation form</span>
+      <div className="cr-pcard__kinds" role="radiogroup" aria-label="Organisation form">
+        {ORG_FORMS.map((o) => (
+          <button key={o.id} role="radio" aria-checked={item.org === o.id} className={item.org === o.id ? 'is-active' : ''}
+            onClick={() => onChange((it) => ({ org: it.org === o.id ? '' : o.id }))}>{o.icon} {o.label}</button>
+        ))}
+      </div>
+    </div>
   )
 }
 

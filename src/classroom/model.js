@@ -157,13 +157,15 @@ export const TAGS = [
   { id: 'listening', label: 'Listening', color: '#8A6BBE' },
   { id: 'speaking', label: 'Speaking', color: '#D9774F' },
   { id: 'writing', label: 'Writing', color: '#4E9A6A' },
-  { id: 'grammar', label: 'Grammar', group: 'Practice', color: '#B5527A' },
-  { id: 'pronunciation', label: 'Pronunciation', group: 'Practice', color: '#B5527A' },
-  { id: 'vocabulary', label: 'Vocabulary', group: 'Practice', color: '#B5527A' },
+  { id: 'grammar', label: 'Grammar practice', color: '#B5527A' },
+  { id: 'pronunciation', label: 'Pronunciation practice', color: '#A0568F' },
+  { id: 'vocabulary', label: 'Vocabulary practice', color: '#8F5A9E' },
   { id: 'homework', label: 'Future homework', color: '#3F6E9A' },
   { id: 'reflection', label: 'Self-reflection', color: '#6B5A69' },
 ]
 export const tagOf = (id) => TAGS.find((t) => t.id === id)
+// A saját (középső) feladatoknál választható címkék – a fix lépések címkéi nélkül
+export const TASK_TAGS = TAGS.filter((t) => !['warmer', 'hwreview', 'homework', 'reflection'].includes(t.id))
 
 const z2 = (n) => String(n).padStart(2, '0')
 export const lessonKey = (date, time) => (time ? `${date}@${time}` : date)
@@ -176,10 +178,38 @@ export const addMinutes = (time, min) => {
   return `${z2(Math.floor(t / 60) % 24)}:${z2(t % 60)}`
 }
 
-export const reflectionItem = () => ({ id: uid(), minutes: 2, aim: 'Self-reflection', activity: '', org: 'individual', equipment: '', tags: ['reflection'], resources: [], done: false })
-export const warmerItem = () => ({ id: uid(), minutes: 5, aim: 'Warmer', activity: '', org: 'frontal', equipment: '', tags: ['warmer'], resources: [], done: false })
-// Az előző óra „Future homework” lépéseiből számolódik (auto: csak olvasható tartalom)
-export const hwReviewItem = () => ({ id: uid(), auto: 'hwreview', minutes: 5, aim: '', activity: '', org: 'frontal', equipment: '', tags: ['hwreview'], resources: [], done: false })
+// ── Fix váz: Warmer, Homework review | saját feladatok | Future homework, Self-reflection ──
+// A fix lépések azonosítója rögzített (role), így üres tervnél is stabilan megjelennek.
+export const FIXED = {
+  warmer: { minutes: 5, aim: '', org: 'frontal', tags: ['warmer'] },
+  hwreview: { minutes: 5, aim: '', org: 'frontal', tags: ['hwreview'], auto: 'hwreview' },
+  homework: { minutes: 3, aim: '', org: 'frontal', tags: ['homework'] },
+  reflection: { minutes: 2, aim: 'Self-reflection', org: 'individual', tags: ['reflection'] },
+}
+const fixedItem = (role) => ({ id: `fixed-${role}`, role, activity: '', equipment: '', resources: [], done: false, ...FIXED[role] })
+export const reflectionItem = () => fixedItem('reflection')
+export const warmerItem = () => fixedItem('warmer')
+export const hwReviewItem = () => fixedItem('hwreview')
+
+// Régi tervek fix lépéseinek felismerése + a hiányzók pótlása, rögzített sorrendben
+export function withSkeleton(plan) {
+  const items = [...(plan.items || [])]
+  const take = (role, test) => {
+    let i = items.findIndex((it) => it.role === role)
+    if (i < 0 && test) i = items.findIndex(test)
+    if (i < 0) return fixedItem(role)
+    const [it] = items.splice(i, 1)
+    return { ...it, role, id: it.id || `fixed-${role}` }
+  }
+  const warmer = take('warmer', (it, i) => i === 0 && it.tags?.length === 1 && it.tags[0] === 'warmer')
+  const hwreview = take('hwreview', (it) => it.auto === 'hwreview')
+  const reflection = take('reflection', (it) => it.tags?.includes('reflection') && /self-reflection/i.test(it.aim || ''))
+  const homework = take('homework', null)
+  return { ...plan, items: [warmer, { ...hwreview, auto: 'hwreview' }, ...items, homework, reflection] }
+}
+export const isFixed = (it) => Boolean(it.role)
+const hasContent = (it) => Boolean((it.aim || '').trim() || (it.activity || '').trim() || it.resources?.length)
+
 export const newItem = () => ({ id: uid(), minutes: 5, aim: '', activity: '', org: '', equipment: '', tags: [], resources: [], done: false })
 
 // Korábbi kártyák (kind/title/note/skills) átalakítása az új szerkezetre
@@ -245,7 +275,7 @@ export function nextLessonKey(doc, now = new Date()) {
 export function previousHomework(doc, key) {
   const keys = plannedKeys(doc).filter((k) => k < key).sort().reverse()
   for (const k of keys) {
-    const items = getPlan(doc, k).items.filter((it) => !it.auto && it.tags?.includes('homework'))
+    const items = getPlan(doc, k).items.filter((it) => !it.auto && it.tags?.includes('homework') && hasContent(it))
     if (items.length) return { key: k, items }
   }
   return null

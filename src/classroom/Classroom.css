@@ -869,3 +869,11 @@ span.cr-sk { cursor: default; }
 .cr-prow__details { animation: cr-details-in 0.14s ease-out; }
 @keyframes cr-details-in { from { opacity: 0; transform: translateY(-4px); } }
 @media (prefers-reduced-motion: reduce) { .cr-prow__details { animation: none; } }
+
+/* Fix vázlépések */
+.cr-prow__pin { width: 28px; text-align: center; font-size: 0.8rem; opacity: 0.35; }
+.cr-prow.is-fixed { background: #FBF8F3; }
+.cr-prow.is-reflection .cr-prow__line { cursor: default; }
+.cr-prows + .cr-prows { margin-top: 0.35rem; }
+.cr-prows--middle:empty { display: none; }
+.cr-pcards__add { margin: 0.6rem 0; }
