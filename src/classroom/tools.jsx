@@ -127,7 +127,9 @@ export function GroupMakerTool({ doc, update, onClose, onBack, initialSize = nul
   const [groups, setGroups] = useState(null)
   const byId = useMemo(() => Object.fromEntries(doc.students.map((s) => [s.id, s])), [doc.students])
 
+  const [keepAlone, setKeepAlone] = useState(false)
   const make = (n) => {
+    setKeepAlone(false)
     setSize(n)
     setGroups(makeGroups(present.map((s) => s.id), n, doc.avoid))
     setView('result')
@@ -141,8 +143,27 @@ export function GroupMakerTool({ doc, update, onClose, onBack, initialSize = nul
   }
 
   if (view === 'result' && groups) {
+    // egyedül maradt diák: a tanár választja ki, hová kerüljön (vagy maradjon egyedül)
+    const loneIdx = size > 1 && !keepAlone ? groups.findIndex((g) => g.length === 1) : -1
+    const lone = loneIdx >= 0 ? byId[groups[loneIdx][0]] : null
+    const label = (i) => `${size === 2 ? 'Pair' : 'Group'} ${i + 1}`
+    const addTo = (target) => setGroups((gs) => {
+      const id = gs[loneIdx][0]
+      return gs.map((g, i) => (i === target ? [...g, id] : g)).filter((_, i) => i !== loneIdx)
+    })
     return (
       <FullScreen color={t.color} onClose={onClose}>
+        {lone && (
+          <div className="cr-lone">
+            <span className="cr-lone__who"><Avatar a={lone.avatar} /><b>{shortName(lone)}</b> is on their own – add to:</span>
+            <span className="cr-lone__opts">
+              {groups.map((g, i) => i !== loneIdx && (
+                <button key={i} className="cr-pillbtn cr-pillbtn--sm" onClick={() => addTo(i)}>{label(i)}</button>
+              ))}
+              <button className="cr-pillbtn cr-pillbtn--sm cr-lone__keep" onClick={() => setKeepAlone(true)}>Keep alone</button>
+            </span>
+          </div>
+        )}
         <div className="cr-groupres">
           {groups.map((g, i) => (
             <motion.div key={i} className="cr-groupres__card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>

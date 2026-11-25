@@ -1122,3 +1122,15 @@ span.cr-sk { cursor: default; }
 .cr-lcard__org button.is-on .cr-orgicon { --bean: #F7D569; }
 .cr-lcard__action--light { background: #fff; }
 .cr-lcard__action + .cr-lcard__action { margin-top: -0.5rem; }
+
+/* Egyedül maradt diák: hová kerüljön */
+.cr-lone { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; padding: 0.8rem 1.2rem; border-radius: 22px; background: rgba(255, 255, 255, 0.95); color: var(--ink); box-shadow: 0 16px 34px -18px rgba(0, 0, 0, 0.5); }
+.cr-lone__who { display: flex; align-items: center; gap: 0.6rem; font-size: 1.05rem; }
+.cr-lone__who .cr-avatar { width: 36px; height: 40px; }
+.cr-lone__opts { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem; }
+.cr-pillbtn--sm { padding: 0.45rem 0.9rem; font-size: 0.9rem; background: #F4F1EC; box-shadow: none; }
+.cr-pillbtn--sm:hover { background: #E9E3DB; }
+.cr-lone__keep { background: transparent; border: 1.5px dashed rgba(36, 20, 34, 0.3); }
+
+/* hosszú tartalomnál ne vágja le a tetejét */
+.cr-full { justify-content: safe center; }

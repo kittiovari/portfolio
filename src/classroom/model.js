@@ -353,15 +353,14 @@ export function shuffle(arr) {
 }
 
 export function makeGroups(ids, size, avoid = []) {
-  // lefelé kerekítve: páratlan létszámnál senki nem marad egyedül (lesz egy hármas)
-  const n = Math.max(1, Math.floor(ids.length / size))
+  // pontos méretű csoportok; a maradék a végén külön kis csoport (ha 1 fő, a tanár dönt róla)
+  const n = Math.max(1, Math.ceil(ids.length / size))
   const bad = new Set(avoid.flatMap(([a, b]) => [`${a}|${b}`, `${b}|${a}`]))
   let best = null
   let bestScore = Infinity
   for (let attempt = 0; attempt < 300; attempt++) {
     const order = shuffle(ids)
-    const groups = Array.from({ length: n }, () => [])
-    order.forEach((id, i) => groups[i % n].push(id))
+    const groups = Array.from({ length: n }, (_, i) => order.slice(i * size, (i + 1) * size)).filter((g) => g.length)
     let score = 0
     for (const g of groups) for (let i = 0; i < g.length; i++) for (let j = i + 1; j < g.length; j++) if (bad.has(`${g[i]}|${g[j]}`)) score++
     if (score < bestScore) { best = groups; bestScore = score }
