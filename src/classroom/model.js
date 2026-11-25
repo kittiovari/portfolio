@@ -57,9 +57,9 @@ export function emptyClass() {
 // ── Avatarok: saját, vonalrajzos „szörnyecskék” ──
 export const AVATAR = {
   colors: ['#9FD3E8', '#A9D18E', '#C3B0EA', '#F4AFC4', '#F7C873', '#F2A283', '#8FD6C3', '#E9D772'],
-  bodies: ['bean', 'round', 'tall'],
-  eyes: ['two', 'one', 'three'],
-  mouths: ['smile', 'grin', 'o'],
+  bodies: Array.from({ length: 10 }, (_, i) => i), // családonként 10 test (Avatar.jsx)
+  eyes: ['two', 'one', 'three', 'sleepy', 'wink', 'big'],
+  mouths: ['smile', 'grin', 'o', 'tongue', 'cat', 'teeth'],
   extras: ['none', 'horns', 'antenna', 'ears'],
 }
 const pick = (arr) => Math.floor(Math.random() * arr.length)

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import Avatar, { ClassAvatar, useAvatarTheme, themeOf, themeColors, AVATAR_THEMES } from './Avatar.jsx'
+import Avatar, { ClassAvatar, useAvatarTheme, themeOf, themeColors, themeBodies, AVATAR_THEMES } from './Avatar.jsx'
 import { Sheet, Icon } from './ui.jsx'
 import { Art, SkillArt, ART_CHOICES } from './art.jsx'
 import { ReportPanel } from './report.jsx'
@@ -276,7 +276,7 @@ export function AvatarEditor({ value, onChange }) {
               className={`cr-swatch ${value.c === i ? 'is-active' : ''}`} style={{ background: c }} onClick={() => set('c', i)} />
           ))}
         </div>
-        {FEATURES.map((f) => (
+        {FEATURES.map((f) => (f.key === 'b' ? { ...f, list: themeBodies(theme) } : f)).map((f) => (
           <div className="cr-avedit__row" key={f.key} role="radiogroup" aria-label={f.label}>
             <span>{f.label}</span>
             {f.list.map((_, i) => (

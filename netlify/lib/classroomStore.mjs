@@ -210,8 +210,8 @@ export function mergeAvatars(doc, map) {
   if (!doc || !map || !Object.keys(map).length) return doc
   return { ...doc, students: (doc.students || []).map((s) => (map[s.id]?.a ? { ...s, avatar: map[s.id].a } : s)) }
 }
-const AV_LIMITS = { c: 8, b: 3, e: 3, m: 3, x: 4 }
-const AV_THEMES = ['monsters', 'fruits', 'food', 'cities', 'tales']
+const AV_LIMITS = { c: 8, b: 10, e: 6, m: 6, x: 4 }
+const AV_THEMES = ['monsters', 'animals', 'fruits', 'food', 'tales']
 export function cleanAvatar(a) {
   if (!a || typeof a !== 'object') return null
   const out = {}
