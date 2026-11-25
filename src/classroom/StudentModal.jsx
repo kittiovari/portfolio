@@ -450,7 +450,13 @@ export function HomeworkWizard({ doc, presentIds, preselect = [], onSave, onClos
   const [step, setStep] = useState(1)
   const [done, setDone] = useState(() => new Set(preselect))
   const [excused, setExcused] = useState(() => new Set())
+  const [bonus, setBonus] = useState({}) // id → { perfect, extra }
   const rest = present.filter((s) => !done.has(s.id))
+  const doneList = present.filter((s) => done.has(s.id))
+  const flip = (id, k) => setBonus((b) => ({ ...b, [id]: { ...b[id], [k]: !b[id]?.[k] } }))
+  const finish = () => onSave([...done], missing.map((s) => s.id), doneSkill, missSkill,
+    Object.keys(bonus).filter((id) => bonus[id]?.perfect && done.has(id)), Object.keys(bonus).filter((id) => bonus[id]?.extra && done.has(id)))
+  const toBonus = () => (done.size ? setStep(3) : finish())
   const missing = rest.filter((s) => !excused.has(s.id))
   const toggle = (_set, setter, id) => setter((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
   const doneSkill = findSkill(doc.skills?.positive, /homework done|elkészített házi/i) || { id: 'hw-done', name: 'Homework done', icon: '👍', value: 2 }
@@ -460,10 +466,32 @@ export function HomeworkWizard({ doc, presentIds, preselect = [], onSave, onClos
     <Sheet title="Check homework" onClose={onClose} className="cr-hwwiz">
       <ol className="cr-hwwiz__steps">
         <li className={step === 1 ? 'is-current' : 'is-done'}>1. Who did it?</li>
-        <li className={step === 2 ? 'is-current' : ''}>2. Who didn't?</li>
+        <li className={step === 2 ? 'is-current' : step > 2 ? 'is-done' : ''}>2. Who didn't?</li>
+        <li className={step === 3 ? 'is-current' : ''}>3. Bonus</li>
       </ol>
 
-      {step === 1 ? (
+      {step === 3 ? (
+        <>
+          <p className="cr-hwwiz__q">Bonus points?</p>
+          <div className="cr-attlist">
+            {doneList.map((s) => (
+              <div key={s.id} className="cr-attrow is-present">
+                <Avatar a={s.avatar} />
+                <b>{pickName(s, doc.students)}</b>
+                <div className="cr-attrow__seg">
+                  <button className={bonus[s.id]?.perfect ? 'is-on is-bonus' : ''} onClick={() => flip(s.id, 'perfect')} aria-pressed={Boolean(bonus[s.id]?.perfect)}>📁 Perfect</button>
+                  <button className={bonus[s.id]?.extra ? 'is-on is-bonus' : ''} onClick={() => flip(s.id, 'extra')} aria-pressed={Boolean(bonus[s.id]?.extra)}>🌟 Extra</button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="cr-form__actions">
+            <button className="cr-btn" onClick={() => setStep(rest.length ? 2 : 1)}>Back</button>
+            <span className="cr-spacer" />
+            <button className="cr-btn cr-btn--primary" onClick={finish}>Save</button>
+          </div>
+        </>
+      ) : step === 1 ? (
         <>
           <p className="cr-hwwiz__q">Who did their homework?</p>
           <div className="cr-hwwiz__quick">
@@ -483,9 +511,7 @@ export function HomeworkWizard({ doc, presentIds, preselect = [], onSave, onClos
           <div className="cr-form__actions">
             <span className="cr-spacer" />
             <button className="cr-btn" onClick={onClose}>Cancel</button>
-            <button className="cr-btn cr-btn--primary" onClick={() => (rest.length ? setStep(2) : onSave([...done], []))}>
-              {rest.length ? 'Next' : 'Save'}
-            </button>
+            <button className="cr-btn cr-btn--primary" onClick={() => (rest.length ? setStep(2) : toBonus())}>Next</button>
           </div>
         </>
       ) : (
@@ -512,7 +538,7 @@ export function HomeworkWizard({ doc, presentIds, preselect = [], onSave, onClos
           <div className="cr-form__actions">
             <button className="cr-btn" onClick={() => setStep(1)}>Back</button>
             <span className="cr-spacer" />
-            <button className="cr-btn cr-btn--primary" onClick={() => onSave([...done], missing.map((s) => s.id), doneSkill, missSkill)}>Save</button>
+            <button className="cr-btn cr-btn--primary" onClick={toBonus}>{done.size ? 'Next' : 'Save'}</button>
           </div>
         </>
       )}
@@ -611,7 +637,7 @@ export function AttendanceWizard({ doc, date, preselect = null, onSave, onClose 
 
 // ── Pontadás egy lépéshez – két lépésben (mint a jelenlét és a házi) ──
 // 1. Mi­ért? (a lépéshez megadott pontok)  2. Ki kapja? (a hiányzók halványan, nem választhatók)
-export function PointsWizard({ doc, skills, stepTitle, presentIds, preselect = [], onSave, onClose }) {
+export function PointsWizard({ doc, skills, stepTitle, presentIds, preselect = [], units = null, unitLabel = 'group', onSave, onClose }) {
   const [skill, setSkill] = useState(skills.length === 1 ? skills[0] : null)
   const [who, setWho] = useState(() => new Set(preselect.filter((id) => presentIds.includes(id))))
   const present = sortStudents(doc.students.filter((s) => presentIds.includes(s.id)))
@@ -649,7 +675,23 @@ export function PointsWizard({ doc, skills, stepTitle, presentIds, preselect = [
             <button className="cr-btn cr-btn--sm" onClick={() => setWho(new Set())}>Nobody</button>
             <span className="cr-muted">{who.size} / {present.length} selected</span>
           </div>
-          <div className="cr-pickgrid">
+          {units?.length > 0 && (
+            <div className="cr-units">
+              {units.map((u) => {
+                const ids = u.ids.filter((id) => presentIds.includes(id))
+                const on = ids.length > 0 && ids.every((id) => who.has(id))
+                return (
+                  <button key={u.id} className={`cr-unit ${on ? 'is-on' : ''}`} disabled={!ids.length}
+                    onClick={() => setWho((p) => { const n = new Set(p); ids.forEach((id) => (on ? n.delete(id) : n.add(id))); return n })}>
+                    <b>{u.label}</b>
+                    <span>{u.ids.map((id) => doc.students.find((s) => s.id === id)).filter(Boolean).map((s) => pickName(s, doc.students)).join(', ')}</span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+          {units && !units.length && <p className="cr-hint">No {unitLabel}s yet – pick students below.</p>}
+          <div className={`cr-pickgrid ${units?.length ? 'cr-pickgrid--sub' : ''}`}>
             {present.map((s) => (
               <button type="button" key={s.id} className={`cr-pick ${who.has(s.id) ? `is-active ${skill.value < 0 ? 'is-no' : 'is-yes'}` : ''}`} onClick={() => toggle(s.id)} aria-pressed={who.has(s.id)}>
                 <Avatar a={s.avatar} /><span>{pickName(s, doc.students)}</span>

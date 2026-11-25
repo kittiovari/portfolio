@@ -433,13 +433,15 @@ function PlanRow({ item, step, start, cls, doc, review, maxMinutes = 45, open, o
 
       {open && role === 'reflection' && (
         <div className="cr-prow__details">
-          <PointsPicker doc={doc} item={item} onChange={onChange} />
+          <RuleChips doc={doc} item={item} />
         </div>
       )}
 
       {open && !locked && !compactOnly && role !== 'reflection' && (
         <div className="cr-prow__details">
           {/* Leírás + források egy dobozban: szöveg, alatta az előnézetek, alul a csatolás */}
+          {role !== 'homework' && <OrgPicker item={item} onChange={onChange} />}
+          {role !== 'homework' && <RuleChips doc={doc} item={item} />}
           <div className={`cr-compose ${over ? 'is-over' : ''}`}>
             <textarea rows={3} value={item.activity || ''}
               placeholder={role === 'homework' ? 'Homework: exercises, pages, deadline…' : 'Activity: what happens, instructions, pages…'}
@@ -464,13 +466,11 @@ function PlanRow({ item, step, start, cls, doc, review, maxMinutes = 45, open, o
               </div>
             )}
           </div>
-          {role !== 'homework' && <OrgPicker item={item} onChange={onChange} />}
           {role !== 'homework' && (
             <label className="cr-pfield">
               <input value={item.equipment || ''} placeholder="Equipment: coursebook, worksheet, speakers…" onChange={(e) => onChange({ equipment: e.target.value })} aria-label="Equipment" />
             </label>
           )}
-          {(!role || role === 'warmer') && <PointsPicker doc={doc} item={item} onChange={onChange} />}
           {!role && (
             <div className="cr-pfield">
               <div className="cr-pcard__skills">
@@ -531,29 +531,14 @@ export function OrgIcon({ id, className = 'cr-orgicon' }) {
   )
 }
 
-// Melyik pontok jöhetnek szóba ennél a lépésnél (pozitív és fejlesztendő)
-function PointsPicker({ doc, item, onChange }) {
-  const allowed = new Set(stepSkills(doc, item).map((k) => k.id))
-  const toggle = (id) => onChange((it) => {
-    const cur = new Set(Array.isArray(it.points) ? it.points : stepSkills(doc, it).map((k) => k.id))
-    cur.has(id) ? cur.delete(id) : cur.add(id)
-    return { points: [...cur] }
-  })
-  const row = (list, neg) => (
-    <div className="cr-pcard__skills">
-      {list.map((k) => (
-        <button key={k.id} className={`cr-ptchip ${neg ? 'is-neg' : ''} ${allowed.has(k.id) ? 'is-on' : ''}`} onClick={() => toggle(k.id)} aria-pressed={allowed.has(k.id)}>
-          <span aria-hidden="true">{k.icon}</span>{k.name}<b>{k.value > 0 ? `+${k.value}` : k.value}</b>
-        </button>
-      ))}
-    </div>
-  )
+// A lépésnél adható pontok (a munkaforma szerint; a Class panelen módosíthatók)
+function RuleChips({ doc, item }) {
+  const list = stepSkills(doc, item)
+  if (!list.length) return item.role ? null : <p className="cr-ruleline cr-ruleline--hint">Choose the organisation form first</p>
   return (
-    <div className="cr-pfield cr-ptpick">
-      <span className="cr-ptpick__label">Points for this step</span>
-      {row(doc.skills?.positive || [], false)}
-      {row(doc.skills?.negative || [], true)}
-    </div>
+    <p className="cr-ruleline">
+      {list.map((k) => <span key={k.id} className={`cr-rulechip ${k.value < 0 ? 'is-neg' : ''}`}>{k.icon} {k.name} <b>{k.value > 0 ? `+${k.value}` : k.value}</b></span>)}
+    </p>
   )
 }
 
@@ -812,7 +797,7 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
                     )
                   })()}
                   {/* munkaforma – óra közben is átállítható */}
-                  {it.role !== 'attendance' && it.role !== 'reflection' && (
+                  {it.role !== 'attendance' && it.role !== 'reflection' && it.role !== 'homework' && (
                     <div className="cr-lcard__org" role="radiogroup" aria-label="Organisation form">
                       {ORG_FORMS.map((o) => (
                         <button key={o.id} role="radio" aria-checked={it.org === o.id} title={o.label}
@@ -842,7 +827,7 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
                   {(it.role === 'attendance' || it.role === 'hwreview') && (
                     <button className="cr-btn cr-btn--primary cr-btn--sm cr-lcard__action" onClick={() => {
                       onSelect({ key, itemId: it.id, title, role: it.role })
-                      if (it.role === 'attendance') onTakeAttendance(splitKey(key).date)
+                      if (it.role === 'attendance') onTakeAttendance(splitKey(key).date, key, it.id)
                       else onCheckHomework()
                     }}>
                       ✓ {it.role === 'attendance' ? 'Take attendance' : 'Check homework'}

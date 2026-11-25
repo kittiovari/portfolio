@@ -13,7 +13,7 @@ import { SessionSetup, SessionPlayer } from '../classroom/session.jsx'
 import { useClassroom } from '../classroom/useClassroom.js'
 import SeasonScene from '../classroom/SeasonScene.jsx'
 import Deskmates from '../classroom/Deskmates.jsx'
-import { ATTENDANCE, CLASSES, dayKey, fullName, pickName, getPlan, stepSkills, withSkeleton, lessonLabel, nextLessonKey, pointsBy, sortStudents, uid } from '../classroom/model.js'
+import { ATTENDANCE, CLASSES, dayKey, fullName, pickName, getPlan, stepSkills, withSkeleton, skillByKey, lessonLabel, nextLessonKey, pointsBy, sortStudents, uid } from '../classroom/model.js'
 import '../components/PasswordModal.css'
 import '../classroom/Classroom.css'
 
@@ -288,7 +288,7 @@ export default function Classroom() {
           <LessonBoard key={cls} doc={doc} update={update} cls={cls} active={activeStep} onSelect={setActiveStep}
             onMakeGroups={(size, date) => setModal({ kind: 'tool', id: 'groups', size, date, fromBoard: true })}
             onCheckHomework={() => setModal({ kind: 'homework', preselect: [] })}
-            onTakeAttendance={(date) => setModal({ kind: 'attendance', date })}
+            onTakeAttendance={(date, key, itemId) => setModal({ kind: 'attendance', date, key, itemId })}
             onGivePoints={(step) => givePoints([], step)}
             onEdit={(k) => setModal({ kind: 'tool', id: 'today', key: k })} />
         )}
@@ -345,21 +345,38 @@ export default function Classroom() {
           const here = doc.students.filter((s) => doc.attendance?.[date]?.[s.id] !== 'absent').map((s) => s.id)
           return (
             <PointsWizard key="points" doc={doc} skills={stepSkills(doc, item)} stepTitle={step.title} presentIds={here} preselect={modal.preselect || []}
+              units={item?.org === 'pairs' ? (doc.deskmates || []).map((ids, i) => ({ id: `d${i}`, label: `Desk ${i + 1}`, ids }))
+                : item?.org === 'groups' ? groupsToday.map((g) => ({ id: g.id, label: g.name, ids: g.ids })) : null}
+              unitLabel={item?.org === 'pairs' ? 'pair' : 'group'}
               onClose={closeModal}
               onSave={(skill, ids) => { award(ids, skill, `${ids.length} student${ids.length === 1 ? '' : 's'}`); closeModal() }} />
           )
         })()}
         {modal?.kind === 'attendance' && (
           <AttendanceWizard key="attendance" doc={doc} date={modal.date} onClose={closeModal}
-            onSave={(map) => { update((d) => ({ ...d, attendance: { ...d.attendance, [modal.date]: map } })); closeModal() }} />
+            onSave={(map) => {
+              const late = skillByKey(doc, 'late')
+              const lateIds = Object.keys(map).filter((id) => map[id] === 'late')
+              update((d) => {
+                // korábbi automatikus késés-pontok törlése ennél az óránál, majd az újak
+                const events = d.events.filter((e) => !(e.auto === 'late' && e.l === modal.key))
+                const add = late && modal.key ? lateIds.map((s) => ({ id: uid(), s, k: late.id, n: late.name, i: late.icon, v: late.value, t: Date.now(), l: modal.key, st: modal.itemId, sn: 'Attendance', auto: 'late' })) : []
+                return { ...d, attendance: { ...d.attendance, [modal.date]: map }, events: [...events, ...add] }
+              })
+              if (late && lateIds.length) play('negative')
+              closeModal()
+            }} />
         )}
         {modal?.kind === 'homework' && (
           <HomeworkWizard key="homework" doc={doc} presentIds={activeStep?.key ? doc.students.filter((s) => doc.attendance?.[activeStep.key.slice(0, 10)]?.[s.id] !== 'absent').map((s) => s.id) : presentIds} preselect={modal.preselect || []} onClose={closeModal}
-            onSave={(doneIds, missingIds, doneSkill, missSkill) => {
+            onSave={(doneIds, missingIds, doneSkill, missSkill, perfectIds = [], extraIds = []) => {
               const ds = doneSkill || { id: 'hw-done', name: 'Homework done', icon: '👍', value: 2 }
               const ms = missSkill || { id: 'hw-missing', name: 'No homework', icon: '🗑️', value: -2 }
               if (doneIds.length) award(doneIds, ds, `${doneIds.length} student${doneIds.length === 1 ? '' : 's'}`)
               if (missingIds.length) setTimeout(() => award(missingIds, ms, `${missingIds.length} student${missingIds.length === 1 ? '' : 's'}`), doneIds.length ? 900 : 0)
+              const ph = skillByKey(doc, 'perfect_hw'), xh = skillByKey(doc, 'extra_hw')
+              if (ph && perfectIds.length) setTimeout(() => award(perfectIds, ph, `${perfectIds.length} student${perfectIds.length === 1 ? '' : 's'}`), 1800)
+              if (xh && extraIds.length) setTimeout(() => award(extraIds, xh, `${extraIds.length} student${extraIds.length === 1 ? '' : 's'}`), 2700)
               closeModal()
             }} />
         )}

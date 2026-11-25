@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { emptyClass, migrateToEnglish } from './model.js'
+import { emptyClass, migrateToEnglish, ensureSkills } from './model.js'
 
 // Az osztály adatainak betöltése és automatikus mentése a szerverre.
 // Minden módosítás azonnal látszik (optimista frissítés); a mentés kis
@@ -24,7 +24,7 @@ export function useClassroom(cls) {
       const data = await res.json()
       const loaded = data.doc ? { ...emptyClass(), ...data.doc } : emptyClass()
       // A korábbi magyar alapértelmezések angolra cserélése (egyszeri, utána elmentjük)
-      const next = migrateToEnglish(loaded)
+      const next = ensureSkills(migrateToEnglish(loaded))
       docRef.current = next
       setDoc(next)
       setStatus('ready')

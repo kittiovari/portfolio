@@ -220,20 +220,66 @@ export function withSkeleton(plan) {
 }
 export const isFixed = (it) => Boolean(it.role)
 
-// ── Lépésenként adható pontok ──
-// item.points: a választható készségek azonosítói; ha nincs megadva, szerepkör szerinti alapértelmezés
-const HW_RE = /homework/i
-const DEFAULT_POINTS = {
-  warmer: (k) => /active participation|great answer|disruptive/i.test(k.name),
-  reflection: (k) => k.value > 0 && /top mark|extra task|quizlet|active participation/i.test(k.name),
-  task: (k) => !HW_RE.test(k.name) && !/^late$/i.test(k.name),
+// ── Pontkategóriák stabil kulccsal + szabályok munkaforma / lépés szerint ──
+// A kulcs (key) a szabályokhoz kell; a név és a pontérték a Class panelen szabadon módosítható.
+export const SKILL_DEFS = [
+  { key: 'active', name: 'Active participation', icon: '💡', value: 1, re: /active participation|aktív órai/i },
+  { key: 'question', name: 'Interesting question', icon: '❓', value: 1, re: /interesting question|great answer|jót mondtál/i },
+  { key: 'perfect_task', name: 'Perfect solution', icon: '🎯', value: 1, re: /perfect (class task|solution)|hibátlan órai/i },
+  { key: 'team1', name: 'Team challenge – 1st place', icon: '🥇', value: 3, re: /1st place|1\. hely/i },
+  { key: 'team2', name: 'Team challenge – 2nd place', icon: '🥈', value: 2, re: /2nd place|2\. hely/i },
+  { key: 'team3', name: 'Team challenge – 3rd place', icon: '🥉', value: 1, re: /3rd place|3\. hely/i },
+  { key: 'creative', name: 'Super creative solution', icon: '🎨', value: 2, re: /creative/i },
+  { key: 'fastest', name: 'Fastest work', icon: '⚡', value: 1, re: /fastest/i },
+  { key: 'hw_done', name: 'Homework done', icon: '👍', value: 2, re: /homework done|elkészített házi/i },
+  { key: 'perfect_hw', name: 'Perfect homework', icon: '📁', value: 1, re: /perfect homework|hibátlan házi/i },
+  { key: 'extra_hw', name: 'Extra homework', icon: '🌟', value: 1, re: /extra homework|extra task|szorgalmi/i },
+  { key: 'disruptive', name: 'Disruptive behaviour', icon: '🛸', value: -1, re: /disruptive|fegyelmezetlen/i },
+  { key: 'passivity', name: 'Passivity warning', icon: '😶', value: -1, re: /passiv/i },
+  { key: 'missing_eq', name: 'Missing equipment', icon: '🧩', value: -1, re: /missing equipment|hiányos felszerel/i },
+  { key: 'late', name: 'Late', icon: '⏰', value: -1, re: /^late$|^késés$/i },
+  { key: 'no_hw', name: 'No homework', icon: '🗑️', value: -2, re: /no homework|nincs házi/i },
+]
+// Melyik lépésnél / munkaformánál mi adható
+export const POINT_RULES = {
+  frontal: ['active', 'question'],
+  individual: ['perfect_task'],
+  pairs: ['team1', 'team2', 'team3', 'active', 'creative', 'fastest'],
+  groups: ['team1', 'team2', 'team3', 'active', 'creative', 'fastest'],
+  reflection: ['active', 'disruptive', 'passivity', 'missing_eq'],
+  hwreview: ['hw_done', 'no_hw', 'perfect_hw', 'extra_hw'],
+  attendance: ['late'],
 }
+export const RULE_LABELS = {
+  frontal: 'Frontal work', individual: 'Individual work', pairs: 'Pair work', groups: 'Group work',
+  reflection: 'Self-reflection & Overall evaluation', hwreview: 'Homework review', attendance: 'Attendance',
+}
+// Követett viselkedések (statisztika és E-Kréta-küszöbök)
+export const TRACKED = ['passivity', 'extra_hw', 'active', 'late', 'no_hw', 'missing_eq']
+export const THRESHOLDS = [3, 5, 10]
+
+// A hiányzó kategóriák pótlása és a meglévők kulcsolása (egyszer, betöltéskor)
+export function ensureSkills(doc) {
+  const sk = { positive: [...(doc.skills?.positive || [])], negative: [...(doc.skills?.negative || [])] }
+  let changed = false
+  for (const def of SKILL_DEFS) {
+    const list = def.value > 0 ? sk.positive : sk.negative
+    const all = [...sk.positive, ...sk.negative]
+    if (all.some((k) => k.key === def.key)) continue
+    const i = list.findIndex((k) => !k.key && def.re.test(k.name))
+    if (i >= 0) list[i] = { ...list[i], key: def.key }
+    else list.push({ id: uid(), key: def.key, name: def.name, icon: def.icon, value: def.value })
+    changed = true
+  }
+  return changed ? { ...doc, skills: sk } : doc
+}
+export const skillByKey = (doc, key) => [...(doc.skills?.positive || []), ...(doc.skills?.negative || [])].find((k) => k.key === key)
+
+// Az adott lépésnél adható pontok (a munkaforma szerint; Future homeworknél nincs)
 export function stepSkills(doc, item) {
-  const all = [...(doc.skills?.positive || []), ...(doc.skills?.negative || [])]
-  if (!item || item.role === 'attendance' || item.role === 'hwreview' || item.role === 'homework') return []
-  if (Array.isArray(item.points)) return all.filter((k) => item.points.includes(k.id))
-  const test = DEFAULT_POINTS[item.role] || DEFAULT_POINTS.task
-  return all.filter(test)
+  if (!item || item.role === 'homework' || item.role === 'attendance' || item.role === 'hwreview') return []
+  const rule = item.role === 'reflection' ? 'reflection' : item.org
+  return (POINT_RULES[rule] || []).map((k) => skillByKey(doc, k)).filter(Boolean)
 }
 const hasContent = (it) => Boolean((it.aim || '').trim() || (it.activity || '').trim() || it.resources?.length)
 
