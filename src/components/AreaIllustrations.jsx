@@ -300,31 +300,43 @@ function UXArt(props) {
 const profileCommon = { ...common, viewBox: '0 0 120 120' }
 
 // NYEK9B: olasz gesztus – összezárt ujjak felfelé, kockás ingujj
+// NYEK9B: babszem-figura az arca mellett olasz gesztussal (összezárt ujjak),
+// kétirányú mozgásnyíllal és kérdéssel – „Cosa?”
 function ItalianHandArt(props) {
   return (
     <svg {...profileCommon} {...props}>
       <g strokeWidth="2.2">
-        {/* mozgásvonalak */}
-        <path className="a-flow" d="M86 22q6 4 4 10M93 33q5 3 3 8M50 20q-6 4-4 10" opacity=".55" />
+        {/* kérdés */}
+        <text x="34" y="30" fontSize="13" {...label} transform="rotate(-8 34 30)">Cosa?</text>
+
+        {/* figura (jobb oldalt) */}
+        <path d={bean(74, 122, 46, 80)} />
+        <path d="M70 44c-3-6 2-9-1-15M78 43c0-6 5-8 4-14M85 46c3-5 7-6 9-10" />
+        {/* felhúzott szemöldök, oldalra néző szemek, csücsörítő száj */}
+        <path d="M60 60q4-4 8-1M75 59q4-3 8 0" />
+        <circle cx="63" cy="67" r="1.9" {...dot} />
+        <circle cx="78" cy="66" r="1.9" {...dot} />
+        <ellipse cx="70" cy="80" rx="3.4" ry="2.6" />
+
+        {/* felemelt kar + összezárt ujjú kéz az arc mellett */}
         <g className="a-shake">
-          {/* kockás ingujj */}
-          <path d="M34 120L40 96L68 100L64 120" />
-          <path d="M38 108l28 4M36 116l28 4M48 97l-4 22M58 99l-3 21" opacity=".45" />
-          {/* csukló */}
-          <path d="M43 96C45 88 47 82 49 76M66 100C68 92 69 86 71 80" />
-          {/* kidomborodó kézfej (jobb oldal) az ujjbegyekig */}
-          <path d="M71 80C81 74 87 63 85 51C83 40 79 31 77 25" />
-          {/* tenyér + hüvelykujj (bal oldal) */}
-          <path d="M49 76C44 68 44 60 48 52C50 43 55 34 60 28" />
-          {/* összeérő ujjbegyek felül */}
-          <path d="M60 28C59 22 63 18 67 21C69 16 75 17 76 22C79 21 81 24 77 25" />
-          {/* ujjak vonala lefelé a tenyérbe */}
-          <path d="M67 21C70 31 72 41 72 53M75 23C78 33 80 43 79 55" opacity=".6" />
-          {/* hüvelykujj belső vonala + köröm */}
-          <path d="M52 57C55 47 58 38 63 30" />
-          <path d="M60 33q3 1 4-2" opacity=".6" />
-          {/* bütykök */}
-          <path d="M58 64q9 6 20 2" opacity=".5" />
+          {/* alkar a test szélétől a csuklóig */}
+          <path d="M51 112C44 100 38 86 36.5 69M52 96C49 88 48 79 47.5 71" />
+          {/* kéz: ugyanaz a forma, mint az önálló gesztusrajzon, kicsinyítve */}
+          <g transform="translate(12 30) scale(0.5)" strokeWidth="4.4">
+            <path d="M71 80C81 74 87 63 85 51C83 40 79 31 77 25" />
+            <path d="M49 76C44 68 44 60 48 52C50 43 55 34 60 28" />
+            <path d="M60 28C59 22 63 18 67 21C69 16 75 17 76 22C79 21 81 24 77 25" />
+            <path d="M67 21C70 31 72 41 72 53M75 23C78 33 80 43 79 55" opacity=".6" />
+            <path d="M52 57C55 47 58 38 63 30" />
+            <path d="M49 76C55 80 64 82 71 80" />
+          </g>
+        </g>
+
+        {/* kétirányú mozgásnyíl */}
+        <g className="a-flow">
+          <path d="M14 66L28 52" />
+          <path d="M14 66l1-6M14 66l6-1M28 52l-1 6M28 52l-6 1" />
         </g>
       </g>
     </svg>
