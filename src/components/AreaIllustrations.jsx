@@ -299,41 +299,64 @@ function UXArt(props) {
 // ── Nyelvoktatás profilválasztó: kör alakú ikonok (négyzetes vászon) ──
 const profileCommon = { ...common, viewBox: '0 0 120 120' }
 
-// NYEK9B: spagettit eszegető babszem-figura, aki éppen egy szálat szippant be
-// (csücsörítő száj, élvezettől csukott szem, tekerős villa, tányér)
+// NYEK9B: lapos olasz sapkás (coppola) babszem-figura, aki egy tányér
+// spagettiből éppen egy hosszú szálat szippant be; kezében feltekert villa
 function SpaghettiArt(props) {
   return (
     <svg {...profileCommon} {...props}>
+      <defs>
+        {/* a fej teteje a sapka alatt ne látsszon */}
+        <clipPath id="nyek9b-under-cap">
+          <rect x="0" y="37" width="120" height="90" />
+        </clipPath>
+      </defs>
       <g strokeWidth="2.2">
-        {/* figura a tányér mögött */}
-        <path d={bean(60, 104, 56, 78)} />
-        <path d="M55 30c-3-6 2-9-1-14M63 29c0-6 5-8 4-13" />
-        {/* élvezettől csukott szem, kipirult arc */}
-        <path d="M43 50q4.5 3.5 9 0M68 50q4.5 3.5 9 0" />
-        <path d="M39 59q2.5 2 5 0M76 59q2.5 2 5 0" opacity=".5" />
-        {/* csücsörítő, szürcsölő száj */}
-        <ellipse cx="60" cy="64" rx="3.4" ry="3" />
+        {/* figura a tányér mögött, a fej teteje a sapka alá bújik */}
+        <path d={bean(60, 104, 56, 80)} clipPath="url(#nyek9b-under-cap)" />
 
-        {/* a beszippantott spagettiszál – kijelöléskor felfelé kúszik */}
-        <g className="a-slurp">
-          <path d="M60 67C55 71.5 65 75.5 60 80C55 84.5 65 88.5 60 93C57 96 59 99 57.5 102" />
+        {/* olasz lapos sapka (coppola): lapos, előre dőlő tető, ellenző, gomb */}
+        <path d="M32 38C31 31 42 25 58 24C75 23 88 28 89 35C89 37 88 38 87 38" />
+        <path d="M32 38C46 35 74 35 87 38" />
+        <path d="M41 38C47 46 72 46 79 38" />
+        <circle cx="60" cy="24" r="1.8" {...dot} />
+
+        {/* élvezettől csukott szem, kipirult arc */}
+        <path d="M43 53q4.5 3.5 9 0M68 53q4.5 3.5 9 0" />
+        <path d="M39 62q2.5 2 5 0M76 62q2.5 2 5 0" opacity=".5" />
+        {/* csücsörítő, szürcsölő száj */}
+        <ellipse cx="60" cy="67" rx="3.4" ry="3" />
+
+        {/* a beszippantott hosszú spagettiszál – kijelöléskor felfelé kúszik */}
+        <g className="a-slurp" strokeWidth="1.8">
+          <path d="M60 70C55 74 64 78 59.5 82.5C55 87 64 90 60 93" />
         </g>
+
         {/* villa a jobb kézben, feltekert tésztával */}
         <g className="a-bob">
           <path d="M87 72C92 77 92 84 88 88" />
           <circle cx="86" cy="91" r="4" />
-          <path d="M83 94L73 103" />
-          <path d="M73 103l-3.5 1.2M73 103l-1.6 3.4M73 103l1.4 3.2" />
-          <path d="M70.5 99.5q4.5-3 6.5 1q-4.5 3-6.5-1" opacity=".75" />
+          <path d="M83 94L75.5 99" />
+          <g strokeWidth="1.6">
+            <path d="M69 96q5-3.5 7.5 1q-5 3.5-7.5-1M69 99q5-3 7.5 1" />
+          </g>
         </g>
 
-        {/* tányér spagettivel és egy húsgombóccal */}
-        <ellipse cx="58" cy="109" rx="31" ry="6.5" />
-        <ellipse cx="58" cy="108" rx="22" ry="3.8" opacity=".45" />
-        <path d="M37 107C38 99 45 96 49 100C51 93 58 92 62 97C65 92 73 93 74 99C78 97 83 101 81 107" />
-        <path d="M42 104q3-4 6-1t6-1t6-1t6 1t6 0" opacity=".75" />
-        <path d="M47 100q3-3 6 0t6 0" opacity=".6" />
-        <circle cx="67" cy="99" r="3.2" />
+        {/* tányér */}
+        <ellipse cx="58" cy="110" rx="32" ry="6.5" />
+        <ellipse cx="58" cy="109" rx="23" ry="3.8" opacity=".4" />
+
+        {/* bőséges spagettikupac: magas halom, hosszú, vékony, hullámzó szálak */}
+        <path d="M33 107C33 97 41 92 47 95C49 87 58 86 63 91C67 86 76 88 77 94C82 92 87 98 85 107" />
+        <g strokeWidth="1.5">
+          <path d="M36 104C40 99 44 103 48 99S56 101 60 97S68 100 72 96S80 100 82 103" />
+          <path d="M39 100C43 95 47 99 51 95S59 97 63 93S71 95 75 93" opacity=".8" />
+          <path d="M44 96C47 92 51 95 54 92S60 93 63 90" opacity=".7" />
+          {/* a tányér széléről lelógó szálak */}
+          <path d="M35 106C31 108 33 111 29.5 114M84 106C88 108 86 111 89.5 114M46 108C45 111 47 113 45 116M70 108C71 111 69 113 71 116" />
+        </g>
+        {/* húsgombócok */}
+        <circle cx="69" cy="92" r="3.2" />
+        <circle cx="48.5" cy="97.5" r="2.6" />
       </g>
     </svg>
   )
