@@ -34,7 +34,8 @@
 
 - `npm run jelszo -- language` (vagy `arttherapy` / `ux`): rejtetten bekéri az új jelszót, és a hash-t beírja a `.env`-be.
 - Ugyanezt az értéket másold be a Netlify-on is, majd indíts egy új deployt.
-- Javasolt jelszó: 4 véletlen szó + szám, legalább 12 karakter.
+- Legalább 6 karakter. Gépelés közben csak pöttyök látszanak, és a szkript kétszer kéri be a jelszót.
+- Jól megjegyezhető és erős, ha több szót kötsz össze. A próbálkozáskorlát miatt egy rövidebb jelszót sem lehet gyorsan kitalálni.
 
 **Minden látogató kiléptetése**
 
