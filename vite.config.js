@@ -12,6 +12,7 @@ const API_ROUTES = [
   { re: /^\/api\/content\/([^/]+)$/, fn: 'content', keys: ['area'] },
   { re: /^\/api\/classroom\/([^/]+)$/, fn: 'classroom', keys: ['cls'] },
   { re: /^\/api\/classview\/([^/]+)$/, fn: 'classview', keys: ['cls'] },
+  { re: /^\/api\/studentview\/([^/]+)$/, fn: 'studentview', keys: ['cls'] },
   { re: /^\/api\/classfile\/([^/]+)(?:\/([^/]+))?$/, fn: 'classfile', keys: ['cls', 'id'] },
   { re: /^\/api\/asset\/([^/]+)\/([^/]+)$/, fn: 'asset', keys: ['area', 'name'] },
 ]

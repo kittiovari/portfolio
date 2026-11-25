@@ -3,7 +3,7 @@ import Avatar, { ClassAvatar } from './Avatar.jsx'
 import { Sheet, Icon } from './ui.jsx'
 import { ReportPanel } from './report.jsx'
 import {
-  AVATAR, RANGES, sortStudents, pickName, POINT_RULES, RULE_LABELS, rangeBounds, inRange, fullName, uid, parseName, randomAvatar, toCsv, download, dayKey,
+  AVATAR, RANGES, sortStudents, pickName, POINT_RULES, RULE_LABELS, newCode, ensureCodes, rangeBounds, inRange, fullName, uid, parseName, randomAvatar, toCsv, download, dayKey,
 } from './model.js'
 
 /*
@@ -287,7 +287,7 @@ export function AddStudents({ update, onClose }) {
   const submit = (e) => {
     e.preventDefault()
     if (!parsed.length) return
-    update((d) => ({ ...d, students: [...d.students, ...parsed.map((p) => ({ id: uid(), ...p, avatar: randomAvatar() }))] }))
+    update((d) => ensureCodes({ ...d, students: [...d.students, ...parsed.map((p) => ({ id: uid(), ...p, avatar: randomAvatar() }))] }))
     onClose()
   }
   return (
@@ -660,6 +660,12 @@ export function PointRules({ doc, update }) {
 // ── Class panel: tagok – szerkesztés, törlés, felvétel ──
 export function ClassMembers({ doc, update }) {
   const [text, setText] = useState('')
+  const [copied, setCopied] = useState(false)
+  const copyCodes = async () => {
+    const t = sortStudents(doc.students).map((s) => `${fullName(s)}\t${s.code || ''}`).join('\n')
+    try { await navigator.clipboard.writeText(t) } catch { /* */ }
+    setCopied(true); setTimeout(() => setCopied(false), 1500)
+  }
   const parsed = text.split(/\r?\n/).map(parseName).filter(Boolean)
   const setStudent = (id, patch) => update((d) => ({ ...d, students: d.students.map((s) => (s.id === id ? { ...s, ...patch } : s)) }))
   const remove = (s) => {
@@ -674,17 +680,24 @@ export function ClassMembers({ doc, update }) {
   }
   return (
     <div className="cr-members">
+      <div className="cr-members__bar">
+        <p className="cr-muted">The personal code opens a student's own full report on the class page.</p>
+        <button className="cr-btn cr-btn--sm" onClick={copyCodes}><Icon.list />{copied ? 'Copied' : 'Copy codes'}</button>
+      </div>
       <ul className="cr-members__list">
         {sortStudents(doc.students).map((s) => (
           <li key={s.id}>
             <Avatar a={s.avatar} />
             <input value={s.last} placeholder="Surname" onChange={(e) => setStudent(s.id, { last: e.target.value })} aria-label="Surname" />
             <input value={s.first} placeholder="First name" onChange={(e) => setStudent(s.id, { first: e.target.value })} aria-label="First name" />
+            <code className="cr-members__code" title="Personal code">{s.code || '—'}</code>
+            <button className="cr-iconbtn cr-iconbtn--sm" title="New code" aria-label={`New code for ${fullName(s)}`}
+              onClick={() => window.confirm(`New code for ${fullName(s)}? The old one stops working.`) && setStudent(s.id, { code: newCode(new Set(doc.students.map((x) => x.code))) })}><Icon.reset /></button>
             <button className="cr-iconbtn cr-iconbtn--sm" onClick={() => remove(s)} aria-label={`Remove ${fullName(s)}`}><Icon.trash /></button>
           </li>
         ))}
       </ul>
-      <form className="cr-form" onSubmit={(e) => { e.preventDefault(); if (!parsed.length) return; update((d) => ({ ...d, students: [...d.students, ...parsed.map((p) => ({ id: uid(), ...p, avatar: randomAvatar() }))] })); setText('') }}>
+      <form className="cr-form" onSubmit={(e) => { e.preventDefault(); if (!parsed.length) return; update((d) => ensureCodes({ ...d, students: [...d.students, ...parsed.map((p) => ({ id: uid(), ...p, avatar: randomAvatar() }))] })); setText('') }}>
         <label className="cr-field"><span>Add students – one per line (Surname First name)</span>
           <textarea rows={3} value={text} onChange={(e) => setText(e.target.value)} placeholder={'Kovács Anna\nNagy Bence'} />
         </label>

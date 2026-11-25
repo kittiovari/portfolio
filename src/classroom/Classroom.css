@@ -1344,3 +1344,20 @@ span.cr-sk { cursor: default; }
 /* E-Kréta kivonat */
 .cr-kreta__text { white-space: pre-wrap; word-break: break-word; font: 0.88rem/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; background: #FAF8F6; border-radius: 14px; padding: 0.9rem 1rem; margin: 0 0 1rem; max-height: 55vh; overflow: auto; }
 .cr-lboard__head { flex-wrap: wrap; }
+
+/* Személyes kódok */
+.cr-members__bar { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
+.cr-members__bar p { margin: 0; }
+.cr-members__code { font: 700 0.85rem ui-monospace, Consolas, monospace; letter-spacing: 0.08em; padding: 0.15rem 0.45rem; border-radius: 8px; background: #fff; border: 1px solid var(--line); }
+@media (max-width: 560px) { .cr-members__list li { flex-wrap: wrap; } .cr-sheet .cr-members__list input { flex: 1 1 35%; } }
+
+/* Diákoldal: óraválasztó, saját riport */
+.cr-board__lesson { position: relative; }
+.cr-board__pick { display: flex; justify-content: flex-end; width: min(100% - 2rem, 1240px); margin: 0 auto 0.4rem; }
+.cr-board__pick select { padding: 0.4rem 0.7rem; border-radius: 999px; border: 1px solid var(--line); background: #fff; font-weight: 600; font-size: 0.88rem; max-width: 100%; }
+.cr-board .cr-subbar { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; }
+.cr-mebar { display: inline-flex; align-items: center; gap: 0.5rem; }
+.cr-tile.is-me .cr-tile__first { text-decoration: underline 2px #E0B33A; text-underline-offset: 3px; }
+.cr-codeform input { font: 700 1.4rem ui-monospace, Consolas, monospace; letter-spacing: 0.25em; text-align: center; padding: 0.6rem; }
+.cr-codeform__err { color: #B4443B; font-size: 0.88rem; margin: 0.3rem 0 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }

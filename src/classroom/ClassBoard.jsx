@@ -1,21 +1,39 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import Avatar, { ClassAvatar } from './Avatar.jsx'
-import { Sheet } from './ui.jsx'
-import { RANGES, rangeBounds, inRange, sortStudents, fullName, pickName } from './model.js'
-import { PlanTimeline, dayLabel } from './plan.jsx'
+import { Sheet, Icon } from './ui.jsx'
+import { sortStudents, fullName, pickName, lessonLabel } from './model.js'
+import { PlanTimeline } from './plan.jsx'
+import { ReportPanel } from './report.jsx'
 import './Classroom.css'
 
 /*
-  Az osztályoldal (diákok) csak olvasható tablója – ugyanaz a látvány, mint
-  a tanári Osztályteremben. A szerver eleve csak a pozitív bejegyzéseket,
-  a csoportokat, a mai napirendet és az utasításokat küldi le.
+  Az osztályoldal (diákok) – ugyanaz, mint a tanári Osztályterem, csak olvasható.
+  A közös jelszóval: a tanév óratervei, csoportok, padtársak és a pozitív pontok.
+  A saját, teljes riport (fejlesztendők, E-Kréta-számlálók) csak a személyes
+  kóddal nyílik meg, és csak az adott diáké.
 */
+const codeKey = (cls) => `kp-code-${cls}`
+const ssGet = (k) => { try { return sessionStorage.getItem(k) } catch { return null } }
+const ssSet = (k, v) => { try { if (v) sessionStorage.setItem(k, v); else sessionStorage.removeItem(k) } catch { /* */ } }
+
+async function fetchMe(cls, code) {
+  const res = await fetch(`/api/studentview/${cls}`, {
+    method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }),
+  })
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) throw Object.assign(new Error(body.error || res.status), { body, status: res.status })
+  return body
+}
+
 export default function ClassBoard({ cls }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState(false)
   const [view, setView] = useState('students')
-  const [open, setOpen] = useState(null) // { ids, title, student? }
+  const [open, setOpen] = useState(null) // { ids, title, student?, isClass? }
+  const [lessonKey, setLessonKey] = useState(null)
+  const [me, setMe] = useState(null)
+  const [asking, setAsking] = useState(false)
 
   useEffect(() => {
     let alive = true
@@ -31,10 +49,16 @@ export default function ClassBoard({ cls }) {
       }
     }
     load()
-    // Frissítés percenként, és amikor visszatérnek a lapra
     const id = setInterval(load, 60000)
     document.addEventListener('visibilitychange', load)
     return () => { alive = false; clearInterval(id); document.removeEventListener('visibilitychange', load) }
+  }, [cls])
+
+  // a böngészőfülön megjegyzett kóddal (csak erre a munkamenetre) újra betölti a saját riportot
+  useEffect(() => {
+    setMe(null)
+    const code = ssGet(codeKey(cls))
+    if (code) fetchMe(cls, code).then(setMe).catch(() => ssSet(codeKey(cls), null))
   }, [cls])
 
   const points = useMemo(() => {
@@ -43,20 +67,43 @@ export default function ClassBoard({ cls }) {
     return m
   }, [data])
 
-  if (!data) return error ? <p className="cr-hint">Couldn't load the points right now. Please try again later.</p> : <div className="cr-skeleton" />
+  // a riportok „doc”-ja: nyilvános (csak pozitív) és saját (minden adatom)
+  const publicDoc = useMemo(() => data && ({
+    students: data.students, events: data.events,
+    skills: { positive: (data.skills || []).filter((k) => k.value > 0), negative: (data.skills || []).filter((k) => k.value < 0) },
+    calendar: data.calendar || {}, units: data.units || [], shortDays: data.shortDays || [], resets: {},
+  }), [data])
+  const myDoc = useMemo(() => publicDoc && me && ({
+    ...publicDoc, events: [...publicDoc.events.filter((e) => e.s !== me.id), ...me.events], resets: { [me.id]: me.resets || {} },
+  }), [publicDoc, me])
+
+  if (!data) return error ? <p className="cr-hint">Couldn't load the class page right now. Please try again later.</p> : <div className="cr-skeleton" />
 
   const students = sortStudents(data.students)
   const total = Object.values(points).reduce((a, b) => a + b, 0)
+  const meStudent = me && data.students.find((s) => s.id === me.id)
+  const lessons = data.lessons || []
+  const key = lessonKey || data.planKey || lessons[lessons.length - 1]?.key
+  const lesson = lessons.find((l) => l.key === key)
+  const signOut = () => { ssSet(codeKey(cls), null); setMe(null) }
 
   return (
     <div className="cr cr-board">
-      {data.plan?.items?.length > 0 && (
-        <PlanTimeline
-          plan={data.plan}
-          cls={cls}
-          heading={`📅 ${data.isToday ? 'Today' : 'Next lesson'} – ${dayLabel(data.planDate, { weekday: 'long', day: 'numeric', month: 'long' })}${data.planTime ? `, ${data.planTime}` : ''}`}
-          startTime={data.planTime}
-        />
+      {lesson && (
+        <div className="cr-board__lesson">
+          <label className="cr-board__pick">
+            <span className="sr-only">Lesson</span>
+            <select value={key} onChange={(e) => setLessonKey(e.target.value)}>
+              {lessons.map((l) => <option key={l.key} value={l.key}>{lessonLabel(l.key, { weekday: 'short', day: 'numeric', month: 'short' }, publicDoc)}{l.key === data.planKey ? (data.isToday ? ' · today' : ' · next') : ''}</option>)}
+            </select>
+          </label>
+          <PlanTimeline
+            plan={lesson}
+            cls={cls}
+            heading={`📅 ${lessonLabel(lesson.key, { weekday: 'long', day: 'numeric', month: 'long' }, publicDoc)}`}
+            startTime={lesson.time}
+          />
+        </div>
       )}
       {data.directions?.length > 0 && (
         <div className="cr-board__info">
@@ -69,9 +116,18 @@ export default function ClassBoard({ cls }) {
 
       <div className="cr-subbar">
         <div className="cr-seg" role="tablist" aria-label="View">
-          <button role="tab" aria-selected={view === 'students'} className={view === 'students' ? 'is-active' : ''} onClick={() => setView('students')}>Students</button>
-          <button role="tab" aria-selected={view === 'groups'} className={view === 'groups' ? 'is-active' : ''} onClick={() => setView('groups')}>Groups</button>
+          {['students', 'pairs', 'groups'].map((v) => (
+            <button key={v} role="tab" aria-selected={view === v} className={view === v ? 'is-active' : ''} onClick={() => setView(v)}>{v[0].toUpperCase() + v.slice(1)}</button>
+          ))}
         </div>
+        {meStudent ? (
+          <span className="cr-mebar">
+            <button className="cr-btn cr-btn--sm cr-btn--primary" onClick={() => setOpen({ ids: [meStudent.id], title: fullName(meStudent), student: meStudent })}>My report</button>
+            <button className="cr-link" onClick={signOut}>Sign out</button>
+          </span>
+        ) : (
+          <button className="cr-btn cr-btn--sm" onClick={() => setAsking(true)}><Icon.people />My report</button>
+        )}
       </div>
 
       <div className="cr-main">
@@ -79,24 +135,41 @@ export default function ClassBoard({ cls }) {
           <p className="cr-hint cr-hint--center">Your points will appear here soon.</p>
         ) : view === 'students' ? (
           <div className="cr-grid">
-            <button className="cr-tile cr-tile--class" onClick={() => setOpen({ ids: students.map((s) => s.id), title: 'Everyone' })}>
+            <button className="cr-tile cr-tile--class" onClick={() => setOpen({ ids: students.map((s) => s.id), title: 'Class', isClass: true })}>
               <span className="cr-tile__art"><ClassAvatar /></span>
               <span className="cr-badge">{total}</span>
               <span className="cr-tile__last">&nbsp;</span>
               <span className="cr-tile__first">Class</span>
             </button>
             {students.map((s) => (
-              <button key={s.id} className="cr-tile" onClick={() => setOpen({ ids: [s.id], title: fullName(s), student: s })}>
+              <button key={s.id} className={`cr-tile ${me?.id === s.id ? 'is-me' : ''}`} onClick={() => setOpen({ ids: [s.id], title: fullName(s), student: s })}>
                 <span className="cr-tile__art"><Avatar a={s.avatar} /></span>
                 <span className={`cr-badge ${(points[s.id] || 0) === 0 ? 'is-zero' : ''}`}>{points[s.id] || 0}</span>
-                <span className="cr-tile__last">{s.last || ' '}</span>
+                <span className="cr-tile__last">{s.last || ' '}</span>
                 <span className="cr-tile__first">{s.first}</span>
               </button>
             ))}
           </div>
+        ) : view === 'pairs' ? (
+          <div className="cr-grid cr-grid--groups">
+            {!data.deskmates?.length && <p className="cr-hint">No desk pairs yet.</p>}
+            {(data.deskmates || []).map((ids, i) => {
+              const members = ids.map((id) => data.students.find((s) => s.id === id)).filter(Boolean)
+              return (
+                <div key={i} className="cr-group">
+                  <button className="cr-group__main" onClick={() => setOpen({ ids, title: `Desk ${i + 1}` })}>
+                    <span className="cr-group__faces">{members.map((s) => <Avatar key={s.id} a={s.avatar} />)}</span>
+                    <span className="cr-badge">{members.reduce((a, s) => a + (points[s.id] || 0), 0)}</span>
+                    <b>Desk {i + 1}</b>
+                    <small>{members.map((s) => pickName(s, data.students)).join(', ')}</small>
+                  </button>
+                </div>
+              )
+            })}
+          </div>
         ) : (
           <div className="cr-grid cr-grid--groups">
-            {!data.groups.length && <p className="cr-hint">No groups yet.</p>}
+            {!data.groups.length && <p className="cr-hint">No groups today.</p>}
             {data.groups.map((g) => {
               const members = sortStudents(g.ids.map((id) => data.students.find((s) => s.id === id)).filter(Boolean))
               const sum = members.reduce((a, s) => a + (points[s.id] || 0), 0)
@@ -116,56 +189,52 @@ export default function ClassBoard({ cls }) {
       </div>
 
       <AnimatePresence>
-        {open && <PointsSheet key="pts" data={data} target={open} points={points} onClose={() => setOpen(null)} />}
+        {open && (() => {
+          const mine = me && open.student?.id === me.id
+          const doc = mine ? myDoc : publicDoc
+          const sum = open.ids.reduce((a, id) => a + doc.events.filter((e) => e.s === id).reduce((x, e) => x + e.v, 0), 0)
+          return (
+            <Sheet key="rep" onClose={() => setOpen(null)} wide className="cr-target cr-readonly">
+              <header className="cr-target__head">
+                <span className="cr-target__avatar">{open.student ? <Avatar a={open.student.avatar} /> : <ClassAvatar />}</span>
+                <h2>{open.title}</h2>
+                <span className={`cr-chip ${sum < 0 ? 'cr-chip--neg' : ''}`}><b>{sum}</b> point{Math.abs(sum) === 1 ? '' : 's'}</span>
+                {!mine && open.student && <span className="cr-chip cr-chip--muted">positive points</span>}
+              </header>
+              <div className="cr-target__content">
+                <ReportPanel doc={doc} update={null} ids={open.ids} isClass={Boolean(open.isClass)} studentId={mine ? me.id : null} publicView={!mine} />
+              </div>
+            </Sheet>
+          )
+        })()}
+        {asking && <CodeSheet key="code" cls={cls} onClose={() => setAsking(false)} onOk={(d, code) => { ssSet(codeKey(cls), code); setMe(d); setAsking(false); const s = data.students.find((x) => x.id === d.id); if (s) setOpen({ ids: [s.id], title: fullName(s), student: s }) }} />}
       </AnimatePresence>
     </div>
   )
 }
 
-// Csak olvasható pontlista (pozitív bejegyzések) egy diákra / csoportra / osztályra
-function PointsSheet({ data, target, points, onClose }) {
-  const [range, setRange] = useState('all')
-  const idSet = new Set(target.ids)
-  const names = Object.fromEntries(data.students.map((s) => [s.id, fullName(s)]))
-  const events = data.events.filter((e) => idSet.has(e.s) && inRange(e.t, rangeBounds(range))).sort((a, b) => b.t - a.t)
-  const sum = target.ids.reduce((a, id) => a + (points[id] || 0), 0)
-  const multi = target.ids.length > 1
-
+function CodeSheet({ cls, onClose, onOk }) {
+  const [code, setCode] = useState('')
+  const [msg, setMsg] = useState('')
+  const [busy, setBusy] = useState(false)
+  const submit = async (e) => {
+    e.preventDefault()
+    setBusy(true); setMsg('')
+    try {
+      onOk(await fetchMe(cls, code), code)
+    } catch (err) {
+      setMsg(err.status === 429 ? `Too many tries. Wait ${Math.ceil((err.body?.retryAfter || 900) / 60)} minutes.`
+        : err.status === 401 ? `Wrong code.${err.body?.remaining != null ? ` ${err.body.remaining} tries left.` : ''}` : 'Something went wrong. Try again.')
+    } finally { setBusy(false) }
+  }
   return (
-    <Sheet onClose={onClose} className="cr-target cr-readonly">
-      <header className="cr-target__head">
-        <span className="cr-target__avatar">{target.student ? <Avatar a={target.student.avatar} /> : <ClassAvatar />}</span>
-        <h2>{target.title}</h2>
-        <span className="cr-chip"><b>{sum}</b> point{Math.abs(sum) === 1 ? '' : 's'}</span>
-      </header>
-      <div className="cr-target__content">
-        <div className="cr-report">
-          <div className="cr-report__bar">
-            <select value={range} onChange={(e) => setRange(e.target.value)} aria-label="Period">
-              {RANGES.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
-            </select>
-          </div>
-          {!events.length ? (
-            <div className="cr-empty"><span className="cr-empty__icon">🏆</span><b>No points in this period yet</b></div>
-          ) : (
-            <ul className="cr-report__list">
-              {events.map((e) => {
-                const d = new Date(e.t)
-                return (
-                  <li key={e.id}>
-                    <span className="cr-report__icon" aria-hidden="true">{e.i}</span>
-                    <span className="cr-report__what">
-                      <b>{e.n}</b>
-                      <small>{multi && `${names[e.s]} · `}{d.toLocaleDateString('en-GB', { month: 'short', day: 'numeric', weekday: 'short' })}</small>
-                    </span>
-                    <span className="cr-report__val">+{e.v}</span>
-                  </li>
-                )
-              })}
-            </ul>
-          )}
-        </div>
-      </div>
+    <Sheet title="My report" onClose={onClose}>
+      <form className="cr-form cr-codeform" onSubmit={submit}>
+        <p className="cr-muted">Type the personal code you got from your teacher. Only you can see your full report with it.</p>
+        <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} autoFocus autoComplete="off" autoCapitalize="characters" spellCheck="false" maxLength={12} aria-label="Personal code" placeholder="ABC123" />
+        {msg && <p className="cr-codeform__err" role="alert">{msg}</p>}
+        <div className="cr-form__actions"><span className="cr-spacer" /><button className="cr-btn cr-btn--primary" type="submit" disabled={busy || code.trim().length < 6}>Open</button></div>
+      </form>
     </Sheet>
   )
 }

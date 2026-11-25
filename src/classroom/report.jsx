@@ -186,7 +186,7 @@ function LessonView({ doc, update, ids, multi }) {
               <small>{multi && `${names[e.s] || '(deleted student)'} · `}{e.sn || ''}</small>
             </span>
             <span className={`cr-report__val ${e.v < 0 ? 'is-neg' : ''}`}>{e.v > 0 ? `+${e.v}` : e.v}</span>
-            <button className="cr-iconbtn cr-iconbtn--sm" onClick={() => removeEvent(e.id)} aria-label="Undo point" title="Undo"><Icon.close /></button>
+            {update && <button className="cr-iconbtn cr-iconbtn--sm" onClick={() => removeEvent(e.id)} aria-label="Undo point" title="Undo"><Icon.close /></button>}
           </li>
         ))}
       </ul>
@@ -262,7 +262,7 @@ export function Alerts({ doc, update, ids, all = false }) {
             <span className="cr-alert__who">{!all && <b>{pickName(s, doc.students)}</b>}<small>{sk.icon} {sk.name}</small></span>
             <Dots n={n} />
             {lv > 0 && <span className="cr-alert__lv">{lv}{lv === 10 ? '+' : ''}</span>}
-            <button className="cr-btn cr-btn--sm" onClick={() => reset(sid, key, sk.name)} disabled={!n} title="Restart count">Reset</button>
+            {update && <button className="cr-btn cr-btn--sm" onClick={() => reset(sid, key, sk.name)} disabled={!n} title="Restart count">Reset</button>}
           </div>
         )
       })}
@@ -271,7 +271,7 @@ export function Alerts({ doc, update, ids, all = false }) {
 }
 
 // ── Osztály-összesítő: ki mennyit tett hozzá egy tanulási ciklusban (Unit / időszak) ──
-function Overview({ doc, update }) {
+function Overview({ doc, update, publicView }) {
   const units = (doc.units || []).filter((u) => u.from && u.to).sort((a, b) => (a.from < b.from ? -1 : 1))
   const today = iso(new Date())
   const cur = units.find((u) => u.from <= today && today <= u.to) || units.filter((u) => u.from <= today).pop()
@@ -293,7 +293,7 @@ function Overview({ doc, update }) {
   const max = Math.max(1, ...rows.map((r) => Math.max(r.pos, r.neg)))
   return (
     <>
-      <Alerts doc={doc} update={update} ids={doc.students.map((s) => s.id)} />
+      {!publicView && <Alerts doc={doc} update={update} ids={doc.students.map((s) => s.id)} />}
       <div className="cr-overview">
         <div className="cr-report__bar">
           <h4>Contribution</h4>
@@ -331,7 +331,7 @@ const VIEWS = [
   { id: 'semester', label: 'Semester' }, { id: 'year', label: 'Year' },
 ]
 
-export function ReportPanel({ doc, update, ids, isClass = false, studentId = null }) {
+export function ReportPanel({ doc, update, ids, isClass = false, studentId = null, publicView = false }) {
   const views = isClass ? [{ id: 'overview', label: 'Overview' }, ...VIEWS] : VIEWS
   const [view, setView] = useState(views[0].id)
   const multi = ids.length > 1
@@ -340,10 +340,10 @@ export function ReportPanel({ doc, update, ids, isClass = false, studentId = nul
       <div className="cr-seg cr-seg--report" role="tablist" aria-label="Report view">
         {views.map((v) => <button key={v.id} role="tab" aria-selected={view === v.id} className={view === v.id ? 'is-active' : ''} onClick={() => setView(v.id)}>{v.label}</button>)}
       </div>
-      {view === 'overview' && <Overview doc={doc} update={update} />}
+      {view === 'overview' && <Overview doc={doc} update={update} publicView={publicView} />}
       {view === 'lesson' && <LessonView doc={doc} update={update} ids={ids} multi={multi} />}
       {['week', 'month', 'semester', 'year'].includes(view) && <PeriodView key={view} doc={doc} ids={ids} view={view} multi={multi} />}
-      {studentId && view !== 'lesson' && <Alerts doc={doc} update={update} ids={[studentId]} all />}
+      {studentId && view !== 'lesson' && !publicView && <Alerts doc={doc} update={update} ids={[studentId]} all />}
     </div>
   )
 }

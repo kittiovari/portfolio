@@ -273,6 +273,20 @@ export function ensureSkills(doc) {
   }
   return changed ? { ...doc, skills: sk } : doc
 }
+// Személyes kód (a diák saját riportjához) – félreolvasható karakterek nélkül
+const CODE_ABC = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
+export function newCode(taken = new Set()) {
+  for (;;) {
+    const r = crypto.getRandomValues(new Uint32Array(6))
+    const c = [...r].map((x) => CODE_ABC[x % CODE_ABC.length]).join('')
+    if (!taken.has(c)) return c
+  }
+}
+export function ensureCodes(doc) {
+  if ((doc.students || []).every((s) => s.code)) return doc
+  const taken = new Set(doc.students.map((s) => s.code).filter(Boolean))
+  return { ...doc, students: doc.students.map((s) => { if (s.code) return s; const code = newCode(taken); taken.add(code); return { ...s, code } }) }
+}
 export const skillByKey = (doc, key) => [...(doc.skills?.positive || []), ...(doc.skills?.negative || [])].find((k) => k.key === key)
 
 // Az adott lépésnél adható pontok (a munkaforma szerint; Future homeworknél nincs)
