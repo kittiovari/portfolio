@@ -1103,3 +1103,8 @@ span.cr-sk { cursor: default; }
 /* magasabb tájkép */
 .season { height: 240px; }
 .cr:not(.cr-board) { padding-bottom: 260px; }
+
+/* Hiányzók jelölése */
+.cr-chip--absent { background: rgba(180, 68, 59, 0.12); color: #B4443B; }
+.cr-pick.is-absentee { opacity: 0.45; border: 2px dashed rgba(36, 20, 34, 0.2); background: transparent; cursor: default; filter: grayscale(0.6); }
+.cr-pick__mark.is-abs { background: #8A7888; font-weight: 600; }

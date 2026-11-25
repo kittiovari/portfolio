@@ -317,6 +317,7 @@ export default function Classroom() {
       <AnimatePresence>
         {modal?.kind === 'target' && (
           <TargetModal key="target" doc={doc} target={modal.target} points={points} update={update} onClose={closeModal}
+            absentIds={doc.students.filter((s) => absent(s.id)).map((s) => s.id)}
             onAward={(ids, sk, label) => award(modal.target.type === 'class' ? presentIds : ids, sk, label)} />
         )}
         {modal?.kind === 'attendance' && (
@@ -324,7 +325,7 @@ export default function Classroom() {
             onSave={(map) => { update((d) => ({ ...d, attendance: { ...d.attendance, [modal.date]: map } })); closeModal() }} />
         )}
         {modal?.kind === 'homework' && (
-          <HomeworkWizard key="homework" doc={doc} presentIds={presentIds} preselect={modal.preselect || []} onClose={closeModal}
+          <HomeworkWizard key="homework" doc={doc} presentIds={activeStep?.key ? doc.students.filter((s) => doc.attendance?.[activeStep.key.slice(0, 10)]?.[s.id] !== 'absent').map((s) => s.id) : presentIds} preselect={modal.preselect || []} onClose={closeModal}
             onSave={(doneIds, missingIds, doneSkill, missSkill) => {
               const ds = doneSkill || { id: 'hw-done', name: 'Homework done', icon: '👍', value: 2 }
               const ms = missSkill || { id: 'hw-missing', name: 'No homework', icon: '🗑️', value: -2 }

@@ -9,7 +9,7 @@ import {
   Diák / egész osztály / kijelölt diákok paneljei.
   target: { type: 'student', id } | { type: 'class' } | { type: 'multi', ids, title }
 */
-export function TargetModal({ doc, target, points, onAward, update, onClose, initialTab = 'give', homeworkMode = false }) {
+export function TargetModal({ doc, target, points, onAward, update, onClose, initialTab = 'give', homeworkMode = false, absentIds = [] }) {
   const student = target.type === 'student' ? doc.students.find((s) => s.id === target.id) : null
   const [tab, setTab] = useState(initialTab)
   if (target.type === 'student' && !student) return null
@@ -32,6 +32,7 @@ export function TargetModal({ doc, target, points, onAward, update, onClose, ini
         <span className="cr-target__avatar">{student ? <Avatar a={student.avatar} /> : <ClassAvatar />}</span>
         <h2>{title}</h2>
         <span className={`cr-chip ${total < 0 ? 'cr-chip--neg' : ''}`}><b>{total}</b> point{Math.abs(total) === 1 ? '' : 's'}</span>
+        {student && absentIds.includes(student.id) && <span className="cr-chip cr-chip--absent">Absent</span>}
         {target.type === 'multi' && <span className="cr-chip cr-chip--muted">{ids.length} student{ids.length === 1 ? '' : 's'}</span>}
       </header>
       <div className="cr-target__layout">
@@ -437,6 +438,12 @@ export function GroupEditor({ doc, group, update, onClose }) {
 // 1. Kik csinálták meg? (mindenki / bizonyos diákok)  2. A többiek nem – kivéve, akit felmentesz.
 export function HomeworkWizard({ doc, presentIds, preselect = [], onSave, onClose }) {
   const present = sortStudents(doc.students.filter((s) => presentIds.includes(s.id)))
+  const absentees = sortStudents(doc.students.filter((s) => !presentIds.includes(s.id)))
+  const AbsentCards = () => absentees.map((s) => (
+    <span key={s.id} className="cr-pick is-absentee" aria-label={`${s.first} – absent`}>
+      <Avatar a={s.avatar} /><span>{s.first}</span><i className="cr-pick__mark is-abs">absent</i>
+    </span>
+  ))
   const [step, setStep] = useState(1)
   const [done, setDone] = useState(() => new Set(preselect))
   const [excused, setExcused] = useState(() => new Set())
@@ -468,6 +475,7 @@ export function HomeworkWizard({ doc, presentIds, preselect = [], onSave, onClos
                 {done.has(s.id) && <i className="cr-pick__mark is-yes">✓</i>}
               </button>
             ))}
+            <AbsentCards />
           </div>
           <div className="cr-form__actions">
             <span className="cr-spacer" />
@@ -490,11 +498,13 @@ export function HomeworkWizard({ doc, presentIds, preselect = [], onSave, onClos
                 </button>
               )
             })}
+            <AbsentCards />
           </div>
           <p className="cr-hwwiz__sum">
             <span className="is-yes">✓ {done.size} done</span>
             <span className="is-no">✗ {missing.length} no homework</span>
             {excused.size > 0 && <span>{excused.size} excused</span>}
+            {absentees.length > 0 && <span>{absentees.length} absent</span>}
           </p>
           <div className="cr-form__actions">
             <button className="cr-btn" onClick={() => setStep(1)}>Back</button>
