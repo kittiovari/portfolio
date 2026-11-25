@@ -212,7 +212,7 @@
 .cr-sheet__head h2, .cr-target__head h2 { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 700; letter-spacing: -0.01em; }
 .cr-sheet__close { position: absolute; top: 14px; right: 14px; z-index: 2; background: rgba(36, 20, 34, 0.06); }
 .cr-sheet__hero {
-  display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 2rem 1.5rem 1.6rem;
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 2rem 1.5rem 1.6rem;
   background: var(--tool); color: #fff;
 }
 .cr-sheet--darktext .cr-sheet__hero { color: var(--ink); }
@@ -460,28 +460,35 @@
 .cr-tps-pairs span { padding: 0.4rem 0.9rem; border-radius: 999px; background: rgba(255, 255, 255, 0.92); color: var(--ink); font-weight: 600; }
 
 /* ── Zene ── */
-.cr-channels { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-.cr-channel-wrap { display: flex; flex-direction: column; }
+.cr-sheet--compact { width: min(100%, 420px); }
+.cr-sheet--compact .cr-sheet__hero { flex-direction: row; justify-content: center; gap: 0.6rem; padding: 1.15rem 3.5rem; }
+.cr-sheet--compact .cr-sheet__hero h2 { font-size: 1.35rem; }
+.cr-sheet--compact .cr-sheet__heroicon svg { width: 26px; height: 26px; }
+.cr-sheet--compact .cr-sheet__back { top: 50%; translate: 0 -50%; }
+.cr-sheet--compact .cr-sheet__hero ~ .cr-sheet__close { top: 12px; }
+.cr-sheet--compact .cr-sheet__body { padding: 1.1rem 1.2rem 1.2rem; }
+.cr-channels { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+.cr-channel-wrap { position: relative; }
 .cr-channel {
-  display: flex; flex-direction: column; align-items: center; gap: 0.35rem; padding: 1.6rem 1rem 1.3rem;
-  border: 1px solid rgba(36, 20, 34, 0.12); border-radius: 22px; background: #fff; cursor: pointer;
+  width: 100%; display: flex; flex-direction: column; align-items: center; gap: 0.45rem; padding: 1rem 0.6rem 0.85rem;
+  border: 1px solid rgba(36, 20, 34, 0.12); border-radius: 18px; background: #fff; cursor: pointer;
   transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
 }
-.cr-channel:hover { transform: translateY(-3px); border-color: var(--ch); box-shadow: 0 16px 30px -20px rgba(36, 20, 34, 0.5); }
+.cr-channel:hover { transform: translateY(-2px); border-color: var(--ch); box-shadow: 0 12px 24px -18px rgba(36, 20, 34, 0.5); }
 .cr-channel__icon {
-  width: 92px; height: 92px; display: grid; place-items: center; border-radius: 50%; margin-bottom: 0.4rem;
-  background: color-mix(in srgb, var(--ch) 22%, #fff); font-size: 2.6rem;
+  width: 64px; height: 64px; display: grid; place-items: center; border-radius: 50%;
+  background: color-mix(in srgb, var(--ch) 24%, #fff); font-size: 1.9rem;
   transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .cr-channel:hover .cr-channel__icon { transform: rotate(-8deg) scale(1.06); }
-.cr-channel b { font-family: var(--font-heading); font-size: 1.3rem; }
-.cr-channel small { color: var(--muted); font-size: 0.85rem; }
+.cr-channel b { font-family: var(--font-heading); font-size: 1.1rem; font-weight: 600; }
+.cr-channel__edit { position: absolute; top: 6px; right: 6px; }
 .cr-player {
-  position: fixed; right: 18px; bottom: 96px; z-index: 40; width: min(380px, calc(100vw - 24px));
-  padding: 0.5rem 0.5rem 0.35rem; border-radius: 20px; background: #fff;
+  position: fixed; right: 18px; bottom: 96px; z-index: 40; width: min(340px, calc(100vw - 24px));
+  padding: 0.35rem 0.35rem 0.3rem; border-radius: 20px; background: #fff;
   border: 1px solid var(--line); box-shadow: 0 20px 44px -22px rgba(36, 20, 34, 0.55);
 }
-.cr-player__bar { display: flex; align-items: center; gap: 0.3rem; padding: 0 0.2rem 0.45rem; }
+.cr-player__bar { display: flex; align-items: center; gap: 0.2rem; padding: 0 0.1rem 0.3rem; }
 .cr-player__ch {
   padding: 0.35rem 0.75rem; border: none; border-radius: 999px; background: transparent; cursor: pointer;
   font-weight: 600; font-size: 0.85rem; color: var(--muted) !important;
@@ -508,7 +515,6 @@
 
 /* ── Mobil ── */
 @media (max-width: 720px) {
-  .cr-channels { grid-template-columns: 1fr; }
   .cr-player { right: 12px; bottom: 84px; }
   .cr-top { flex-wrap: wrap; }
   .cr-class { font-size: 1rem; }

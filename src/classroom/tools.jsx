@@ -402,11 +402,14 @@ export function TodayTool({ doc, update, onClose, onBack }) {
 // vagy jelentkezve a Spotify-ba, a teljes számokat játssza; bejelentkezés
 // nélkül csak 30 mp-es részleteket. A műsorlisták nyilvánosak legyenek.
 export const MUSIC_CHANNELS = [
-  { id: 'relax', label: 'Relax', sub: 'Csendes, önálló munkához', icon: '🌿', color: '#7FA88A' },
-  { id: 'active', label: 'Active', sub: 'Mozgáshoz, csapatmunkához', icon: '⚡', color: '#E0915A' },
+  // link: alapértelmezett műsorlista (Classroom music – Relax / Active); az appban felülírható
+  { id: 'relax', label: 'Relax', sub: 'Csendes, önálló munkához', icon: '🌿', color: '#7FA88A', link: 'https://open.spotify.com/playlist/4ltbNjjpM1Z8VXryyIwmCx' },
+  { id: 'active', label: 'Active', sub: 'Mozgáshoz, csapatmunkához', icon: '⚡', color: '#E0915A', link: 'https://open.spotify.com/playlist/6bbuItAD2mIe0hdOfBDi8g' },
 ]
 
 // Spotify-link → műsorlista-azonosító (open.spotify.com/playlist/… vagy spotify:playlist:…)
+const linkOf = (doc, id) => doc.music?.[id] || MUSIC_CHANNELS.find((c) => c.id === id)?.link || ''
+
 export function playlistId(link = '') {
   const m = String(link).match(/playlist[/:]([A-Za-z0-9]{10,})/)
   return m ? m[1] : null
@@ -416,7 +419,7 @@ export function MusicTool({ doc, update, onPlay, onClose, onBack }) {
   const t = tool('music')
   const [editing, setEditing] = useState(null)
   const [draft, setDraft] = useState('')
-  const links = doc.music || {}
+  const links = Object.fromEntries(MUSIC_CHANNELS.map((c) => [c.id, linkOf(doc, c.id)]))
 
   const choose = (ch) => {
     if (playlistId(links[ch.id])) { onPlay(ch.id); return }
@@ -431,7 +434,7 @@ export function MusicTool({ doc, update, onPlay, onClose, onBack }) {
   }
 
   return (
-    <Sheet title={t.label} color={t.color} icon={<t.icon />} onClose={onClose} onBack={onBack}>
+    <Sheet title={t.label} color={t.color} icon={<t.icon />} onClose={onClose} onBack={onBack} className="cr-sheet--compact">
       {editing ? (
         <form className="cr-form" onSubmit={save}>
           <h3>Classroom music – {MUSIC_CHANNELS.find((c) => c.id === editing).label}</h3>
@@ -440,6 +443,7 @@ export function MusicTool({ doc, update, onPlay, onClose, onBack }) {
             <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="https://open.spotify.com/playlist/…" autoFocus />
           </label>
           {draft && !playlistId(draft) && <p className="cr-hint is-neg">Ez nem Spotify-műsorlista link.</p>}
+          <p className="cr-hint">Teljes számokhoz jelentkezz be a Spotify-ba ebben a böngészőben. A lista legyen nyilvános.</p>
           <div className="cr-form__actions">
             <span className="cr-spacer" />
             <button type="button" className="cr-btn" onClick={() => setEditing(null)}>Mégse</button>
@@ -448,22 +452,20 @@ export function MusicTool({ doc, update, onPlay, onClose, onBack }) {
         </form>
       ) : (
         <>
-          <h3 className="cr-q">Válassz csatornát!</h3>
           <div className="cr-channels">
             {MUSIC_CHANNELS.map((ch) => (
               <div key={ch.id} className="cr-channel-wrap">
-                <button className="cr-channel" onClick={() => choose(ch)} style={{ '--ch': ch.color }}>
+                <button className="cr-channel" onClick={() => choose(ch)} style={{ '--ch': ch.color }} title={ch.sub}>
                   <span className="cr-channel__icon" aria-hidden="true">{ch.icon}</span>
                   <b>{ch.label}</b>
-                  <small>{ch.sub}</small>
                 </button>
                 {playlistId(links[ch.id]) && (
-                  <button className="cr-link cr-link--center" onClick={() => { setEditing(ch.id); setDraft(links[ch.id]) }}><Icon.pencil />Link módosítása</button>
+                  <button className="cr-iconbtn cr-iconbtn--sm cr-channel__edit" aria-label={`${ch.label} link módosítása`} title="Link módosítása"
+                    onClick={() => { setEditing(ch.id); setDraft(links[ch.id]) }}><Icon.pencil /></button>
                 )}
               </div>
             ))}
           </div>
-          <p className="cr-hint cr-hint--center">Teljes számokhoz jelentkezz be a Spotify-ba ebben a böngészőben (open.spotify.com).</p>
         </>
       )}
     </Sheet>
@@ -473,7 +475,7 @@ export function MusicTool({ doc, update, onPlay, onClose, onBack }) {
 // Lebegő mini lejátszó: az eszköztár bezárása után is szól tovább
 export function MusicPlayer({ doc, channel, onChange, onClose }) {
   const ch = MUSIC_CHANNELS.find((c) => c.id === channel)
-  const id = playlistId(doc.music?.[channel])
+  const id = playlistId(linkOf(doc, channel))
   if (!ch || !id) return null
   return (
     <motion.aside className="cr-player" style={{ '--ch': ch.color }} aria-label="Zenelejátszó"
@@ -481,7 +483,7 @@ export function MusicPlayer({ doc, channel, onChange, onClose }) {
       <div className="cr-player__bar">
         {MUSIC_CHANNELS.map((c) => (
           <button key={c.id} className={`cr-player__ch ${c.id === channel ? 'is-active' : ''}`} onClick={() => onChange(c.id)}
-            disabled={!playlistId(doc.music?.[c.id])}>{c.icon} {c.label}</button>
+            disabled={!playlistId(linkOf(doc, c.id))}>{c.icon} {c.label}</button>
         ))}
         <span className="cr-spacer" />
         <button className="cr-iconbtn cr-iconbtn--sm" onClick={onClose} aria-label="Zene kikapcsolása"><Icon.close /></button>
@@ -490,7 +492,7 @@ export function MusicPlayer({ doc, channel, onChange, onClose }) {
         key={id}
         title={`Classroom music – ${ch.label}`}
         src={`https://open.spotify.com/embed/playlist/${id}?utm_source=generator&theme=0`}
-        width="100%" height="152" frameBorder="0" loading="lazy"
+        width="100%" height="80" frameBorder="0" loading="lazy"
         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
       />
     </motion.aside>
