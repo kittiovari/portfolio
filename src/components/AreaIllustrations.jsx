@@ -299,41 +299,41 @@ function UXArt(props) {
 // ── Nyelvoktatás profilválasztó: kör alakú ikonok (négyzetes vászon) ──
 const profileCommon = { ...common, viewBox: '0 0 120 120' }
 
-// NYEK9B: olasz gesztus – összezárt ujjak felfelé, kockás ingujj
-// NYEK9B: fintorgó babszem-figura, mindkét kezével a teste előtt az olasz
-// gesztust rázza (összezárt ujjak felfelé)
-function ItalianHandArt(props) {
+// NYEK9B: spagettit eszegető babszem-figura, aki éppen egy szálat szippant be
+// (csücsörítő száj, élvezettől csukott szem, tekerős villa, tányér)
+function SpaghettiArt(props) {
   return (
     <svg {...profileCommon} {...props}>
       <g strokeWidth="2.2">
-        {/* figura középen */}
-        <path d={bean(60, 124, 60, 100)} />
-        <path d="M55 26c-3-6 2-9-1-14M63 25c0-6 5-8 4-13" />
-        {/* fintor: lefelé-befelé húzott szemöldök, összeszorított szem, félrehúzott csücsörítés */}
-        <path d="M39 44l11 5M81 44l-11 5" />
-        <path d="M41 55l8 2l-8 2M79 55l-8 2l8 2" />
-        <path d="M59 68q4-4 9-1q-3 5-9 1" />
-        <path d="M54 66q-3 2-2 6M71 64q3 1 3 4" opacity=".55" />
+        {/* figura a tányér mögött */}
+        <path d={bean(60, 104, 56, 78)} />
+        <path d="M55 30c-3-6 2-9-1-14M63 29c0-6 5-8 4-13" />
+        {/* élvezettől csukott szem, kipirult arc */}
+        <path d="M43 50q4.5 3.5 9 0M68 50q4.5 3.5 9 0" />
+        <path d="M39 59q2.5 2 5 0M76 59q2.5 2 5 0" opacity=".5" />
+        {/* csücsörítő, szürcsölő száj */}
+        <ellipse cx="60" cy="64" rx="3.4" ry="3" />
 
-        {/* két kéz a mellkas előtt: összeérő ujjbegyek felfelé – fel-le rázva */}
+        {/* a beszippantott spagettiszál – kijelöléskor felfelé kúszik */}
+        <g className="a-slurp">
+          <path d="M60 67C55 71.5 65 75.5 60 80C55 84.5 65 88.5 60 93C57 96 59 99 57.5 102" />
+        </g>
+        {/* villa a jobb kézben, feltekert tésztával */}
         <g className="a-bob">
-          <path d="M40 112C35 103 35 94 39 87C40 83 43 82 44 85C45 80 50 80 50 85C52 82 55 85 53 89C57 96 56 105 52 112" />
-          <path d="M44 85C45 93 46 101 46 109M50 85C51 93 51 101 50 109" opacity=".55" />
-          <path d="M40 101C41 94 43 90 46 88" />
-          <path d="M40 112C37 117 35 121 34 124M52 112C51 117 50 121 50 124" />
-        </g>
-        <g className="a-bob" style={{ '--d': '0.22s' }}>
-          <path d="M80 112C85 103 85 94 81 87C80 83 77 82 76 85C75 80 70 80 70 85C68 82 65 85 67 89C63 96 64 105 68 112" />
-          <path d="M76 85C75 93 74 101 74 109M70 85C69 93 69 101 70 109" opacity=".55" />
-          <path d="M80 101C79 94 77 90 74 88" />
-          <path d="M80 112C83 117 85 121 86 124M68 112C69 117 70 121 70 124" />
+          <path d="M87 72C92 77 92 84 88 88" />
+          <circle cx="86" cy="91" r="4" />
+          <path d="M83 94L73 103" />
+          <path d="M73 103l-3.5 1.2M73 103l-1.6 3.4M73 103l1.4 3.2" />
+          <path d="M70.5 99.5q4.5-3 6.5 1q-4.5 3-6.5-1" opacity=".75" />
         </g>
 
-        {/* rázás-jelek a kezek két oldalán, kifelé */}
-        <g className="a-flow" opacity=".6">
-          <path d="M31 88q-4 6 0 12M26 91q-3 3 0 6" />
-          <path d="M89 88q4 6 0 12M94 91q3 3 0 6" />
-        </g>
+        {/* tányér spagettivel és egy húsgombóccal */}
+        <ellipse cx="58" cy="109" rx="31" ry="6.5" />
+        <ellipse cx="58" cy="108" rx="22" ry="3.8" opacity=".45" />
+        <path d="M37 107C38 99 45 96 49 100C51 93 58 92 62 97C65 92 73 93 74 99C78 97 83 101 81 107" />
+        <path d="M42 104q3-4 6-1t6-1t6-1t6 1t6 0" opacity=".75" />
+        <path d="M47 100q3-3 6 0t6 0" opacity=".6" />
+        <circle cx="67" cy="99" r="3.2" />
       </g>
     </svg>
   )
@@ -377,7 +377,7 @@ function SalsaDancerArt(props) {
 }
 
 export const profileArt = {
-  'language-9b': ItalianHandArt,
+  'language-9b': SpaghettiArt,
   'language-9d': SalsaDancerArt,
 }
 

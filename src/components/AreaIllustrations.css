@@ -39,6 +39,12 @@
 :is(.pw-profile:hover, .pw-profile:focus-visible, .pw-profile--active) .a-fan    { animation: a-fan 0.8s ease-in-out infinite alternate; }
 
 :is(.pw-profile:hover, .pw-profile:focus-visible, .pw-profile--active) .a-bob { animation: a-bob 0.45s ease-in-out infinite alternate; }
+:is(.pw-profile:hover, .pw-profile:focus-visible, .pw-profile--active) .a-slurp { animation: a-slurp 0.9s ease-in-out infinite; }
+.a-slurp { transform-origin: 50% 0%; }
+@keyframes a-slurp {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  50% { transform: translateY(-3px) scaleY(0.93); }
+}
 @keyframes a-bob {
   from { transform: translateY(0); }
   to   { transform: translateY(-4px); }
