@@ -298,6 +298,7 @@ export default function Classroom() {
       <AnimatePresence>
         {modal?.kind === 'target' && (
           <TargetModal key="target" doc={doc} target={modal.target} points={points} update={update} onClose={closeModal}
+            homeworkMode={activeStep?.role === 'hwreview'}
             onAward={(ids, sk, label) => award(modal.target.type === 'class' ? presentIds : ids, sk, label)} />
         )}
         {modal?.kind === 'add' && <AddStudents key="add" update={update} onClose={closeModal} />}

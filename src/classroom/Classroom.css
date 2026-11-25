@@ -953,3 +953,16 @@ span.cr-sk { cursor: default; }
 @media (max-width: 720px) { .cr-lboard__track { padding-left: 0.2rem; padding-right: 0.2rem; } }
 
 .cr-lboard__track { scrollbar-width: thin; scrollbar-color: rgba(36,20,34,.2) transparent; }
+
+/* Homework review: két opció */
+.cr-hwcheck { display: flex; flex-direction: column; gap: 0.8rem; }
+.cr-hwcheck__row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+.cr-hwcheck__btn { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; padding: 1.6rem 1rem; border: 1.5px solid var(--line); border-radius: 22px; background: #fff; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s; }
+.cr-hwcheck__btn:hover { transform: translateY(-2px); box-shadow: 0 14px 28px -18px rgba(36, 20, 34, 0.5); }
+.cr-hwcheck__btn b { font-family: var(--font-heading); font-size: 1.2rem; }
+.cr-hwcheck__btn small { color: var(--muted); font-weight: 600; }
+.cr-hwcheck__icon { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 50%; font-size: 2rem; font-weight: 800; color: #fff; }
+.cr-hwcheck__btn.is-done .cr-hwcheck__icon { background: #3F7D4E; }
+.cr-hwcheck__btn.is-missing .cr-hwcheck__icon { background: #B4443B; }
+.cr-hwcheck__btn.is-done:hover { border-color: #3F7D4E; }
+.cr-hwcheck__btn.is-missing:hover { border-color: #B4443B; }

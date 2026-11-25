@@ -9,7 +9,7 @@ import {
   Diák / egész osztály / kijelölt diákok paneljei.
   target: { type: 'student', id } | { type: 'class' } | { type: 'multi', ids, title }
 */
-export function TargetModal({ doc, target, points, onAward, update, onClose, initialTab = 'give' }) {
+export function TargetModal({ doc, target, points, onAward, update, onClose, initialTab = 'give', homeworkMode = false }) {
   const student = target.type === 'student' ? doc.students.find((s) => s.id === target.id) : null
   const [tab, setTab] = useState(initialTab)
   if (target.type === 'student' && !student) return null
@@ -43,7 +43,9 @@ export function TargetModal({ doc, target, points, onAward, update, onClose, ini
           ))}
         </nav>
         <div className="cr-target__content">
-          {tab === 'give' && <GivePoints doc={doc} update={update} onGive={(sk) => { onAward(ids, sk, title); onClose() }} />}
+          {tab === 'give' && (homeworkMode
+            ? <HomeworkCheck doc={doc} onGive={(sk) => { onAward(ids, sk, title); onClose() }} />
+            : <GivePoints doc={doc} update={update} onGive={(sk) => { onAward(ids, sk, title); onClose() }} />)}
           {tab === 'report' && <Report doc={doc} ids={ids} title={title} update={update} />}
           {tab === 'custom' && student && <Customize student={student} update={update} onClose={onClose} />}
         </div>
@@ -75,6 +77,31 @@ function IconGrid({ value, onPick }) {
           </div>
         </div>
       ))}
+    </div>
+  )
+}
+
+// Homework review módban: csak „elkészítette / nem készítette el”
+// A meglévő készségeket használja (név alapján), ha nincsenek, alapértékkel.
+const findSkill = (list, re) => (list || []).find((k) => re.test(k.name))
+function HomeworkCheck({ doc, onGive }) {
+  const done = findSkill(doc.skills?.positive, /homework done|elkészített házi/i) || { id: 'hw-done', name: 'Homework done', icon: '👍', value: 2 }
+  const missing = findSkill(doc.skills?.negative, /no homework|nincs házi/i) || { id: 'hw-missing', name: 'No homework', icon: '🗑️', value: -2 }
+  return (
+    <div className="cr-hwcheck">
+      <p className="cr-hint">Homework review – did they do the homework?</p>
+      <div className="cr-hwcheck__row">
+        <button className="cr-hwcheck__btn is-done" onClick={() => onGive(done)}>
+          <span className="cr-hwcheck__icon" aria-hidden="true">✓</span>
+          <b>Homework done</b>
+          <small>{done.value > 0 ? `+${done.value}` : done.value} {Math.abs(done.value) === 1 ? 'point' : 'points'}</small>
+        </button>
+        <button className="cr-hwcheck__btn is-missing" onClick={() => onGive(missing)}>
+          <span className="cr-hwcheck__icon" aria-hidden="true">✗</span>
+          <b>No homework</b>
+          <small>{missing.value} {Math.abs(missing.value) === 1 ? 'point' : 'points'}</small>
+        </button>
+      </div>
     </div>
   )
 }

@@ -652,7 +652,7 @@ export function LessonBoard({ doc, cls, active, onSelect, onEdit }) {
               const sel = active?.key === key && active?.itemId === it.id
               return (
                 <li key={it.id} data-step={it.id} className={`cr-tcard cr-lcard ${sel ? 'is-selected' : ''}`} style={{ '--tg': tags[0]?.color || '#C9B8C6' }}>
-                  <button className="cr-lcard__btn" onClick={() => onSelect(sel ? null : { key, itemId: it.id, title })} aria-pressed={sel}>
+                  <button className="cr-lcard__btn" onClick={() => onSelect(sel ? null : { key, itemId: it.id, title, role: it.role || null })} aria-pressed={sel}>
                     <span className="cr-tcard__kind">{i + 1} · {it.minutes} min{start ? ` · ${start}` : ''}</span>
                     {tags.length > 0 && <span className="cr-tcard__skills">{tags.map((t) => <span key={t.id} className="cr-tag" style={{ '--tg': t.color }}>{t.label}</span>)}</span>}
                     <b className="cr-tcard__title">{title}</b>
