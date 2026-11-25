@@ -1066,3 +1066,7 @@ span.cr-sk { cursor: default; }
 .cr-lcard { display: flex; flex-direction: column; }
 .cr-lcard__btn { flex: 1; }
 .cr-lcard__action { margin: 0 1rem 1rem; align-self: flex-start; }
+
+/* Az alsó lebegő sáv ne takarja el az oldal alját (idővonal, New lesson plan) */
+.cr:not(.cr-board) { padding-bottom: 200px; }
+.cr-lboard { margin-bottom: 1rem; }
