@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import Avatar, { ClassAvatar } from './Avatar.jsx'
 import { Sheet } from './ui.jsx'
-import { RANGES, rangeBounds, inRange, sortStudents, fullName } from './model.js'
+import { RANGES, rangeBounds, inRange, sortStudents, fullName, pickName } from './model.js'
 import { PlanTimeline, dayLabel } from './plan.jsx'
 import './Classroom.css'
 
@@ -106,7 +106,7 @@ export default function ClassBoard({ cls }) {
                     <span className="cr-group__faces">{members.slice(0, 5).map((s) => <Avatar key={s.id} a={s.avatar} />)}</span>
                     <span className="cr-badge">{sum}</span>
                     <b>{g.name}</b>
-                    <small>{members.map((s) => s.first).join(', ') || 'empty'}</small>
+                    <small>{members.map((s) => pickName(s, data.students)).join(', ') || 'empty'}</small>
                   </button>
                 </div>
               )

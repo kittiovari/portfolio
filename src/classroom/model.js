@@ -79,6 +79,12 @@ export function parseName(line) {
 const coll = new Intl.Collator('hu', { sensitivity: 'base' })
 export const sortStudents = (list) => [...list].sort((a, b) => coll.compare(a.first, b.first) || coll.compare(a.last, b.last))
 
+// Keresztnév – azonos keresztnevűeknél a vezetéknévvel együtt (pl. „Dani Veil”)
+export function pickName(s, students = []) {
+  const dup = students.filter((x) => (x.first || '').toLowerCase() === (s.first || '').toLowerCase()).length > 1
+  return dup && s.last ? `${s.first} ${s.last}` : s.first
+}
+
 export const fullName = (s) => [s.last, s.first].filter(Boolean).join(' ')
 export const shortName = (s) => `${s.first}${s.last ? ` ${s.last[0]}.` : ''}`
 

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Avatar from './Avatar.jsx'
 import { Icon } from './ui.jsx'
-import { sortStudents } from './model.js'
+import { sortStudents, pickName } from './model.js'
 
 /*
   Padtársak (Pairs nézet): tartós párok – a csoportokkal ellentétben nem törlődnek órák között.
@@ -44,7 +44,7 @@ export default function Deskmates({ doc, update, points, onGive }) {
         onDragStart={(e) => { e.dataTransfer.setData('text/plain', id); e.dataTransfer.effectAllowed = 'move' }}
         onClick={(e) => { e.stopPropagation(); setPicked(picked === id ? null : id) }} title="Drag to a desk">
         <Avatar a={s.avatar} />
-        <span>{s.first}</span>
+        <span>{pickName(s, doc.students)}</span>
       </div>
     )
   }

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import Avatar, { ClassAvatar } from './Avatar.jsx'
 import { Sheet, Icon } from './ui.jsx'
 import {
-  AVATAR, RANGES, sortStudents, rangeBounds, inRange, fullName, uid, parseName, randomAvatar, toCsv, download, dayKey,
+  AVATAR, RANGES, sortStudents, pickName, rangeBounds, inRange, fullName, uid, parseName, randomAvatar, toCsv, download, dayKey,
 } from './model.js'
 
 /*
@@ -424,7 +424,7 @@ export function GroupEditor({ doc, group, update, onClose }) {
         <div className="cr-pickgrid">
           {sortStudents(doc.students).map((s) => (
             <button type="button" key={s.id} className={`cr-pick ${ids.has(s.id) ? 'is-active' : ''}`} onClick={() => toggle(s.id)} aria-pressed={ids.has(s.id)}>
-              <Avatar a={s.avatar} /><span>{s.first}</span>
+              <Avatar a={s.avatar} /><span>{pickName(s, doc.students)}</span>
             </button>
           ))}
         </div>
@@ -445,8 +445,8 @@ export function HomeworkWizard({ doc, presentIds, preselect = [], onSave, onClos
   const present = sortStudents(doc.students.filter((s) => presentIds.includes(s.id)))
   const absentees = sortStudents(doc.students.filter((s) => !presentIds.includes(s.id)))
   const AbsentCards = () => absentees.map((s) => (
-    <span key={s.id} className="cr-pick is-absentee" aria-label={`${s.first} – absent`}>
-      <Avatar a={s.avatar} /><span>{s.first}</span><i className="cr-pick__mark is-abs">absent</i>
+    <span key={s.id} className="cr-pick is-absentee" aria-label={`${pickName(s, doc.students)} – absent`}>
+      <Avatar a={s.avatar} /><span>{pickName(s, doc.students)}</span><i className="cr-pick__mark is-abs">absent</i>
     </span>
   ))
   const [step, setStep] = useState(1)
@@ -476,7 +476,7 @@ export function HomeworkWizard({ doc, presentIds, preselect = [], onSave, onClos
           <div className="cr-pickgrid">
             {present.map((s) => (
               <button type="button" key={s.id} className={`cr-pick ${done.has(s.id) ? 'is-active is-yes' : ''}`} onClick={() => toggle(done, setDone, s.id)} aria-pressed={done.has(s.id)}>
-                <Avatar a={s.avatar} /><span>{s.first}</span>
+                <Avatar a={s.avatar} /><span>{pickName(s, doc.students)}</span>
                 {done.has(s.id) && <i className="cr-pick__mark is-yes">✓</i>}
               </button>
             ))}
@@ -498,7 +498,7 @@ export function HomeworkWizard({ doc, presentIds, preselect = [], onSave, onClos
               const ex = excused.has(s.id)
               return (
                 <button type="button" key={s.id} className={`cr-pick ${ex ? 'is-excused' : 'is-active is-no'}`} onClick={() => toggle(excused, setExcused, s.id)} aria-pressed={!ex}>
-                  <Avatar a={s.avatar} /><span>{s.first}</span>
+                  <Avatar a={s.avatar} /><span>{pickName(s, doc.students)}</span>
                   <i className={`cr-pick__mark ${ex ? 'is-ex' : 'is-no'}`}>{ex ? 'excused' : '✗'}</i>
                 </button>
               )
@@ -563,7 +563,7 @@ export function AttendanceWizard({ doc, date, preselect = null, onSave, onClose 
           <div className="cr-pickgrid">
             {all.map((s) => (
               <button type="button" key={s.id} className={`cr-pick ${here.has(s.id) ? 'is-active is-yes' : ''}`} onClick={() => toggle(setHere, s.id)} aria-pressed={here.has(s.id)}>
-                <Avatar a={s.avatar} /><span>{s.first}</span>
+                <Avatar a={s.avatar} /><span>{pickName(s, doc.students)}</span>
                 {here.has(s.id) && <i className="cr-pick__mark is-yes">✓</i>}
               </button>
             ))}
@@ -583,8 +583,8 @@ export function AttendanceWizard({ doc, date, preselect = null, onSave, onClose 
               return (
                 <div key={s.id} className={`cr-attrow is-${st}`}>
                   <Avatar a={s.avatar} />
-                  <b>{s.first}</b>
-                  <div className="cr-attrow__seg" role="radiogroup" aria-label={`${s.first}`}>
+                  <b>{pickName(s, doc.students)}</b>
+                  <div className="cr-attrow__seg" role="radiogroup" aria-label={pickName(s, doc.students)}>
                     {[['absent', 'Absent'], ['late', 'Late'], ['left', 'Left early']].map(([v, l]) => (
                       <button key={v} role="radio" aria-checked={st === v} className={st === v ? `is-on is-${v}` : ''}
                         onClick={() => setStatus((x) => ({ ...x, [s.id]: v }))}>{l}</button>

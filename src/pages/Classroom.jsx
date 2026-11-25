@@ -13,7 +13,7 @@ import { SessionSetup, SessionPlayer } from '../classroom/session.jsx'
 import { useClassroom } from '../classroom/useClassroom.js'
 import SeasonScene from '../classroom/SeasonScene.jsx'
 import Deskmates from '../classroom/Deskmates.jsx'
-import { ATTENDANCE, CLASSES, dayKey, fullName, getPlan, lessonLabel, nextLessonKey, pointsBy, sortStudents, uid } from '../classroom/model.js'
+import { ATTENDANCE, CLASSES, dayKey, fullName, pickName, getPlan, lessonLabel, nextLessonKey, pointsBy, sortStudents, uid } from '../classroom/model.js'
 import '../components/PasswordModal.css'
 import '../classroom/Classroom.css'
 
@@ -252,7 +252,7 @@ export default function Classroom() {
                       <b>{g.name}</b>
                       <span className={`cr-badge ${total < 0 ? 'is-neg' : ''}`}>{total}</span>
                     </span>
-                    <small>{members.map((s) => s.first).join(', ') || 'empty'}</small>
+                    <small>{members.map((s) => pickName(s, doc.students)).join(', ') || 'empty'}</small>
                   </button>
                   <span className="cr-group__actions">
                     <button className="cr-iconbtn cr-iconbtn--sm" aria-label="Edit group" title="Edit" onClick={() => setModal({ kind: 'group', group: g })}><Icon.pencil /></button>

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import Avatar from './Avatar.jsx'
 import { Sheet, FullScreen, Icon, play } from './ui.jsx'
-import { dayKey, fmtTime, isAbsent, makeGroups, shortName, shuffle, sortStudents, uid } from './model.js'
+import { dayKey, fmtTime, isAbsent, makeGroups, shortName, shuffle, sortStudents, uid, pickName } from './model.js'
 
 export const TOOLS = [
   { id: 'session', label: 'Timer & music', color: '#6A4BC4', icon: Icon.timer },
@@ -222,7 +222,7 @@ function AvoidPairs({ doc, update, color, onBack, onClose }) {
       <div className="cr-pickgrid">
         {sortStudents(doc.students).map((s) => (
           <button type="button" key={s.id} className={`cr-pick ${sel.includes(s.id) ? 'is-active' : ''}`} onClick={() => choose(s.id)}>
-            <Avatar a={s.avatar} /><span>{s.first}</span>
+            <Avatar a={s.avatar} /><span>{pickName(s, doc.students)}</span>
           </button>
         ))}
       </div>
@@ -345,7 +345,7 @@ function TpsRun({ doc, color, onClose }) {
       <div className="cr-bigtime cr-bigtime--md">{fmtTime(c.left)}</div>
       {phase.key === 'pair' && pairs.length > 0 && (
         <div className="cr-tps-pairs">
-          {pairs.map((p, k) => <span key={k}>{p.map((s) => s.first).join(' + ')}</span>)}
+          {pairs.map((p, k) => <span key={k}>{p.map((s) => pickName(s, doc.students)).join(' + ')}</span>)}
         </div>
       )}
       <div className="cr-controls">
