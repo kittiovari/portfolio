@@ -460,7 +460,7 @@ function PlanRow({ item, step, start, cls, review, maxMinutes = 45, open, onTogg
               <button className="cr-iconbtn cr-iconbtn--sm" disabled={index === 0} onClick={() => onMove(-1)} aria-label="Move up">↑</button>
               <button className="cr-iconbtn cr-iconbtn--sm" disabled={index === count - 1} onClick={() => onMove(1)} aria-label="Move down">↓</button>
               <span className="cr-spacer" />
-              <button className="cr-btn cr-btn--danger cr-btn--sm" onClick={onRemove}><Icon.trash />Delete step</button>
+              <button className="cr-btn cr-btn--danger cr-btn--sm" onClick={onRemove}><Icon.trash />Delete</button>
             </div>
           )}
         </div>
