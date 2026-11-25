@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
-import Avatar, { ClassAvatar } from './Avatar.jsx'
+import Avatar, { ClassAvatar, AvatarThemeContext } from './Avatar.jsx'
 import { Sheet, Icon } from './ui.jsx'
 import { sortStudents, fullName, pickName, lessonLabel } from './model.js'
 import { PlanTimeline, Resource, Linkify } from './plan.jsx'
@@ -98,6 +98,7 @@ export default function ClassBoard({ cls }) {
   const signOut = () => { ssSet(codeKey(cls), null); setMe(null) }
 
   return (
+    <AvatarThemeContext.Provider value={data.avatarTheme || 'monsters'}>
     <div className="cr cr-board">
       {lesson && (
         <div className="cr-board__lesson">
@@ -226,6 +227,7 @@ export default function ClassBoard({ cls }) {
         {asking && <CodeSheet key="code" cls={cls} onClose={() => setAsking(false)} onOk={(d, code) => { ssSet(codeKey(cls), code); setMe(d); setAsking(false); const s = data.students.find((x) => x.id === d.id); if (s) setOpen({ ids: [s.id], title: fullName(s), student: s }) }} />}
       </AnimatePresence>
     </div>
+    </AvatarThemeContext.Provider>
   )
 }
 

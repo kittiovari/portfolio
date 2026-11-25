@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { profileArt } from '../components/AreaIllustrations.jsx'
-import Avatar, { ClassAvatar } from '../classroom/Avatar.jsx'
+import Avatar, { AvatarThemeContext, ClassAvatar } from '../classroom/Avatar.jsx'
 import { Icon, play, isMuted, setMuted } from '../classroom/ui.jsx'
 import { TargetModal, AddStudents, GroupEditor, HomeworkWizard, AttendanceWizard, PointsWizard } from '../classroom/StudentModal.jsx'
 import {
@@ -224,6 +224,7 @@ export default function Classroom() {
   }
 
   return (
+    <AvatarThemeContext.Provider value={doc?.avatarTheme || 'monsters'}>
     <div className={`cr cr--${mode}`}>
       {header}
 
@@ -450,6 +451,7 @@ export default function Classroom() {
         )}
       </AnimatePresence>
     </div>
+    </AvatarThemeContext.Provider>
   )
 }
 

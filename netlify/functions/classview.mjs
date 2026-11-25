@@ -99,6 +99,7 @@ export default async (req, context) => {
       plan: next ? { title: next.title, items: next.items } : { title: '', items: [] },
       planKey: next?.key || null, planDate: next?.date || null, planTime: next?.time || null, isToday: next?.date === today,
       directions: doc.directions || [],
+      avatarTheme: doc.avatarTheme || 'monsters',
     }, { Vary: 'Cookie' })
   } catch (err) {
     console.error('classview failed', cls, err?.message)

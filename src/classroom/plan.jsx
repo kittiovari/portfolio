@@ -3,6 +3,7 @@ import { Reorder, useDragControls } from 'framer-motion'
 import { Sheet, Icon } from './ui.jsx'
 import { Art, SkillArt, fileArt, stepArt } from './art.jsx'
 import { KretaSheet } from './kreta.jsx'
+import { AvatarThemePicker } from './Avatar.jsx'
 import { YearPanel, FilesPanel, AccessPanel } from './upkeep.jsx'
 import {
   LESSON_MIN, ORG_FORMS, TAGS, WEEKDAYS, addMinutes, dayKey, getPlan, lessonLabel, lessonTimeline, newItem, nextLessonKey,
@@ -577,6 +578,9 @@ export function ClassSettings({ doc, update, onClose, className = '', cls, onRel
 
   return (
     <Sheet title={`${className ? `${className} – ` : ''}Class settings`} onClose={onClose} wide className="cr-settings">
+      <h3 className="cr-settings__h">Avatars <small className="cr-muted">· style for this class</small></h3>
+      <AvatarThemePicker value={doc.avatarTheme || 'monsters'} onChange={(t) => update((d) => ({ ...d, avatarTheme: t }))} />
+
       <h3 className="cr-settings__h">Weekly timetable <small className="cr-muted">· {count} lesson{count === 1 ? '' : 's'} a week</small></h3>
       <div className="cr-ttable-wrap">
         <table className="cr-ttable">

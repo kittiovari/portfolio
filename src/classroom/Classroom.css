@@ -1459,3 +1459,9 @@ svg.cr-art.cr-art--toast { width: 64px; height: 64px; }
 .cr-rsec .cr-donut { margin: 0.4rem 0 0; }
 .cr-donut__legend li span { display: inline-flex; align-items: center; gap: 0.35rem; min-width: 0; }
 @media (max-width: 560px) { .cr-stat { padding: 0.6rem; } .cr-stat b { font-size: 1.3rem; } }
+
+/* Avatar-stílusok */
+.cr-themes { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.5rem; margin-bottom: 0.4rem; }
+.cr-theme { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.6rem 0.4rem 0.5rem; border: 1.5px solid var(--line); border-radius: 16px; background: #fff; cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--ink); text-align: center; }
+.cr-theme .cr-avatar { width: 64px; height: 72px; }
+.cr-theme.is-active { border-color: var(--ink); background: #FBF4DC; box-shadow: 0 6px 16px -10px rgba(36, 20, 34, 0.5); }

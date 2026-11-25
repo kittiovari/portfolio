@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import Avatar, { ClassAvatar } from './Avatar.jsx'
+import Avatar, { ClassAvatar, useAvatarTheme, themeOf, themeColors, AVATAR_THEMES } from './Avatar.jsx'
 import { Sheet, Icon } from './ui.jsx'
 import { Art, SkillArt, ART_CHOICES } from './art.jsx'
 import { ReportPanel } from './report.jsx'
@@ -249,6 +249,8 @@ const FEATURES = [
 
 export function AvatarEditor({ value, onChange }) {
   const set = (k, v) => onChange({ ...value, [k]: v })
+  const ctx = useAvatarTheme()
+  const theme = themeOf(ctx, value)
   return (
     <div className="cr-avedit">
       <div className="cr-avedit__preview">
@@ -256,9 +258,20 @@ export function AvatarEditor({ value, onChange }) {
         <button type="button" className="cr-btn cr-btn--sm" onClick={() => onChange(randomAvatar())}><Icon.shuffle />Random</button>
       </div>
       <div className="cr-avedit__opts">
+        {ctx === 'mixed' && (
+          <div className="cr-avedit__row" role="radiogroup" aria-label="Style">
+            <span>Style</span>
+            {AVATAR_THEMES.map((t) => (
+              <button type="button" key={t.id} role="radio" aria-checked={theme === t.id} title={t.label}
+                className={`cr-avopt ${theme === t.id ? 'is-active' : ''}`} onClick={() => set('t', t.id)}>
+                <Avatar a={{ ...value, t: t.id }} theme={t.id} />
+              </button>
+            ))}
+          </div>
+        )}
         <div className="cr-avedit__row" role="radiogroup" aria-label="Colour">
           <span>Colour</span>
-          {AVATAR.colors.map((c, i) => (
+          {themeColors(theme).map((c, i) => (
             <button type="button" key={c} role="radio" aria-checked={value.c === i} aria-label={`Colour ${i + 1}`}
               className={`cr-swatch ${value.c === i ? 'is-active' : ''}`} style={{ background: c }} onClick={() => set('c', i)} />
           ))}
