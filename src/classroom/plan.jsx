@@ -155,7 +155,7 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings, 
     setKey(dayKey(d))
   }
   const nextKey = nextLessonKey(doc)
-  const upcoming = timeline.filter((k) => !nextKey || k >= nextKey).slice(0, 12)
+  const upcoming = timeline.filter((k) => !nextKey || k >= nextKey) // az egész hátralévő tanév
 
   const setPlan = (fn) => update((d) => {
     const next = withSkeleton(fn(withSkeleton(getPlan(d, key))))
@@ -313,8 +313,11 @@ export function LessonPicker({ value, options, nextKey, planned, onChange, doc =
       </button>
       {open && (
         <ul className="cr-lpick__list" role="listbox" aria-label="Lessons">
-          {options.map((k) => (
+          {options.map((k, i) => (
             <li key={k}>
+              {(i === 0 || k.slice(0, 7) !== options[i - 1].slice(0, 7)) && (
+                <span className="cr-lpick__month">{new Date(`${k.slice(0, 7)}-01T12:00`).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</span>
+              )}
               <button role="option" aria-selected={k === value} className={k === value ? 'is-active' : ''} onClick={() => { onChange(k); setOpen(false) }}>
                 <span>{label(k)}</span>
                 {k === nextKey && <small className="cr-lpick__badge">next</small>}

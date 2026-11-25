@@ -1034,3 +1034,31 @@ span.cr-sk { cursor: default; }
 .cr-group__actions { position: absolute; top: 8px; right: 8px; display: flex; gap: 0.1rem; }
 .cr-group__actions .cr-iconbtn--sm:hover { background: rgba(36, 20, 34, 0.08); }
 .cr-groups__clear { grid-column: 1 / -1; justify-self: center; margin-top: 0.4rem; }
+
+/* Időzítő és zene – kapcsolós beállítás */
+.cr-setup__toggle { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; margin-bottom: 0.6rem; }
+.cr-setup__toggle b { font-family: var(--font-heading); font-size: 1.1rem; }
+.cr-switch { position: relative; width: 42px; height: 24px; flex-shrink: 0; }
+.cr-switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.cr-switch i { position: absolute; inset: 0; border-radius: 999px; background: rgba(36, 20, 34, 0.18); transition: background 0.15s; pointer-events: none; }
+.cr-switch i::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); transition: transform 0.15s; }
+.cr-switch.is-on i { background: #6A4BC4; }
+.cr-switch.is-on i::after { transform: translateX(18px); }
+.cr-switch input:focus-visible + i { outline: 2px solid var(--ink); outline-offset: 2px; }
+.cr-presets--sm { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+.cr-presets--sm .cr-preset { padding: 0.7rem 0.4rem; font-size: 1.4rem; border-bottom-width: 3px; }
+.cr-preset.is-active { border-color: #6A4BC4; background: #F1EDFB; }
+.cr-preset--plus { display: grid; place-items: center; color: #6A4BC4; }
+.cr-preset--plus svg { width: 22px; height: 22px; }
+.cr-setup .cr-custom { margin-top: 0.7rem; }
+.cr-chans { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.cr-chan { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.8rem; border: 1.5px solid var(--line); border-radius: 18px; background: #fff; cursor: pointer; font-family: var(--font-heading); font-weight: 600; font-size: 1rem; transition: border-color 0.15s, background 0.15s; }
+.cr-chan.is-active { border-color: var(--ch); background: color-mix(in srgb, var(--ch) 14%, #fff); }
+.cr-chart { width: 64px; height: 54px; }
+.cr-chart--sm { width: 26px; height: 22px; }
+.cr-chart--xl { width: 180px; height: 150px; }
+.cr-session__ch { gap: 0.3rem; }
+.cr-session__ch .cr-chart--sm { background: #fff; border-radius: 999px; }
+
+.cr-lpick__month { display: block; padding: 0.6rem 0.8rem 0.2rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.cr-lpick__list { max-height: 380px; }

@@ -27,92 +27,103 @@ export function playlistId(link = '') {
   return m ? m[1] : null
 }
 
-const MINUTES = [1, 3, 5, 10, 15, 20]
+const PRESETS = [15, 30, 60, 300, 600] // másodperc – nagyobb nem kell
+const fmtPreset = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 
-// ── Beállító panel ──
-export function SessionSetup({ doc, update, onStart, onClose, onBack }) {
+// Relax / Active – vonalrajzos babszem-figurák az oldal illusztrációinak stílusában
+export function ChannelArt({ id, className = 'cr-chart' }) {
+  const body = (cx, base, w, h, fill) => {
+    const l = cx - w / 2, r = cx + w / 2, t = base - h
+    return <path d={`M${l} ${base}C${l - 0.3} ${base - h * 0.6} ${l + w * 0.06} ${t + h * 0.12} ${cx} ${t}C${r - w * 0.06} ${t + h * 0.12} ${r + 0.3} ${base - h * 0.6} ${r} ${base}Z`} fill={fill} />
+  }
+  return (
+    <svg className={className} viewBox="0 0 48 40" fill="none" stroke="#241422" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {id === 'relax' ? (
+        <>
+          {/* csukott szemmel pihenő figura, mellette levél */}
+          {body(20, 36, 18, 26, '#CFE3D3')}
+          <path d="M14.5 21.5q2 1.6 4 0M21.5 21.5q2 1.6 4 0" />
+          <path d="M17.5 27q2.5 1.8 5 0" />
+          <path d="M33 34c-1-6 2-11 9-12-1 7-4 11-9 12z" fill="#A9D18E" />
+          <path d="M33 34c2-3.5 4.5-6.5 8-10.5" strokeWidth="1.3" />
+          <path d="M6 37h34" opacity=".3" />
+          <path d="M30 9c1.2-1 2.6-1 3.6 0M35 6c1.2-1 2.6-1 3.6 0" strokeWidth="1.3" opacity=".6" />
+        </>
+      ) : (
+        <>
+          {/* ugró figura mozgásvonalakkal */}
+          {body(24, 31, 17, 25, '#F7D2B5')}
+          <circle cx="20.3" cy="15.5" r="1.3" fill="#241422" stroke="none" />
+          <circle cx="27.7" cy="15.5" r="1.3" fill="#241422" stroke="none" />
+          <path d="M20 20.5q4 4 8 0" fill="#241422" />
+          <path d="M15.5 17l-5-5M32.5 17l5-5" />
+          <path d="M20 31l-2 5M28 31l2 5" />
+          <path d="M5 22h5M4 27h4M38 22h5M40 27h4" strokeWidth="1.3" opacity=".6" />
+        </>
+      )}
+    </svg>
+  )
+}
+
+// ── Beállító panel: időzítő (alapból be) és zene (alapból ki) kapcsolóval ──
+export function SessionSetup({ doc, onStart, onClose, onBack }) {
+  const [timerOn, setTimerOn] = useState(true)
+  const [secs, setSecs] = useState(300)
+  const [customOpen, setCustomOpen] = useState(false)
+  const [custom, setCustom] = useState({ m: 3, s: 0 })
+  const [musicOn, setMusicOn] = useState(false)
   const [music, setMusic] = useState('relax')
-  const [minutes, setMinutes] = useState(5)
-  const [custom, setCustom] = useState('')
-  const [mode, setMode] = useState('full')
-  const [editLink, setEditLink] = useState(null)
-  const [draft, setDraft] = useState('')
 
-  const seconds = custom ? Math.round(Number(custom) * 60) : minutes ? minutes * 60 : null
-  const canStart = Boolean(music || seconds)
-
-  const saveLink = (e) => {
-    e.preventDefault()
-    if (!playlistId(draft)) return
-    update((d) => ({ ...d, music: { ...(d.music || {}), [editLink]: draft.trim() } }))
-    setEditLink(null)
-  }
-
-  if (editLink) {
-    const ch = MUSIC_CHANNELS.find((c) => c.id === editLink)
-    return (
-      <Sheet title="Timer & music" color={COLOR} icon={<Icon.timer />} onClose={onClose} onBack={() => setEditLink(null)} className="cr-sheet--compact">
-        <form className="cr-form" onSubmit={saveLink}>
-          <label className="cr-field">
-            <span>{ch.icon} {ch.label} – Spotify playlist link</span>
-            <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="https://open.spotify.com/playlist/…" autoFocus />
-          </label>
-          {draft && !playlistId(draft) && <p className="cr-hint is-neg">This isn't a Spotify playlist link.</p>}
-          <div className="cr-form__actions">
-            <span className="cr-spacer" />
-            <button type="button" className="cr-btn" onClick={() => setEditLink(null)}>Cancel</button>
-            <button type="submit" className="cr-btn cr-btn--primary" disabled={!playlistId(draft)}>Save</button>
-          </div>
-        </form>
-      </Sheet>
-    )
-  }
+  const seconds = timerOn ? (customOpen ? custom.m * 60 + custom.s : secs) : null
+  const canStart = Boolean((timerOn && seconds > 0) || musicOn)
 
   return (
     <Sheet title="Timer & music" color={COLOR} icon={<Icon.timer />} onClose={onClose} onBack={onBack} className="cr-sheet--compact cr-setup">
       <div className="cr-setup__row">
-        <h3>Music</h3>
-        <div className="cr-choice">
-          <button className={!music ? 'is-active' : ''} onClick={() => setMusic(null)}>None</button>
-          {MUSIC_CHANNELS.map((c) => (
-            <button key={c.id} className={music === c.id ? 'is-active' : ''} onClick={() => setMusic(c.id)} style={{ '--ch': c.color }}>
-              <span aria-hidden="true">{c.icon}</span> {c.label}
-            </button>
-          ))}
-        </div>
-        <div className="cr-setup__links">
-          {music && (
-            <button className="cr-link cr-setup__edit" onClick={() => { setEditLink(music); setDraft(linkOf(doc, music)) }}>
-              <Icon.pencil />Change playlist
-            </button>
-          )}
-          <SpotifyStatus />
-        </div>
+        <label className="cr-setup__toggle">
+          <span className={`cr-switch ${timerOn ? 'is-on' : ''}`}><input type="checkbox" checked={timerOn} onChange={(e) => setTimerOn(e.target.checked)} /><i /></span>
+          <b>Timer</b>
+        </label>
+        {timerOn && (
+          <>
+            <div className="cr-presets cr-presets--sm">
+              {PRESETS.map((p) => (
+                <button key={p} className={`cr-preset ${!customOpen && secs === p ? 'is-active' : ''}`} onClick={() => { setSecs(p); setCustomOpen(false) }}>{fmtPreset(p)}</button>
+              ))}
+              <button className={`cr-preset cr-preset--plus ${customOpen ? 'is-active' : ''}`} onClick={() => setCustomOpen(true)} aria-label="Custom time"><Icon.plus /></button>
+            </div>
+            {customOpen && (
+              <div className="cr-custom">
+                <input type="number" min="0" max="10" value={custom.m} onChange={(e) => setCustom({ ...custom, m: Math.max(0, Math.min(10, Number(e.target.value) || 0)) })} aria-label="Minutes" /> min
+                <input type="number" min="0" max="59" value={custom.s} onChange={(e) => setCustom({ ...custom, s: Math.max(0, Math.min(59, Number(e.target.value) || 0)) })} aria-label="Seconds" /> sec
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       <div className="cr-setup__row">
-        <h3>Timer</h3>
-        <div className="cr-choice cr-choice--wrap">
-          <button className={!minutes && !custom ? 'is-active' : ''} onClick={() => { setMinutes(null); setCustom('') }}>None</button>
-          {MINUTES.map((m) => (
-            <button key={m} className={minutes === m && !custom ? 'is-active' : ''} onClick={() => { setMinutes(m); setCustom('') }}>{m} min</button>
-          ))}
-          <label className={`cr-choice__custom ${custom ? 'is-active' : ''}`}>
-            <input type="number" min="0.5" max="180" step="0.5" value={custom} placeholder="custom" onChange={(e) => setCustom(e.target.value)} aria-label="Custom time in minutes" /> min
-          </label>
-        </div>
-      </div>
-
-      <div className="cr-setup__row">
-        <h3>View</h3>
-        <div className="cr-choice">
-          <button className={mode === 'full' ? 'is-active' : ''} onClick={() => setMode('full')}><Icon.expand />Full screen</button>
-          <button className={mode === 'compact' ? 'is-active' : ''} onClick={() => setMode('compact')}><Icon.compact />Compact</button>
-        </div>
+        <label className="cr-setup__toggle">
+          <span className={`cr-switch ${musicOn ? 'is-on' : ''}`}><input type="checkbox" checked={musicOn} onChange={(e) => setMusicOn(e.target.checked)} /><i /></span>
+          <b>Music</b>
+        </label>
+        {musicOn && (
+          <>
+            <div className="cr-chans">
+              {MUSIC_CHANNELS.map((c) => (
+                <button key={c.id} className={`cr-chan ${music === c.id ? 'is-active' : ''}`} onClick={() => setMusic(c.id)} style={{ '--ch': c.color }}>
+                  <ChannelArt id={c.id} />
+                  <span>{c.label}</span>
+                </button>
+              ))}
+            </div>
+            <div className="cr-setup__links"><SpotifyStatus /></div>
+          </>
+        )}
       </div>
 
       <button className="cr-btn cr-btn--primary cr-setup__go" disabled={!canStart}
-        onClick={() => onStart({ music, link: music ? linkOf(doc, music) : null, seconds, mode, key: Date.now() })}>
+        onClick={() => onStart({ music: musicOn ? music : null, link: musicOn ? linkOf(doc, music) : null, seconds, mode: 'full', key: Date.now() })}>
         <Icon.play />Start
       </button>
     </Sheet>
@@ -360,7 +371,7 @@ export function SessionPlayer({ session, onMode, onClose }) {
       aria-label="Timer & music"
     >
       <div className="cr-session__top">
-        {ch && <span className="cr-session__ch"><span aria-hidden="true">{ch.icon}</span> {ch.label}</span>}
+        {ch && <span className="cr-session__ch"><ChannelArt id={ch.id} className="cr-chart cr-chart--sm" /> {ch.label}</span>}
         <span className="cr-spacer" />
         <button className="cr-iconbtn cr-session__btn" onClick={() => onMode(full ? 'compact' : 'full')}
           aria-label={full ? 'Compact view' : 'Full screen'} title={full ? 'Compact view' : 'Full screen'}>
@@ -385,7 +396,7 @@ export function SessionPlayer({ session, onMode, onClose }) {
             </div>
           </>
         ) : (
-          full && ch && <div className="cr-session__icon" aria-hidden="true">{ch.icon}</div>
+          full && ch && <div className="cr-session__icon" aria-hidden="true"><ChannelArt id={ch.id} className="cr-chart cr-chart--xl" /></div>
         )}
       </div>
 

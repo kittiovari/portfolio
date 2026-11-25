@@ -288,8 +288,12 @@ export function scheduledLessons(doc, fromDate, days) {
 
 // Léptetéshez: órarendi órák (−60…+180 nap) + minden betervezett alkalom
 export function lessonTimeline(doc) {
-  const from = dayKey(new Date(Date.now() - 60 * 864e5))
-  const sched = scheduledLessons(doc, from, 240)
+  // a teljes tanév: a megadott első naptól az utolsóig (különben −60 nap … +1 év)
+  const c = doc.calendar || {}
+  const from = c.start || dayKey(new Date(Date.now() - 60 * 864e5))
+  const to = c.end || dayKey(new Date(Date.now() + 366 * 864e5))
+  const days = Math.max(1, Math.round((parseDate(to) - parseDate(from)) / 864e5) + 1)
+  const sched = scheduledLessons(doc, from, Math.min(days, 500))
   const schedDates = new Set(sched.map((k) => splitKey(k).date))
   // a csak dátumos (órarend előtti) terv beolvad az aznapi órarendi órába
   const planned = plannedKeys(doc).filter((k) => splitKey(k).time || !schedDates.has(k))

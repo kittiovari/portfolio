@@ -68,7 +68,7 @@ export function useCountdown(initial, onDone) {
 export function RandomTool({ doc, onClose, onGive }) {
   const t = tool('random')
   const pool = doc.students.filter((s) => !isAbsent(doc, s.id))
-  const [noRepeat, setNoRepeat] = useState(true)
+  const noRepeat = true // ismétlés nélkül, amíg mindenki sorra nem kerül
   const [used, setUsed] = useState(() => new Set())
   const [shown, setShown] = useState(null)
   const [rolling, setRolling] = useState(false)
@@ -112,7 +112,6 @@ export function RandomTool({ doc, onClose, onGive }) {
       <div className="cr-controls cr-controls--pills">
         <button className="cr-pillbtn" onClick={roll} disabled={rolling}><Icon.shuffle />Again</button>
         {shown && !rolling && <button className="cr-pillbtn" onClick={() => onGive(shown.id)}><Icon.plus />Give points</button>}
-        <label className="cr-toggle"><input type="checkbox" checked={noRepeat} onChange={(e) => setNoRepeat(e.target.checked)} />No repeats ({used.size}/{pool.length})</label>
       </div>
     </FullScreen>
   )
