@@ -300,43 +300,39 @@ function UXArt(props) {
 const profileCommon = { ...common, viewBox: '0 0 120 120' }
 
 // NYEK9B: olasz gesztus – összezárt ujjak felfelé, kockás ingujj
-// NYEK9B: babszem-figura az arca mellett olasz gesztussal (összezárt ujjak),
-// kétirányú mozgásnyíllal és kérdéssel – „Cosa?”
+// NYEK9B: fintorgó babszem-figura, mindkét kezével a teste előtt az olasz
+// gesztust rázza (összezárt ujjak felfelé)
 function ItalianHandArt(props) {
   return (
     <svg {...profileCommon} {...props}>
       <g strokeWidth="2.2">
-        {/* kérdés */}
-        <text x="34" y="30" fontSize="13" {...label} transform="rotate(-8 34 30)">Cosa?</text>
+        {/* figura középen */}
+        <path d={bean(60, 124, 60, 100)} />
+        <path d="M55 26c-3-6 2-9-1-14M63 25c0-6 5-8 4-13" />
+        {/* fintor: lefelé-befelé húzott szemöldök, összeszorított szem, félrehúzott csücsörítés */}
+        <path d="M39 44l11 5M81 44l-11 5" />
+        <path d="M41 55l8 2l-8 2M79 55l-8 2l8 2" />
+        <path d="M59 68q4-4 9-1q-3 5-9 1" />
+        <path d="M54 66q-3 2-2 6M71 64q3 1 3 4" opacity=".55" />
 
-        {/* figura (jobb oldalt) */}
-        <path d={bean(74, 122, 46, 80)} />
-        <path d="M70 44c-3-6 2-9-1-15M78 43c0-6 5-8 4-14M85 46c3-5 7-6 9-10" />
-        {/* felhúzott szemöldök, oldalra néző szemek, csücsörítő száj */}
-        <path d="M60 60q4-4 8-1M75 59q4-3 8 0" />
-        <circle cx="63" cy="67" r="1.9" {...dot} />
-        <circle cx="78" cy="66" r="1.9" {...dot} />
-        <ellipse cx="70" cy="80" rx="3.4" ry="2.6" />
-
-        {/* felemelt kar + összezárt ujjú kéz az arc mellett */}
-        <g className="a-shake">
-          {/* alkar a test szélétől a csuklóig */}
-          <path d="M51 112C44 100 38 86 36.5 69M52 96C49 88 48 79 47.5 71" />
-          {/* kéz: ugyanaz a forma, mint az önálló gesztusrajzon, kicsinyítve */}
-          <g transform="translate(12 30) scale(0.5)" strokeWidth="4.4">
-            <path d="M71 80C81 74 87 63 85 51C83 40 79 31 77 25" />
-            <path d="M49 76C44 68 44 60 48 52C50 43 55 34 60 28" />
-            <path d="M60 28C59 22 63 18 67 21C69 16 75 17 76 22C79 21 81 24 77 25" />
-            <path d="M67 21C70 31 72 41 72 53M75 23C78 33 80 43 79 55" opacity=".6" />
-            <path d="M52 57C55 47 58 38 63 30" />
-            <path d="M49 76C55 80 64 82 71 80" />
-          </g>
+        {/* két kéz a mellkas előtt: összeérő ujjbegyek felfelé – fel-le rázva */}
+        <g className="a-bob">
+          <path d="M40 112C35 103 35 94 39 87C40 83 43 82 44 85C45 80 50 80 50 85C52 82 55 85 53 89C57 96 56 105 52 112" />
+          <path d="M44 85C45 93 46 101 46 109M50 85C51 93 51 101 50 109" opacity=".55" />
+          <path d="M40 101C41 94 43 90 46 88" />
+          <path d="M40 112C37 117 35 121 34 124M52 112C51 117 50 121 50 124" />
+        </g>
+        <g className="a-bob" style={{ '--d': '0.22s' }}>
+          <path d="M80 112C85 103 85 94 81 87C80 83 77 82 76 85C75 80 70 80 70 85C68 82 65 85 67 89C63 96 64 105 68 112" />
+          <path d="M76 85C75 93 74 101 74 109M70 85C69 93 69 101 70 109" opacity=".55" />
+          <path d="M80 101C79 94 77 90 74 88" />
+          <path d="M80 112C83 117 85 121 86 124M68 112C69 117 70 121 70 124" />
         </g>
 
-        {/* kétirányú mozgásnyíl */}
-        <g className="a-flow">
-          <path d="M14 66L28 52" />
-          <path d="M14 66l1-6M14 66l6-1M28 52l-1 6M28 52l-6 1" />
+        {/* rázás-jelek a kezek két oldalán, kifelé */}
+        <g className="a-flow" opacity=".6">
+          <path d="M31 88q-4 6 0 12M26 91q-3 3 0 6" />
+          <path d="M89 88q4 6 0 12M94 91q3 3 0 6" />
         </g>
       </g>
     </svg>

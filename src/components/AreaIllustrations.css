@@ -38,6 +38,12 @@
 :is(.pw-profile:hover, .pw-profile:focus-visible, .pw-profile--active) .a-ruffle { animation: a-ruffle 1.1s ease-in-out infinite alternate; }
 :is(.pw-profile:hover, .pw-profile:focus-visible, .pw-profile--active) .a-fan    { animation: a-fan 0.8s ease-in-out infinite alternate; }
 
+:is(.pw-profile:hover, .pw-profile:focus-visible, .pw-profile--active) .a-bob { animation: a-bob 0.45s ease-in-out infinite alternate; }
+@keyframes a-bob {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-4px); }
+}
+
 .a-shake  { transform-origin: 30% 100%; }
 .a-ruffle { transform-origin: 50% 0%; }
 .a-fan    { transform-origin: 80% 95%; }
