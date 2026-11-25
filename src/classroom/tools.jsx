@@ -118,9 +118,10 @@ export function RandomTool({ doc, onClose, onGive }) {
 }
 
 // ── Csoportkészítő ──
-export function GroupMakerTool({ doc, update, onClose, onBack }) {
+export function GroupMakerTool({ doc, update, onClose, onBack, initialSize = null, date = undefined }) {
   const t = tool('groups')
-  const present = doc.students.filter((s) => !isAbsent(doc, s.id))
+  // az adott óra jelenléte szerint (a kártyáról indítva), különben a mai nap szerint
+  const present = doc.students.filter((s) => !isAbsent(doc, s.id, date))
   const [view, setView] = useState('size') // size | avoid | result
   const [size, setSize] = useState(3)
   const [groups, setGroups] = useState(null)
@@ -131,9 +132,11 @@ export function GroupMakerTool({ doc, update, onClose, onBack }) {
     setGroups(makeGroups(present.map((s) => s.id), n, doc.avoid))
     setView('result')
   }
+  // párokhoz rögtön sorsol (a kártyáról indítva)
+  useEffect(() => { if (initialSize && present.length > 1) make(initialSize) }, []) // eslint-disable-line react-hooks/exhaustive-deps
   const saveAsGroups = () => {
     if (doc.groups.length && !window.confirm('Replace the existing groups with the new ones?')) return
-    update((d) => ({ ...d, groups: groups.map((ids, i) => ({ id: uid(), name: `Group ${i + 1}`, ids })) }))
+    update((d) => ({ ...d, groups: groups.map((ids, i) => ({ id: uid(), name: `${size === 2 ? 'Pair' : 'Group'} ${i + 1}`, ids })) }))
     onClose()
   }
 
@@ -143,7 +146,7 @@ export function GroupMakerTool({ doc, update, onClose, onBack }) {
         <div className="cr-groupres">
           {groups.map((g, i) => (
             <motion.div key={i} className="cr-groupres__card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
-              <h3>Group {i + 1}</h3>
+              <h3>{size === 2 ? 'Pair' : 'Group'} {i + 1}</h3>
               {g.map((id) => byId[id] && (
                 <div key={id} className="cr-groupres__row"><Avatar a={byId[id].avatar} /><span>{shortName(byId[id])}</span></div>
               ))}

@@ -353,7 +353,8 @@ export function shuffle(arr) {
 }
 
 export function makeGroups(ids, size, avoid = []) {
-  const n = Math.max(1, Math.round(ids.length / size))
+  // lefelé kerekítve: páratlan létszámnál senki nem marad egyedül (lesz egy hármas)
+  const n = Math.max(1, Math.floor(ids.length / size))
   const bad = new Set(avoid.flatMap(([a, b]) => [`${a}|${b}`, `${b}|${a}`]))
   let best = null
   let bestScore = Infinity

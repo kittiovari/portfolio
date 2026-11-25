@@ -268,7 +268,8 @@ export default function Classroom() {
           </div>
         )}
         {mode !== 'attendance' && (
-          <LessonBoard key={cls} doc={doc} cls={cls} active={activeStep} onSelect={setActiveStep}
+          <LessonBoard key={cls} doc={doc} update={update} cls={cls} active={activeStep} onSelect={setActiveStep}
+            onMakeGroups={(size, date) => setModal({ kind: 'tool', id: 'groups', size, date, fromBoard: true })}
             onCheckHomework={() => setModal({ kind: 'homework', preselect: [] })}
             onTakeAttendance={(date) => setModal({ kind: 'attendance', date })}
             onEdit={(k) => setModal({ kind: 'tool', id: 'today', key: k })} />
@@ -345,7 +346,8 @@ export default function Classroom() {
           <RandomTool key="random" doc={doc} onClose={closeModal}
             onGive={(id) => setModal({ kind: 'target', target: { type: 'student', id } })} />
         )}
-        {modal?.kind === 'tool' && modal.id === 'groups' && <GroupMakerTool key="groups" doc={doc} update={update} onClose={() => { closeModal(); setView('groups') }} onBack={backToKit} />}
+        {modal?.kind === 'tool' && modal.id === 'groups' && <GroupMakerTool key="groups" doc={doc} update={update} initialSize={modal.size || null} date={modal.date}
+          onClose={() => { closeModal(); if (!modal.fromBoard) setView('groups') }} onBack={modal.fromBoard ? undefined : backToKit} />}
         {modal?.kind === 'tool' && modal.id === 'directions' && <DirectionsTool key="dir" doc={doc} update={update} onClose={closeModal} onBack={backToKit} />}
         {modal?.kind === 'tool' && modal.id === 'tps' && <TpsTool key="tps" doc={doc} update={update} onClose={closeModal} onBack={backToKit} />}
         {modal?.kind === 'tool' && modal.id === 'today' && <PlanEditor key="today" doc={doc} update={update} cls={cls} initialKey={modal.key} onClose={closeModal} onBack={modal.fromKit ? backToKit : undefined} onOpenSettings={() => setModal({ kind: 'settings' })} />}

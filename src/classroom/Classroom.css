@@ -1108,3 +1108,17 @@ span.cr-sk { cursor: default; }
 .cr-chip--absent { background: rgba(180, 68, 59, 0.12); color: #B4443B; }
 .cr-pick.is-absentee { opacity: 0.45; border: 2px dashed rgba(36, 20, 34, 0.2); background: transparent; cursor: default; filter: grayscale(0.6); }
 .cr-pick__mark.is-abs { background: #8A7888; font-weight: 600; }
+
+/* Idővonal-kártya: részletek, munkaforma, párok/csoportok */
+.cr-lcard__detail { display: flex; flex-direction: column; gap: 0.5rem; padding: 0 1rem 0.6rem; }
+.cr-lcard__detail .cr-res__img img { max-width: 100%; max-height: 220px; }
+.cr-lcard__detail .cr-res__audio, .cr-lcard__detail .cr-res__chip { max-width: 100%; }
+.cr-lcard__detail .cr-res__audio audio { width: 100%; }
+.cr-lcard__org { display: flex; gap: 0.2rem; margin: 0 1rem 0.7rem; padding: 3px; border-radius: 12px; background: rgba(36, 20, 34, 0.05); align-self: flex-start; }
+.cr-lcard__org button { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.4rem; border: none; border-radius: 9px; background: transparent; cursor: pointer; font-size: 0.78rem; font-weight: 600; color: var(--ink); opacity: 0.55; }
+.cr-lcard__org button .cr-orgicon { width: 28px; height: 22px; }
+.cr-lcard__org button:hover { opacity: 0.9; }
+.cr-lcard__org button.is-on { background: #fff; opacity: 1; box-shadow: 0 1px 4px rgba(36, 20, 34, 0.15); }
+.cr-lcard__org button.is-on .cr-orgicon { --bean: #F7D569; }
+.cr-lcard__action--light { background: #fff; }
+.cr-lcard__action + .cr-lcard__action { margin-top: -0.5rem; }

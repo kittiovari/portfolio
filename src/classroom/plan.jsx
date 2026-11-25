@@ -695,7 +695,7 @@ function attSummary(doc, date) {
 // ── Tanári osztálynézet: az óra idővonala, feladathoz kötött pontozással ──
 // Választható órák: a már megtartott (betervezett) órák, az éppen aktuális óra,
 // és a következő, már előkészített órák.
-export function LessonBoard({ doc, cls, active, onSelect, onEdit, onCheckHomework, onTakeAttendance }) {
+export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onCheckHomework, onTakeAttendance, onMakeGroups }) {
   const today = dayKey()
   const nowKey = nextLessonKey(doc)
   const planned = plannedKeys(doc)
@@ -718,6 +718,10 @@ export function LessonBoard({ doc, cls, active, onSelect, onEdit, onCheckHomewor
   }, [active?.itemId])
 
   const changeLesson = (k) => { setKey(k); onSelect(null) }
+  const setOrg = (itemId, org) => update((d) => {
+    const p = withSkeleton(getPlan(d, key))
+    return { ...d, plans: { ...(d.plans || {}), [key]: { ...p, items: p.items.map((x) => (x.id === itemId ? { ...x, org: x.org === org ? '' : org } : x)) } } }
+  })
   let acc = 0
 
   return (
@@ -754,12 +758,45 @@ export function LessonBoard({ doc, cls, active, onSelect, onEdit, onCheckHomewor
                     <span className="cr-tcard__kind">{i + 1} · {it.minutes} min{start ? ` · ${start}` : ''}</span>
                     {tags.length > 0 && <span className="cr-tcard__skills">{tags.map((t) => <span key={t.id} className="cr-tag" style={{ '--tg': t.color }}>{t.label}</span>)}</span>}
                     <b className="cr-tcard__title">{title}</b>
-                    {org && <span className="cr-tcard__org"><OrgIcon id={org.id} />{org.label}</span>}
                     <span className={`cr-lcard__pts ${evs.length ? 'has' : ''}`}>
                       {it.role === 'attendance' ? attSummary(doc, splitKey(key).date)
                         : evs.length ? `${sum > 0 ? '+' : ''}${sum} pts · ${kids} student${kids === 1 ? '' : 's'}` : sel ? 'Give points above ↑' : 'No points yet'}
                     </span>
                   </button>
+                  {/* részletek: leírás és feltöltött tartalmak (olvasható, lejátszható, megnyitható) */}
+                  {(() => {
+                    const src = it.role === 'hwreview' ? prevHw.items : [it]
+                    const text = src.map((x) => x.activity).filter(Boolean).join('\n')
+                    const res = src.flatMap((x) => x.resources || [])
+                    const eq = src.map((x) => x.equipment).filter(Boolean).join(', ')
+                    if (!text && !res.length && !eq) return null
+                    return (
+                      <div className="cr-lcard__detail">
+                        {text && <p className="cr-tcard__note"><Linkify text={text} /></p>}
+                        {res.length > 0 && <div className="cr-tcard__res">{res.map((r) => <Resource key={r.id} r={r} cls={cls} />)}</div>}
+                        {eq && <p className="cr-tcard__meta"><span>🎒 {eq}</span></p>}
+                      </div>
+                    )
+                  })()}
+                  {/* munkaforma – óra közben is átállítható */}
+                  {it.role !== 'attendance' && it.role !== 'reflection' && (
+                    <div className="cr-lcard__org" role="radiogroup" aria-label="Organisation form">
+                      {ORG_FORMS.map((o) => (
+                        <button key={o.id} role="radio" aria-checked={it.org === o.id} title={o.label}
+                          className={it.org === o.id ? 'is-on' : ''} onClick={() => setOrg(it.id, o.id)}>
+                          <OrgIcon id={o.id} />{it.org === o.id && <span>{o.label}</span>}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {(it.org === 'pairs' || it.org === 'groups') && it.role !== 'attendance' && (
+                    <button className="cr-btn cr-btn--sm cr-lcard__action cr-lcard__action--light" onClick={() => {
+                      onSelect({ key, itemId: it.id, title, role: it.role || null })
+                      onMakeGroups(it.org === 'pairs' ? 2 : null, splitKey(key).date)
+                    }}>
+                      ✦ {it.org === 'pairs' ? 'Make pairs' : 'Make groups'}
+                    </button>
+                  )}
                   {/* a jelenlét és a házi-ellenőrzés gombja magán a kártyán */}
                   {(it.role === 'attendance' || it.role === 'hwreview') && (
                     <button className="cr-btn cr-btn--primary cr-btn--sm cr-lcard__action" onClick={() => {
