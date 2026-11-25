@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { profileArt } from '../components/AreaIllustrations.jsx'
 import Avatar, { AvatarThemeContext, ClassAvatar } from '../classroom/Avatar.jsx'
 import { Icon, play, isMuted, setMuted } from '../classroom/ui.jsx'
 import { TargetModal, AddStudents, GroupEditor, HomeworkWizard, AttendanceWizard, PointsWizard } from '../classroom/StudentModal.jsx'
@@ -16,7 +15,7 @@ import { useArchives, useClassList, AddClassSheet } from '../classroom/upkeep.js
 import { classArt } from '../components/AreaIllustrations.jsx'
 import SeasonScene from '../classroom/SeasonScene.jsx'
 import Deskmates from '../classroom/Deskmates.jsx'
-import { ATTENDANCE, CLASSES, dayKey, fullName, pickName, getPlan, stepSkills, withSkeleton, skillByKey, lessonLabel, nextLessonKey, pointsBy, sortStudents, uid } from '../classroom/model.js'
+import { ATTENDANCE, dayKey, fullName, pickName, getPlan, stepSkills, withSkeleton, skillByKey, pointsBy, sortStudents, uid } from '../classroom/model.js'
 import '../components/PasswordModal.css'
 import '../classroom/Classroom.css'
 

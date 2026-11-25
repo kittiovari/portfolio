@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import Avatar, { ClassAvatar, useAvatarTheme, themeOf, themeColors, AVATAR_THEMES } from './Avatar.jsx'
 import { Sheet, Icon } from './ui.jsx'
 import { Art, SkillArt, ART_CHOICES } from './art.jsx'
 import { ReportPanel } from './report.jsx'
 import {
-  AVATAR, RANGES, sortStudents, pickName, POINT_RULES, RULE_LABELS, newCode, ensureCodes, rangeBounds, inRange, fullName, uid, parseName, randomAvatar, toCsv, download, dayKey,
+  AVATAR, sortStudents, pickName, POINT_RULES, RULE_LABELS, newCode, ensureCodes, fullName, uid, parseName, randomAvatar, dayKey,
 } from './model.js'
 
 /*

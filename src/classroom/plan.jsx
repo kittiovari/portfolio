@@ -6,10 +6,7 @@ import { KretaSheet } from './kreta.jsx'
 import { AvatarThemePicker } from './Avatar.jsx'
 import { YearPanel, FilesPanel, AccessPanel } from './upkeep.jsx'
 import {
-  LESSON_MIN, ORG_FORMS, TAGS, WEEKDAYS, addMinutes, dayKey, getPlan, lessonLabel, lessonTimeline, newItem, nextLessonKey,
-  splitKey, tagOf, uid, previousHomework, withSkeleton, TASK_TAGS, plannedKeys, stepSkills,
-  BELLS, isShortDay, lessonStart, lessonLength, breakOn,
-  moveToNext, undoMove, nextKeyAfter,
+  ORG_FORMS, WEEKDAYS, addMinutes, dayKey, getPlan, lessonLabel, lessonTimeline, newItem, nextLessonKey, splitKey, tagOf, uid, previousHomework, withSkeleton, TASK_TAGS, plannedKeys, stepSkills, BELLS, isShortDay, lessonStart, lessonLength, breakOn, moveToNext, undoMove, nextKeyAfter,
 } from './model.js'
 
 /*
