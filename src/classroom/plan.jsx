@@ -3,7 +3,7 @@ import { Reorder, useDragControls } from 'framer-motion'
 import { Sheet, Icon } from './ui.jsx'
 import {
   LESSON_MIN, ORG_FORMS, TAGS, WEEKDAYS, addMinutes, dayKey, getPlan, lessonLabel, lessonTimeline, newItem, nextLessonKey,
-  reflectionItem, splitKey, tagOf, uid,
+  reflectionItem, splitKey, tagOf, uid, warmerItem, hwReviewItem, previousHomework,
 } from './model.js'
 
 /*
@@ -127,6 +127,8 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings }
   const [error, setError] = useState('')
   const plan = getPlan(doc, key)
   const { date, time } = splitKey(key)
+  const prevHw = previousHomework(doc, key)
+  const hasReview = plan.items.some((it) => it.auto === 'hwreview')
   const length = doc.lessonLength || LESSON_MIN
   const total = plan.items.reduce((s, it) => s + (Number(it.minutes) || 0), 0)
   const left = length - total
@@ -164,7 +166,7 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings }
     const it = newItem()
     setPlan((p) => {
       const items = [...p.items]
-      if (!items.length) return { ...p, items: [it, reflectionItem()] }
+      if (!items.length) return { ...p, items: [warmerItem(), ...(prevHw ? [hwReviewItem()] : []), it, reflectionItem()] }
       // a záró önreflexió mindig az utolsó marad
       const last = items[items.length - 1]
       if (last.tags?.includes('reflection')) items.splice(items.length - 1, 0, it)
@@ -255,6 +257,7 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings }
         {plan.items.map((it, i) => (
           <PlanRow
             key={it.id} item={it} index={i} count={plan.items.length} start={starts[i]} cls={cls}
+            review={it.auto === 'hwreview' ? prevHw : undefined}
             open={open === it.id} onToggle={() => setOpen(open === it.id ? null : it.id)}
             onChange={(patch) => setItem(it.id, patch)}
             onRemove={() => removeItem(it)}
@@ -266,13 +269,24 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings }
 
       <div className="cr-pcards__add">
         <button className="cr-btn cr-btn--primary" onClick={addItem}><Icon.plus />Add task</button>
+        {prevHw && !hasReview && plan.items.length > 0 && (
+          <button className="cr-btn" onClick={() => setPlan((p) => {
+            const items = [...p.items]
+            const at = items[0]?.tags?.includes('warmer') ? 1 : 0
+            items.splice(at, 0, hwReviewItem())
+            return { ...p, items }
+          })}><Icon.plus />Homework review ({lessonLabel(prevHw.key)})</button>
+        )}
       </div>
       <p className="cr-hint cr-plan__note">Click a row to edit details. Drag ⠿ to reorder. Add resources with Link / File, by dropping a file on the row, or pasting a screenshot (Ctrl+V). Students see the next lesson's plan on the class page.</p>
     </Sheet>
   )
 }
 
-function PlanRow({ item, index, count, start, cls, open, onToggle, onChange, onRemove, onMove, onFiles }) {
+function PlanRow({ item, index, count, start, cls, review, open, onToggle, onChange, onRemove, onMove, onFiles }) {
+  const locked = item.auto === 'hwreview'
+  // a házi-ellenőrzés tartalma: az előző óra „Future homework” lépései (csak olvasható)
+  const reviewAim = locked ? (review ? `Homework review: ${review.items.map((h) => h.aim).filter(Boolean).join(' · ') || 'homework'}` : 'Homework review (no homework set in the previous lesson)') : null
   const controls = useDragControls()
   const fileRef = useRef(null)
   const [linkForm, setLinkForm] = useState(null)
@@ -295,9 +309,11 @@ function PlanRow({ item, index, count, start, cls, open, onToggle, onChange, onR
   return (
     <Reorder.Item
       value={item} dragListener={false} dragControls={controls}
-      className={`cr-prow ${open ? 'is-open' : ''} ${item.done ? 'is-done' : ''} ${over ? 'is-over' : ''}`}
-      onPaste={(e) => { const files = [...(e.clipboardData?.files || [])]; if (files.length) { e.preventDefault(); onFiles(files) } }}
-      onDragOver={(e) => { if (e.dataTransfer?.types?.includes('Files')) { e.preventDefault(); setOver(true) } }}
+      // csak pozíció-animáció (nincs nyújtás), gyorsan
+      layout="position" transition={{ layout: { duration: 0.14, ease: 'easeOut' } }}
+      className={`cr-prow ${open ? 'is-open' : ''} ${locked ? 'is-locked' : ''} ${over ? 'is-over' : ''}`}
+      onPaste={(e) => { const files = [...(e.clipboardData?.files || [])]; if (files.length && !locked) { e.preventDefault(); onFiles(files) } }}
+      onDragOver={(e) => { if (!locked && e.dataTransfer?.types?.includes('Files')) { e.preventDefault(); setOver(true) } }}
       onDragLeave={() => setOver(false)}
       onDrop={(e) => { if (e.dataTransfer?.files?.length) { e.preventDefault(); setOver(false); onFiles([...e.dataTransfer.files]) } }}
     >
@@ -318,7 +334,9 @@ function PlanRow({ item, index, count, start, cls, open, onToggle, onChange, onR
               {item.tags.map((t) => tagOf(t)).filter(Boolean).map((t) => <span key={t.id} className="cr-tag" style={{ '--tg': t.color }}>{t.label}</span>)}
             </span>
           )}
-          <input value={item.aim} placeholder="Aim – what students will be able to do" onChange={(e) => onChange({ aim: e.target.value })} aria-label="Aim" />
+          {locked
+            ? <span className="cr-prow__locked" title={review ? `From ${lessonLabel(review.key)}` : ''}>🔒 {reviewAim}</span>
+            : <input value={item.aim} placeholder="Aim – what students will be able to do" onChange={(e) => onChange({ aim: e.target.value })} aria-label="Aim" />}
         </span>
         <span className="cr-prow__org" title={org?.label || ''}>{org ? <>{org.icon}<small>{org.label}</small></> : <small>–</small>}</span>
         <span className="cr-prow__end">
@@ -330,7 +348,35 @@ function PlanRow({ item, index, count, start, cls, open, onToggle, onChange, onR
       </div>
 
       {/* Részletek */}
-      {open && (
+      {open && locked && (
+        <div className="cr-prow__details">
+          <p className="cr-hint">🔒 Copied from the previous lesson's <b>Future homework</b>{review ? ` (${lessonLabel(review.key, { weekday: 'long', day: 'numeric', month: 'long' })})` : ''}. Edit it there.</p>
+          {review?.items.map((h) => (
+            <div key={h.id} className="cr-review">
+              <b>{h.aim || 'Homework'}</b>
+              {h.activity && <p><Linkify text={h.activity} /></p>}
+              {h.equipment && <small>🎒 {h.equipment}</small>}
+              {h.resources?.length > 0 && <div className="cr-pcard__res">{h.resources.map((r) => <Resource key={r.id} r={r} cls={cls} />)}</div>}
+            </div>
+          ))}
+          <div className="cr-pfield">
+            <span>Organisation form</span>
+            <div className="cr-pcard__kinds" role="radiogroup" aria-label="Organisation form">
+              {ORG_FORMS.map((o) => (
+                <button key={o.id} role="radio" aria-checked={item.org === o.id} className={item.org === o.id ? 'is-active' : ''}
+                  onClick={() => onChange((it) => ({ org: it.org === o.id ? '' : o.id }))}>{o.icon} {o.label}</button>
+              ))}
+            </div>
+          </div>
+          <div className="cr-prow__actions">
+            <button className="cr-iconbtn cr-iconbtn--sm" disabled={index === 0} onClick={() => onMove(-1)} aria-label="Move up">↑</button>
+            <button className="cr-iconbtn cr-iconbtn--sm" disabled={index === count - 1} onClick={() => onMove(1)} aria-label="Move down">↓</button>
+            <span className="cr-spacer" />
+            <button className="cr-btn cr-btn--danger cr-btn--sm" onClick={onRemove}><Icon.trash />Delete step</button>
+          </div>
+        </div>
+      )}
+      {open && !locked && (
         <div className="cr-prow__details">
           <label className="cr-pfield">
             <span>Activity</span>
@@ -383,7 +429,6 @@ function PlanRow({ item, index, count, start, cls, open, onToggle, onChange, onR
           <div className="cr-prow__actions">
             <button className="cr-iconbtn cr-iconbtn--sm" disabled={index === 0} onClick={() => onMove(-1)} aria-label="Move up">↑</button>
             <button className="cr-iconbtn cr-iconbtn--sm" disabled={index === count - 1} onClick={() => onMove(1)} aria-label="Move down">↓</button>
-            <label className="cr-pcard__done"><input type="checkbox" checked={Boolean(item.done)} onChange={(e) => onChange({ done: e.target.checked })} /> done</label>
             <span className="cr-spacer" />
             <button className="cr-btn cr-btn--danger cr-btn--sm" onClick={onRemove}><Icon.trash />Delete step</button>
           </div>

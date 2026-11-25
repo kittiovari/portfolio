@@ -177,6 +177,9 @@ export const addMinutes = (time, min) => {
 }
 
 export const reflectionItem = () => ({ id: uid(), minutes: 2, aim: 'Self-reflection', activity: '', org: 'individual', equipment: '', tags: ['reflection'], resources: [], done: false })
+export const warmerItem = () => ({ id: uid(), minutes: 5, aim: 'Warmer', activity: '', org: 'frontal', equipment: '', tags: ['warmer'], resources: [], done: false })
+// Az előző óra „Future homework” lépéseiből számolódik (auto: csak olvasható tartalom)
+export const hwReviewItem = () => ({ id: uid(), auto: 'hwreview', minutes: 5, aim: '', activity: '', org: 'frontal', equipment: '', tags: ['hwreview'], resources: [], done: false })
 export const newItem = () => ({ id: uid(), minutes: 5, aim: '', activity: '', org: '', equipment: '', tags: [], resources: [], done: false })
 
 // Korábbi kártyák (kind/title/note/skills) átalakítása az új szerkezetre
@@ -236,6 +239,16 @@ export function nextLessonKey(doc, now = new Date()) {
     if (date < today) return false
     return !time || addMinutes(time, len) > nowTime
   }) || null
+}
+
+// Az adott óra előtti utolsó óra, amelyben van „Future homework” lépés
+export function previousHomework(doc, key) {
+  const keys = plannedKeys(doc).filter((k) => k < key).sort().reverse()
+  for (const k of keys) {
+    const items = getPlan(doc, k).items.filter((it) => !it.auto && it.tags?.includes('homework'))
+    if (items.length) return { key: k, items }
+  }
+  return null
 }
 
 export const lessonLabel = (key, opts = { weekday: 'short', day: 'numeric', month: 'short' }) => {

@@ -40,9 +40,27 @@ export default async (req, context) => {
     const todayKey = dayKey()
     const planKey = Object.keys(plansAll).filter((k) => k.slice(0, 10) >= todayKey && (plansAll[k]?.items?.length)).sort()[0] || null
     const p = planKey ? plansAll[planKey] : null
+    // Homework review: az előző óra „Future homework” lépéseinek tartalma
+    const prevHw = (() => {
+      if (!planKey) return []
+      const keys = Object.keys(plansAll).filter((k) => k < planKey).sort().reverse()
+      for (const k of keys) {
+        const hw = (plansAll[k]?.items || []).map(normItem).filter((it) => !it.auto && it.tags?.includes('homework'))
+        if (hw.length) return hw
+      }
+      return []
+    })()
+    const resolve = (it) => (it.auto === 'hwreview' ? {
+      ...it,
+      aim: prevHw.length ? `Homework review: ${prevHw.map((h) => h.aim).filter(Boolean).join(' · ')}` : 'Homework review',
+      activity: prevHw.map((h) => h.activity).filter(Boolean).join('
+'),
+      equipment: prevHw.map((h) => h.equipment).filter(Boolean).join(', '),
+      resources: prevHw.flatMap((h) => h.resources || []),
+    } : it)
     const plan = p ? {
       title: String(p.title || ''),
-      items: (p.items || []).map(normItem).map((it) => ({
+      items: (p.items || []).map(normItem).map(resolve).map((it) => ({
         id: it.id, minutes: Number(it.minutes) || 0, aim: it.aim || '', activity: it.activity || '', org: it.org || '', equipment: it.equipment || '',
         tags: it.tags || [], done: Boolean(it.done),
         resources: (it.resources || []).map((r) => (r.type === 'file'

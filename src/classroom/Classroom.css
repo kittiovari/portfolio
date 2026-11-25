@@ -857,3 +857,15 @@ span.cr-sk { cursor: default; }
 }
 .cr-prow__line { cursor: pointer; }
 .cr-prow__line input { cursor: text; }
+
+/* Zárolt (automatikus) házi-ellenőrzés */
+.cr-prow.is-locked { background: #F7F3EC; }
+.cr-prow__locked { display: block; padding: 0.3rem 0.45rem; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cr-review { display: flex; flex-direction: column; gap: 0.3rem; padding: 0.6rem 0.8rem; border-radius: 12px; background: #fff; border: 1px solid var(--line); }
+.cr-review p { white-space: pre-wrap; font-size: 0.92rem; }
+.cr-review small { color: var(--muted); }
+
+/* Részletek: rövid, finom beúszás */
+.cr-prow__details { animation: cr-details-in 0.14s ease-out; }
+@keyframes cr-details-in { from { opacity: 0; transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .cr-prow__details { animation: none; } }
