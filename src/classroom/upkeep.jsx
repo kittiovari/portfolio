@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Icon } from './ui.jsx'
+import { Icon, Sheet } from './ui.jsx'
 import { Art, fileArt } from './art.jsx'
-import { download } from './model.js'
+import { download, CLASSES } from './model.js'
 
 /*
   Fenntarthatóság: tanévek archívuma, biztonsági mentés, tárhely (fájlok).
@@ -128,6 +128,101 @@ export function FilesPanel({ doc, cls }) {
           {!files.length && <li className="cr-muted">No uploaded files yet.</li>}
         </ul>
       )}
+    </>
+  )
+}
+
+// ── Osztálynyilvántartás (a tanári felületről bővíthető) ──
+let classCache = null
+export function useClassList() {
+  const [list, setList] = useState(classCache || CLASSES)
+  const [loaded, setLoaded] = useState(Boolean(classCache))
+  const refresh = async () => {
+    try {
+      const res = await fetch('/api/classes', { credentials: 'same-origin', cache: 'no-store' })
+      if (!res.ok) return
+      const { classes = [] } = await res.json()
+      if (classes.length) {
+        classCache = classes.map((c) => ({ ...c, area: `language-${c.id}` }))
+        setList(classCache)
+      }
+    } catch { /* marad az alap */ } finally { setLoaded(true) }
+  }
+  useEffect(() => { refresh() }, [])
+  return { list, refresh, loaded }
+}
+
+const slug = (s) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '').slice(0, 12)
+
+export function AddClassSheet({ taken = [], onClose, onAdded }) {
+  const [label, setLabel] = useState('')
+  const [id, setId] = useState('')
+  const [touched, setTouched] = useState(false)
+  const [pw, setPw] = useState('')
+  const [msg, setMsg] = useState('')
+  const [busy, setBusy] = useState(false)
+  const theId = touched ? id : slug(label)
+  const ok = label.trim() && /^[a-z0-9]{1,12}$/.test(theId) && !taken.includes(theId) && pw.trim().length >= 6
+  const submit = async (e) => {
+    e.preventDefault()
+    if (!ok) return
+    setBusy(true); setMsg('')
+    try {
+      const res = await fetch('/api/classes', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: theId, label: label.trim(), password: pw }) })
+      if (res.status === 409) throw new Error('This short name is taken.')
+      if (!res.ok) throw new Error('Could not add the class.')
+      onAdded(theId)
+    } catch (err) { setMsg(err.message) } finally { setBusy(false) }
+  }
+  return (
+    <Sheet title="New class" onClose={onClose}>
+      <form className="cr-form" onSubmit={submit}>
+        <label className="cr-field"><span>Name (shown everywhere)</span><input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="NYEK10A" maxLength={24} autoFocus /></label>
+        <label className="cr-field"><span>Address · kittipedia.hu/nyelvoktatas/<b>{theId || '…'}</b></span>
+          <input value={theId} onChange={(e) => { setTouched(true); setId(slug(e.target.value)) }} maxLength={12} />
+        </label>
+        {taken.includes(theId) && <p className="cr-codeform__err">This short name is taken.</p>}
+        <label className="cr-field"><span>Student password (min. 6 characters) – the class uses it to open its page</span>
+          <input value={pw} onChange={(e) => setPw(e.target.value)} type="text" autoComplete="off" spellCheck="false" />
+        </label>
+        {msg && <p className="cr-codeform__err">{msg}</p>}
+        <div className="cr-form__actions"><span className="cr-spacer" /><button className="cr-btn cr-btn--primary" type="submit" disabled={!ok || busy}><Icon.plus />Add class</button></div>
+      </form>
+    </Sheet>
+  )
+}
+
+// ── Class settings: név, diákjelszó, elrejtés ──
+export function AccessPanel({ cls, meta, onChanged }) {
+  const [label, setLabel] = useState(meta?.label || '')
+  const [pw, setPw] = useState('')
+  const [msg, setMsg] = useState('')
+  const patch = async (body, done) => {
+    setMsg('')
+    const res = await fetch('/api/classes', { method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: cls, ...body }) })
+    if (!res.ok) { setMsg('Could not save.'); return }
+    setMsg(done); onChanged?.()
+  }
+  return (
+    <>
+      <h3 className="cr-settings__h">Class page access</h3>
+      <div className="cr-upkeep">
+        <p className="cr-muted">Students open kittipedia.hu/nyelvoktatas/{cls} with the class password, then their own report with their personal code.</p>
+        <div className="cr-upkeep__row">
+          <input className="cr-upkeep__input" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={24} aria-label="Class name" />
+          <button className="cr-btn cr-btn--sm" disabled={!label.trim() || label === meta?.label} onClick={() => patch({ label: label.trim() }, 'Name saved.')}>Rename</button>
+        </div>
+        <div className="cr-upkeep__row">
+          <input className="cr-upkeep__input" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="New student password (min. 6)" autoComplete="off" spellCheck="false" aria-label="New student password" />
+          <button className="cr-btn cr-btn--sm" disabled={pw.trim().length < 6} onClick={() => { patch({ password: pw }, 'Password changed – tell the class.'); setPw('') }}>Set password</button>
+        </div>
+        <div className="cr-upkeep__row">
+          <button className="cr-btn cr-btn--sm" onClick={() => patch({ archived: !meta?.archived }, meta?.archived ? 'Class shown again.' : 'Class hidden – its data stays.')}>
+            {meta?.archived ? 'Show class again' : 'Hide class (no longer taught)'}
+          </button>
+        </div>
+        {msg && <p className="cr-muted" role="status">{msg}</p>}
+      </div>
     </>
   )
 }

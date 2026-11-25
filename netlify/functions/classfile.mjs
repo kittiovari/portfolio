@@ -14,7 +14,7 @@ const ALLOWED = /^(image\/(png|jpeg|gif|webp)|audio\/[a-z0-9.+-]+|video\/(mp4|we
 
 export default async (req, context) => {
   const { cls, id } = context?.params || {}
-  if (!isClass(cls)) return json(404, { error: 'class' })
+  if (!(await isClass(cls))) return json(404, { error: 'class' })
   const teacher = hasSession(req, 'teacher')
 
   try {

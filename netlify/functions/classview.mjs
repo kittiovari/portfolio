@@ -32,7 +32,7 @@ const SHORT = ['07:10', '07:50', '08:35', '09:20', '10:05', '10:50', '11:45', '1
 export default async (req, context) => {
   if (req.method !== 'GET') return json(405, { error: 'method' }, { Allow: 'GET' })
   const cls = context?.params?.cls
-  if (!isClass(cls)) return json(404, { error: 'class' })
+  if (!(await isClass(cls))) return json(404, { error: 'class' })
   if (!hasSession(req, `language-${cls}`) && !hasSession(req, 'teacher')) return json(401, { error: 'locked' })
 
   try {

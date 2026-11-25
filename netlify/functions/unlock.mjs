@@ -5,6 +5,7 @@ import {
   json, sameOrigin, clientIp,
 } from '../lib/security.mjs'
 import { lockedFor, registerFailure, registerSuccess } from '../lib/rateLimit.mjs'
+import { loadRegistry } from '../lib/classroomStore.mjs'
 
 export default async (req, context) => {
   if (req.method !== 'POST') return json(405, { error: 'method' }, { Allow: 'POST' })
@@ -24,7 +25,12 @@ export default async (req, context) => {
   const wait = await lockedFor(ip, area)
   if (wait > 0) return json(429, { error: 'locked', retryAfter: wait }, { 'Retry-After': String(wait) })
 
-  const stored = areaPasswordHash(area)
+  let stored = areaPasswordHash(area)
+  if (area.startsWith('language-')) {
+    const c = (await loadRegistry()).find((x) => `language-${x.id}` === area)
+    if (!c) return json(400, { error: 'area' })
+    if (c.pw) stored = c.pw
+  }
   if (!stored) {
     // Nincs beállítva jelszó → zárva marad (biztonságos alapállapot)
     return json(503, { error: 'not-configured' })

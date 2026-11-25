@@ -12,7 +12,8 @@ import { PlanEditor, ClassSettings, LessonBoard } from '../classroom/plan.jsx'
 import { SessionSetup, SessionPlayer } from '../classroom/session.jsx'
 import { useClassroom } from '../classroom/useClassroom.js'
 import { SkillArt } from '../classroom/art.jsx'
-import { useArchives } from '../classroom/upkeep.jsx'
+import { useArchives, useClassList, AddClassSheet } from '../classroom/upkeep.jsx'
+import { classArt } from '../components/AreaIllustrations.jsx'
 import SeasonScene from '../classroom/SeasonScene.jsx'
 import Deskmates from '../classroom/Deskmates.jsx'
 import { ATTENDANCE, CLASSES, dayKey, fullName, pickName, getPlan, stepSkills, withSkeleton, skillByKey, lessonLabel, nextLessonKey, pointsBy, sortStudents, uid } from '../classroom/model.js'
@@ -32,14 +33,17 @@ const STATUS = {
 export function ClassroomIndex() {
   let last = '9b'
   try { last = localStorage.getItem('cr-class') || '9b' } catch { /* */ }
-  if (!CLASSES.some((c) => c.id === last)) last = '9b'
+  if (!/^[a-z0-9]{1,12}$/.test(last)) last = '9b'
   return <Navigate to={`/osztalyterem/${last}`} replace />
 }
 
 export default function Classroom() {
   const { cls } = useParams()
   const navigate = useNavigate()
-  const meta = CLASSES.find((c) => c.id === cls)
+  const { list: classList, refresh: refreshClasses, loaded: classesLoaded } = useClassList()
+  const meta = classList.find((c) => c.id === cls)
+  // ismeretlen (pl. törölt) osztály → az első
+  useEffect(() => { if (classesLoaded && !meta && classList[0]) navigate(`/osztalyterem/${classList[0].id}`, { replace: true }) }, [classesLoaded, meta]) // eslint-disable-line react-hooks/exhaustive-deps
   const { doc, status, update, retry, reload } = useClassroom(meta ? cls : '9b')
   // az archivált tanévek eseményei is a riportokba kerülnek (tanéveken átívelő kép)
   const archives = useArchives(meta ? cls : '9b', doc?.previousYears || [])
@@ -140,8 +144,8 @@ export default function Classroom() {
       <div className="cr-top__left">
         <Link to="/" className="cr-back" aria-label="Back to Kittipedia"><Icon.back /></Link>
         <div className="cr-classes" role="tablist" aria-label="Class">
-          {CLASSES.map((c) => {
-            const Art = profileArt[c.area]
+          {classList.filter((c) => !c.archived || c.id === cls).map((c) => {
+            const Art = classArt(c.area)
             return (
               <button key={c.id} role="tab" aria-selected={c.id === cls}
                 className={`cr-class ${c.id === cls ? 'is-active' : ''}`}
@@ -151,6 +155,7 @@ export default function Classroom() {
               </button>
             )
           })}
+          <button className="cr-iconbtn cr-class__add" onClick={() => setModal({ kind: 'addclass' })} aria-label="Add a class" title="Add a class"><Icon.plus /></button>
         </div>
       </div>
       <div className="cr-top__right">
@@ -410,7 +415,8 @@ export default function Classroom() {
         {modal?.kind === 'tool' && modal.id === 'directions' && <DirectionsTool key="dir" doc={doc} update={update} onClose={closeModal} onBack={backToKit} />}
         {modal?.kind === 'tool' && modal.id === 'tps' && <TpsTool key="tps" doc={doc} update={update} onClose={closeModal} onBack={backToKit} />}
         {modal?.kind === 'tool' && modal.id === 'today' && <PlanEditor key="today" doc={doc} update={update} cls={cls} initialKey={modal.key} onClose={closeModal} onBack={modal.fromKit ? backToKit : undefined} onOpenSettings={() => setModal({ kind: 'settings' })} />}
-        {modal?.kind === 'settings' && <ClassSettings key="settings" doc={doc} update={update} onClose={closeModal} className={meta.label} cls={cls} onReload={reload} />}
+        {modal?.kind === 'settings' && <ClassSettings key="settings" doc={doc} update={update} onClose={closeModal} className={meta.label} cls={cls} onReload={reload} meta={meta} onClassesChanged={refreshClasses} />}
+        {modal?.kind === 'addclass' && <AddClassSheet key="addclass" taken={classList.map((c) => c.id)} onClose={closeModal} onAdded={async (id) => { await refreshClasses(); closeModal(); navigate(`/osztalyterem/${id}`) }} />}
       </AnimatePresence>
 
       {/* Időzítő és zene: futás közben teljes képernyő ↔ kompakt */}

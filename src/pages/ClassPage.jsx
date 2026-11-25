@@ -1,7 +1,8 @@
 import { lazy, Suspense } from 'react'
 import { Link } from 'react-router-dom'
 import { useLanguage, useTranslation } from '../i18n/LanguageContext.jsx'
-import { profileArt } from '../components/AreaIllustrations.jsx'
+import { profileArt, classArt } from '../components/AreaIllustrations.jsx'
+import { LANGUAGE_PROFILES } from '../lib/unlock.js'
 import '../components/Hero.css'
 import './Landing.css'
 
@@ -16,8 +17,8 @@ const ClassBoard = lazy(() => import('../classroom/ClassBoard.jsx'))
 function ClassPage({ id }) {
   const { language, setLanguage } = useLanguage()
   const t = useTranslation()
-  const title = t.topics.classes?.[id]?.title ?? id
-  const Art = profileArt[`language-${id}`]
+  const title = t.topics.classes?.[id]?.title ?? LANGUAGE_PROFILES.find((p) => p.id === id)?.label ?? id.toUpperCase()
+  const Art = classArt(`language-${id}`)
   const TeacherArt = profileArt.teacher
 
   return (

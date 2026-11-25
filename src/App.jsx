@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom'
 import Landing from './pages/Landing.jsx'
 import UX from './pages/UX.jsx'
 import Topic from './pages/Topic.jsx'
@@ -10,7 +10,7 @@ const Classroom = lazy(() => import('./pages/Classroom.jsx'))
 const ClassroomIndex = lazy(() => import('./pages/Classroom.jsx').then((m) => ({ default: m.ClassroomIndex })))
 const SpotifyCallback = lazy(() => import('./classroom/session.jsx').then((m) => ({ default: m.SpotifyCallback })))
 const lazyEl = (el) => <Suspense fallback={<div className="home" aria-busy="true" />}>{el}</Suspense>
-import { AREAS, fetchContent, refreshSession, unlockedLanguageAreas } from './lib/unlock.js'
+import { areaPath, fetchContent, refreshSession, unlockedLanguageAreas } from './lib/unlock.js'
 import { useProtectedContent } from './i18n/LanguageContext.jsx'
 
 // Oldalváltáskor az új oldal tetejére ugrunk; #horgonynál a horgonyhoz.
@@ -78,13 +78,20 @@ function LanguageHub() {
     refreshSession().then(() => {
       if (!alive) return
       const open = unlockedLanguageAreas()
-      setTarget(open.length === 1 ? AREAS[open[0]].path : null)
+      setTarget(open.length === 1 ? areaPath(open[0]) : null)
     })
     return () => { alive = false }
   }, [])
   if (target === undefined) return <div className="home" aria-busy="true" />
   if (target) return <Navigate to={target} replace />
   return <Landing gateArea="language" />
+}
+
+// Bármely nyelvi csoport oldala (az osztálynyilvántartás alapján) – saját jelszóval
+function ClassRoute() {
+  const { id = '' } = useParams()
+  if (!/^[a-z0-9]{1,12}$/.test(id)) return <Navigate to="/nyelvoktatas" replace />
+  return <Gated area={`language-${id}`} key={`language-${id}`}><ClassPage id={id} /></Gated>
 }
 
 function App() {
@@ -95,8 +102,7 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/ux" element={<Gated area="ux" key="ux"><UX /></Gated>} />
         <Route path="/nyelvoktatas" element={<LanguageHub />} />
-        <Route path="/nyelvoktatas/9b" element={<Gated area="language-9b" key="language-9b"><ClassPage id="9b" /></Gated>} />
-        <Route path="/nyelvoktatas/9d" element={<Gated area="language-9d" key="language-9d"><ClassPage id="9d" /></Gated>} />
+        <Route path="/nyelvoktatas/:id" element={<ClassRoute />} />
         <Route path="/muveszetterapia" element={<Gated area="arttherapy" key="arttherapy"><Topic topic="arttherapy" /></Gated>} />
         {/* Tanári Osztályterem (pontozás, jelenlét, órai eszközök) – külön tanári jelszóval */}
         <Route path="/osztalyterem" element={<Gated area="teacher" key="teacher">{lazyEl(<ClassroomIndex />)}</Gated>} />

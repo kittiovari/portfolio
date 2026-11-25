@@ -3,7 +3,7 @@ import { Reorder, useDragControls } from 'framer-motion'
 import { Sheet, Icon } from './ui.jsx'
 import { Art, SkillArt, fileArt } from './art.jsx'
 import { KretaSheet } from './kreta.jsx'
-import { YearPanel, FilesPanel } from './upkeep.jsx'
+import { YearPanel, FilesPanel, AccessPanel } from './upkeep.jsx'
 import {
   LESSON_MIN, ORG_FORMS, TAGS, WEEKDAYS, addMinutes, dayKey, getPlan, lessonLabel, lessonTimeline, newItem, nextLessonKey,
   splitKey, tagOf, uid, previousHomework, withSkeleton, TASK_TAGS, plannedKeys, stepSkills,
@@ -560,7 +560,7 @@ function OrgPicker({ item, onChange }) {
 
 // ── Osztálybeállítások: heti órarend (csengetési rend alapján), rövidített napok, tanév rendje ──
 const SCHOOL_DAYS = WEEKDAYS.filter((w) => w.id <= 5)
-export function ClassSettings({ doc, update, onClose, className = '', cls, onReload }) {
+export function ClassSettings({ doc, update, onClose, className = '', cls, onReload, meta, onClassesChanged }) {
   const sched = doc.schedule || []
   const has = (day, p) => sched.some((s) => s.day === day && (s.period === p || (!Number.isInteger(s.period) && s.time === BELLS.normal[p][0])))
   const toggle = (day, p) => update((d) => {
@@ -665,6 +665,7 @@ export function ClassSettings({ doc, update, onClose, className = '', cls, onRel
         <Icon.plus />Add unit
       </button>
 
+      <AccessPanel cls={cls} meta={meta} onChanged={onClassesChanged} />
       <YearPanel doc={doc} cls={cls} onReload={() => { onClose(); onReload?.() }} />
       <FilesPanel doc={doc} cls={cls} />
     </Sheet>

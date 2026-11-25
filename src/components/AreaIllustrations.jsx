@@ -427,6 +427,22 @@ function TeacherArt(props) {
   )
 }
 
+// Új (felületről felvett) csoport: nyitott könyv babszem-figurával
+function ClassGenericArt(props) {
+  return (
+    <svg {...profileCommon} {...props}>
+      <path d="M22 84c12-7 26-7 38 0 12-7 26-7 38 0V40c-12-7-26-7-38 0-12-7-26-7-38 0z" fill="#FBF4DC" />
+      <path d="M60 40v44" />
+      <path d="M30 52c7-3 15-3 22 0M30 62c7-3 15-3 22 0M68 52c7-3 15-3 22 0M68 62c7-3 15-3 22 0" opacity=".5" />
+      <path d="M50 40c0-12 4-22 10-22s10 10 10 22" fill="#E0B33A" />
+      <circle cx="56.5" cy="29" r="1.8" fill="#241422" stroke="none" />
+      <circle cx="63.5" cy="29" r="1.8" fill="#241422" stroke="none" />
+      <path d="M57 34q3 2.2 6 0" />
+    </svg>
+  )
+}
+export const classArt = (area) => profileArt[area] || (area?.startsWith('language-') ? ClassGenericArt : null)
+
 export const profileArt = {
   'language-9b': SpaghettiArt,
   'language-9d': SalsaDancerArt,

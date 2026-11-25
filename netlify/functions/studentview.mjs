@@ -15,7 +15,7 @@ export default async (req, context) => {
   if (req.method !== 'POST') return json(405, { error: 'method' }, { Allow: 'POST' })
   if (!sameOrigin(req)) return json(403, { error: 'origin' })
   const cls = context?.params?.cls
-  if (!isClass(cls)) return json(404, { error: 'class' })
+  if (!(await isClass(cls))) return json(404, { error: 'class' })
   if (!hasSession(req, `language-${cls}`) && !hasSession(req, 'teacher')) return json(401, { error: 'locked' })
 
   let body

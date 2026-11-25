@@ -11,7 +11,11 @@ export const AREAS = {
   teacher: { path: '/osztalyterem' },
 }
 
-// A Nyelvoktatás csempe mögötti csoportok (profilválasztó a jelszómodalban)
+// Egy terület oldala (a nyelvi csoportoké dinamikus: /nyelvoktatas/<id>)
+export const areaPath = (area) => AREAS[area]?.path || (area?.startsWith('language-') ? `/nyelvoktatas/${area.slice(9)}` : '/')
+
+// A Nyelvoktatás csempe mögötti csoportok (profilválasztó a jelszómodalban).
+// Az alap lista a 9b/9d; a többit a szerver osztálynyilvántartása adja (loadClasses).
 export const LANGUAGE_PROFILES = [
   { area: 'language-9b', id: '9b', label: 'NYEK9B' },
   { area: 'language-9d', id: '9d', label: 'NYEK9D' },
@@ -38,7 +42,21 @@ export function markUnlocked(area) {
   emit()
 }
 
+export async function loadClasses() {
+  try {
+    const res = await fetch('/api/classes', { credentials: 'same-origin', cache: 'no-store' })
+    if (!res.ok) return
+    const { classes = [] } = await res.json()
+    const teacher = LANGUAGE_PROFILES.filter((p) => p.area === 'teacher')
+    const groups = classes.filter((c) => !c.archived).map((c) => ({ area: `language-${c.id}`, id: c.id, label: c.label }))
+    if (!groups.length) return
+    LANGUAGE_PROFILES.splice(0, LANGUAGE_PROFILES.length, ...groups, ...teacher)
+    emit()
+  } catch { /* marad az alap lista */ }
+}
+
 export async function refreshSession() {
+  loadClasses()
   try {
     const res = await fetch('/api/session', { credentials: 'same-origin', cache: 'no-store' })
     if (res.ok) {

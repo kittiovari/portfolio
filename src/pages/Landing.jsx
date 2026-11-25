@@ -5,7 +5,7 @@ import { useLanguage, useTranslation } from '../i18n/LanguageContext.jsx'
 import { areaArt } from '../components/AreaIllustrations.jsx'
 import PasswordModal from '../components/PasswordModal.jsx'
 import {
-  AREAS, LANGUAGE_PROFILES, isLanguageArea, isUnlocked, unlockedLanguageAreas,
+  areaPath, LANGUAGE_PROFILES, isLanguageArea, isUnlocked, unlockedLanguageAreas,
   refreshSession, onSessionChange,
 } from '../lib/unlock.js'
 import '../components/Hero.css'
@@ -60,11 +60,11 @@ function Landing({ gateArea = null, onUnlock }) {
     if (key === 'language') {
       // Ha pontosan egy csoport van feloldva, egyenesen annak az oldalára megyünk
       const open = unlockedLanguageAreas()
-      if (open.length === 1) navigate(AREAS[open[0]].path)
+      if (open.length === 1) navigate(areaPath(open[0]))
       else setPending('language')
       return
     }
-    if (isUnlocked(key)) navigate(AREAS[key].path)
+    if (isUnlocked(key)) navigate(areaPath(key))
     else setPending(key)
   }
 
@@ -72,7 +72,7 @@ function Landing({ gateArea = null, onUnlock }) {
   const handleSuccess = (unlockedArea) => {
     setPending(null)
     if (gateArea && unlockedArea === gateArea) onUnlock?.()
-    else navigate(AREAS[unlockedArea].path)
+    else navigate(areaPath(unlockedArea))
   }
 
   const handleClose = () => {

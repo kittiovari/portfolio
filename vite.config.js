@@ -14,6 +14,7 @@ const API_ROUTES = [
   { re: /^\/api\/classview\/([^/]+)$/, fn: 'classview', keys: ['cls'] },
   { re: /^\/api\/studentview\/([^/]+)$/, fn: 'studentview', keys: ['cls'] },
   { re: /^\/api\/school$/, fn: 'school', keys: [] },
+  { re: /^\/api\/classes$/, fn: 'classes', keys: [] },
   { re: /^\/api\/classarchive\/([^/]+)(?:\/([^/]+))?$/, fn: 'classarchive', keys: ['cls', 'year'] },
   { re: /^\/api\/classfile\/([^/]+)(?:\/([^/]+))?$/, fn: 'classfile', keys: ['cls', 'id'] },
   { re: /^\/api\/asset\/([^/]+)\/([^/]+)$/, fn: 'asset', keys: ['area', 'name'] },

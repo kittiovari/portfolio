@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { motion, AnimatePresence, useAnimationControls } from 'framer-motion'
 import { useTranslation } from '../i18n/LanguageContext.jsx'
 import { checkPassword, isUnlocked } from '../lib/unlock.js'
-import { areaArt, profileArt } from './AreaIllustrations.jsx'
+import { areaArt, classArt } from './AreaIllustrations.jsx'
 import './PasswordModal.css'
 
 const ease = [0.22, 1, 0.36, 1]
@@ -141,7 +141,7 @@ function PasswordModal({ area, title, profiles = null, initialProfile = null, on
         {profiles && (
           <div className="pw-profiles" role="radiogroup" aria-label={t.gate.choose}>
             {profiles.map((p) => {
-              const PArt = profileArt[p.area]
+              const PArt = classArt(p.area)
               const active = p.area === selected
               return (
                 <button

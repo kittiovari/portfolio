@@ -6,8 +6,31 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { seal, open } from './security.mjs'
 
-export const CLASSES = ['9b', '9d']
-export const isClass = (c) => CLASSES.includes(c)
+// Osztálynyilvántartás (Blobs: 'classes'): [{ id, label, pw?, createdAt, archived? }]
+// A 9b és 9d az alap; újak a tanári felületről vehetők fel, saját diákjelszóval
+// (scrypt-hash a nyilvántartásban – nem kell Netlify-beállítás hozzá).
+export const DEFAULT_CLASSES = [{ id: '9b', label: 'NYEK9B' }, { id: '9d', label: 'NYEK9D' }]
+export const CLASS_ID = /^[a-z0-9]{1,12}$/
+let regCache = null
+export async function loadRegistry() {
+  if (regCache && regCache.at > Date.now() - 15000) return regCache.list
+  let list = null
+  try {
+    const raw = await readRaw('classes')
+    list = raw ? JSON.parse(open(raw).toString('utf8')) : null
+  } catch { list = null }
+  if (!Array.isArray(list) || !list.length) list = DEFAULT_CLASSES.map((c) => ({ ...c }))
+  regCache = { at: Date.now(), list }
+  return list
+}
+export async function saveRegistry(list) {
+  await writeRaw('classes', seal(Buffer.from(JSON.stringify(list), 'utf8')))
+  regCache = { at: Date.now(), list }
+}
+export async function isClass(c) {
+  if (typeof c !== 'string' || !CLASS_ID.test(c)) return false
+  return (await loadRegistry()).some((x) => x.id === c)
+}
 
 let storePromise = null
 async function getStoreSafe() {

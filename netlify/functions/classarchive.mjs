@@ -14,7 +14,7 @@ const gz = (req, body) => (/\bgzip\b/.test(req.headers.get('accept-encoding') ||
 
 export default async (req, context) => {
   const { cls, year } = context?.params || {}
-  if (!isClass(cls)) return json(404, { error: 'class' })
+  if (!(await isClass(cls))) return json(404, { error: 'class' })
   if (!hasSession(req, 'teacher')) return json(401, { error: 'locked' })
   try {
     if (req.method === 'GET' && !year) return json(200, { years: await listArchiveYears(cls) })
