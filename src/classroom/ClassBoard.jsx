@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AnimatePresence } from 'framer-motion'
 import Avatar, { ClassAvatar, AvatarThemeContext } from './Avatar.jsx'
 import { Sheet, Icon } from './ui.jsx'
 import { sortStudents, fullName, pickName, lessonLabel } from './model.js'
@@ -19,9 +18,9 @@ const codeKey = (cls) => `kp-code-${cls}`
 const ssGet = (k) => { try { return sessionStorage.getItem(k) } catch { return null } }
 const ssSet = (k, v) => { try { if (v) sessionStorage.setItem(k, v); else sessionStorage.removeItem(k) } catch { /* */ } }
 
-async function fetchMe(cls, code) {
+async function fetchMe(cls, code, id) {
   const res = await fetch(`/api/studentview/${cls}`, {
-    method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }),
+    method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code, id }),
   })
   const body = await res.json().catch(() => ({}))
   if (!res.ok) throw Object.assign(new Error(body.error || res.status), { body, status: res.status })
@@ -34,7 +33,7 @@ export default function ClassBoard({ cls }) {
   const [open, setOpen] = useState(null) // { ids, title, student?, isClass? }
   const [lessonKey, setLessonKey] = useState(null)
   const [me, setMe] = useState(null)
-  const [asking, setAsking] = useState(false)
+  const [asking, setAsking] = useState(null) // annak a diáknak az adatai, akinek a kódját kérjük
 
   useEffect(() => {
     let alive = true
@@ -70,27 +69,29 @@ export default function ClassBoard({ cls }) {
 
   // a riportok „doc”-ja: nyilvános (csak pozitív) és saját (minden adatom)
   const publicDoc = useMemo(() => data && ({
-    students: data.students, events: data.events,
+    students: [], events: data.events,
     skills: { positive: (data.skills || []).filter((k) => k.value > 0), negative: (data.skills || []).filter((k) => k.value < 0) },
     calendar: data.calendar || {}, units: data.units || [], shortDays: data.shortDays || [], resets: {},
   }), [data])
   const myDoc = useMemo(() => publicDoc && me && ({
-    ...publicDoc, events: [...publicDoc.events.filter((e) => e.s !== me.id), ...me.events], resets: { [me.id]: me.resets || {} },
-  }), [publicDoc, me])
+    ...publicDoc, students: data.students.filter((s) => s.id === me.id), events: me.events, resets: { [me.id]: me.resets || {} },
+  }), [publicDoc, me, data])
 
   if (!data) return error ? <p className="cr-hint">Couldn't load the class page right now. Please try again later.</p> : <div className="cr-skeleton" />
 
   const students = sortStudents(data.students)
   const total = Object.values(points).reduce((a, b) => a + b, 0)
+  // diák avatarja: a saját kódjával nyílik a saját riportja
+  const openStudent = (s) => (me?.id === s.id ? setOpen({ ids: [s.id], title: fullName(s), student: s }) : setAsking(s))
   const meStudent = me && data.students.find((s) => s.id === me.id)
   const lessons = data.lessons || []
   const key = lessonKey || data.planKey || lessons[lessons.length - 1]?.key
   const lesson = lessons.find((l) => l.key === key)
   // a legutóbbi (ma vagy korábban kiadott) házi és a határideje (a következő óra)
-  const today = new Date().toISOString().slice(0, 10)
   const isHw = (it) => it.role === 'homework' || (!it.role && it.tags?.includes('homework'))
+  // a kiválasztott órán kiadott házi (határidő: a következő óra); a dátumválasztóval együtt vált
   const homework = (() => {
-    const given = [...lessons].reverse().find((l) => l.date <= today && l.items.some((it) => isHw(it) && (it.aim || it.activity || it.resources?.length)))
+    const given = lesson && lesson.items.some((it) => isHw(it) && (it.aim || it.activity || it.resources?.length)) ? lesson : null
     if (!given) return null
     const due = lessons.find((l) => l.key > given.key)?.key || null
     return { items: given.items.filter((it) => isHw(it) && (it.aim || it.activity || it.resources?.length)), due }
@@ -100,6 +101,14 @@ export default function ClassBoard({ cls }) {
   return (
     <AvatarThemeContext.Provider value={data.avatarTheme || 'monsters'}>
     <div className="cr cr-board">
+      {lessons.length > 0 && (
+      <label className="cr-board__pick">
+        <span className="sr-only">Lesson</span>
+        <select value={key} onChange={(e) => setLessonKey(e.target.value)}>
+          {lessons.map((l) => <option key={l.key} value={l.key}>{lessonLabel(l.key, { weekday: 'short', day: 'numeric', month: 'short' }, publicDoc)}{l.key === data.planKey ? (data.isToday ? ' · today' : ' · next') : ''}</option>)}
+        </select>
+      </label>
+      )}
       {homework && (
         <div className="cr-board__info cr-board__info--hw">
           <div className="cr-board__card cr-hwcard">
@@ -116,12 +125,6 @@ export default function ClassBoard({ cls }) {
       )}
       {lesson && (
         <div className="cr-board__lesson">
-          <label className="cr-board__pick">
-            <span className="sr-only">Lesson</span>
-            <select value={key} onChange={(e) => setLessonKey(e.target.value)}>
-              {lessons.map((l) => <option key={l.key} value={l.key}>{lessonLabel(l.key, { weekday: 'short', day: 'numeric', month: 'short' }, publicDoc)}{l.key === data.planKey ? (data.isToday ? ' · today' : ' · next') : ''}</option>)}
-            </select>
-          </label>
           <PlanTimeline
             plan={lesson}
             cls={cls}
@@ -131,32 +134,26 @@ export default function ClassBoard({ cls }) {
         </div>
       )}
 
-      <div className="cr-subbar">
-        {meStudent ? (
-          <span className="cr-mebar">
-            <button className="cr-btn cr-btn--sm cr-btn--primary" onClick={() => setOpen({ ids: [meStudent.id], title: fullName(meStudent), student: meStudent })}>My report</button>
-            <button className="cr-link" onClick={signOut}>Sign out</button>
-          </span>
-        ) : (
-          <button className="cr-btn cr-btn--sm" onClick={() => setAsking(true)}><Icon.people />My report</button>
-        )}
-      </div>
+      {meStudent && (
+        <div className="cr-subbar">
+          <span className="cr-mebar"><span className="cr-muted">Signed in as <b>{meStudent.first}</b></span><button className="cr-link" onClick={signOut}>Sign out</button></span>
+        </div>
+      )}
 
       <div className="cr-main">
         {!students.length ? (
           <p className="cr-hint cr-hint--center">Your points will appear here soon.</p>
         ) : (
           <div className="cr-grid">
-            <button className="cr-tile cr-tile--class" onClick={() => setOpen({ ids: students.map((s) => s.id), title: 'Class', isClass: true })}>
+            <button className="cr-tile cr-tile--class" onClick={() => setOpen({ ids: ['class'], title: 'Class', isClass: true })}>
               <span className="cr-tile__art"><ClassAvatar /></span>
               <span className="cr-badge">{total}</span>
               <span className="cr-tile__last">&nbsp;</span>
               <span className="cr-tile__first">Class</span>
             </button>
             {students.map((s) => (
-              <button key={s.id} className={`cr-tile ${me?.id === s.id ? 'is-me' : ''}`} onClick={() => setOpen({ ids: [s.id], title: fullName(s), student: s })}>
+              <button key={s.id} className={`cr-tile ${me?.id === s.id ? 'is-me' : ''}`} onClick={() => openStudent(s)} aria-label={`${s.first} – open with personal code`}>
                 <span className="cr-tile__art"><Avatar a={s.avatar} /></span>
-                <span className={`cr-badge ${(points[s.id] || 0) === 0 ? 'is-zero' : ''}`}>{points[s.id] || 0}</span>
                 <span className="cr-tile__last">{s.last || ' '}</span>
                 <span className="cr-tile__first">{s.first}</span>
               </button>
@@ -168,7 +165,8 @@ export default function ClassBoard({ cls }) {
       {/* évszakos tájkép a lap alján – ugyanaz, mint a tanári oldalon */}
       <SeasonScene />
 
-      <AnimatePresence>
+      {/* a diákoldalon a lapok azonnal záródnak (kilépő animáció nélkül) */}
+      <>
         {open && (() => {
           const mine = me && open.student?.id === me.id
           const doc = mine ? myDoc : publicDoc
@@ -179,22 +177,21 @@ export default function ClassBoard({ cls }) {
                 <span className="cr-target__avatar">{open.student ? <Avatar a={open.student.avatar} /> : <ClassAvatar />}</span>
                 <h2>{open.title}</h2>
                 <span className={`cr-chip ${sum < 0 ? 'cr-chip--neg' : ''}`}><b>{sum}</b> point{Math.abs(sum) === 1 ? '' : 's'}</span>
-                {!mine && open.student && <span className="cr-chip cr-chip--muted">positive points</span>}
               </header>
               <div className="cr-target__content">
-                <ReportPanel doc={doc} update={null} ids={open.ids} isClass={Boolean(open.isClass)} studentId={mine ? me.id : null} publicView={!mine} />
+                <ReportPanel doc={doc} update={null} ids={open.ids} isClass={false} studentId={mine ? me.id : null} publicView={!mine} />
               </div>
             </Sheet>
           )
         })()}
-        {asking && <CodeSheet key="code" cls={cls} onClose={() => setAsking(false)} onOk={(d, code) => { ssSet(codeKey(cls), code); setMe(d); setAsking(false); const s = data.students.find((x) => x.id === d.id); if (s) setOpen({ ids: [s.id], title: fullName(s), student: s }) }} />}
-      </AnimatePresence>
+        {asking && <CodeSheet key={`code-${asking.id}`} cls={cls} student={asking} onClose={() => setAsking(null)} onOk={(d, code) => { ssSet(codeKey(cls), code); setMe(d); const s = asking; setAsking(null); setOpen({ ids: [s.id], title: fullName(s), student: s }) }} />}
+      </>
     </div>
     </AvatarThemeContext.Provider>
   )
 }
 
-function CodeSheet({ cls, onClose, onOk }) {
+function CodeSheet({ cls, student, onClose, onOk }) {
   const [code, setCode] = useState('')
   const [msg, setMsg] = useState('')
   const [busy, setBusy] = useState(false)
@@ -202,16 +199,17 @@ function CodeSheet({ cls, onClose, onOk }) {
     e.preventDefault()
     setBusy(true); setMsg('')
     try {
-      onOk(await fetchMe(cls, code), code)
+      onOk(await fetchMe(cls, code, student.id), code)
     } catch (err) {
       setMsg(err.status === 429 ? `Too many tries. Wait ${Math.ceil((err.body?.retryAfter || 900) / 60)} minutes.`
         : err.status === 401 ? `Wrong code.${err.body?.remaining != null ? ` ${err.body.remaining} tries left.` : ''}` : 'Something went wrong. Try again.')
     } finally { setBusy(false) }
   }
   return (
-    <Sheet title="My report" onClose={onClose}>
+    <Sheet title={student.first} onClose={onClose}>
       <form className="cr-form cr-codeform" onSubmit={submit}>
-        <p className="cr-muted">Type the personal code you got from your teacher. Only you can see your full report with it.</p>
+        <div className="cr-codeform__who"><Avatar a={student.avatar} /></div>
+        <p className="cr-muted">Is this you? Type your personal code from your teacher to see your own report. Nobody else can see it.</p>
         <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} autoFocus autoComplete="off" autoCapitalize="characters" spellCheck="false" maxLength={12} aria-label="Personal code" placeholder="ABC123" />
         {msg && <p className="cr-codeform__err" role="alert">{msg}</p>}
         <div className="cr-form__actions"><span className="cr-spacer" /><button className="cr-btn cr-btn--primary" type="submit" disabled={busy || code.trim().length < 6}>Open</button></div>

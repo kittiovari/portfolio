@@ -28,7 +28,10 @@ export default async (req, context) => {
 
   try {
     const doc = await loadClass(cls)
-    const s = code.length >= 6 ? (doc?.students || []).find((x) => x.code && same(norm(x.code), code)) : null
+    const want = typeof body?.id === 'string' ? body.id : null
+    const found = code.length >= 6 ? (doc?.students || []).find((x) => x.code && same(norm(x.code), code)) : null
+    // a kód csak ahhoz a diákhoz nyit, akinek az avatarjára kattintottak
+    const s = found && (!want || found.id === want) ? found : null
     if (!s) {
       const { remaining, lockedSeconds } = await registerFailure(ip, area)
       if (lockedSeconds) return json(429, { error: 'locked', retryAfter: lockedSeconds }, { 'Retry-After': String(lockedSeconds) })

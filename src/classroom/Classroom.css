@@ -1480,3 +1480,14 @@ svg.cr-art.cr-art--toast { width: 64px; height: 64px; }
 .cr-hwcard h3 { font-size: 1.25rem; }
 .cr-hwcard h3 small { display: inline-flex; padding: 0.15rem 0.6rem; border-radius: 999px; background: #3F6E9A; color: #fff; font-size: 0.78rem; }
 .cr-hwcard__item b { font-family: var(--font-heading); font-size: 1.05rem; }
+
+.cr-codeform__who { display: flex; justify-content: center; }
+.cr-codeform__who .cr-avatar { width: 84px; height: 94px; }
+.cr-board .cr-subbar { justify-content: flex-end; }
+
+/* Lesson nézet: feladatonként összevont sorok */
+.cr-lgroup { margin-top: 0.9rem; }
+.cr-lgroup h5 { margin: 0 0 0.2rem; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.cr-report__list--grouped li { padding-top: 0.45rem; padding-bottom: 0.45rem; }
+.cr-report__list--grouped small { white-space: normal; line-height: 1.35; }
+.cr-report section.cr-lgroup { padding: 0; min-height: 0; }

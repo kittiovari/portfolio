@@ -330,6 +330,20 @@ function LessonView({ doc, update, ids, multi }) {
   const events = mine.filter((e) => e.l === key).sort((a, b) => a.t - b.t)
   const names = Object.fromEntries(doc.students.map((s) => [s.id, fullName(s)]))
   const removeEvent = (id) => update((d) => ({ ...d, events: d.events.filter((e) => e.id !== id) }))
+  // több diák (osztály, csoport, pár): összevont sorok – névsor csak a tanárnál
+  const grouped = multi || ids[0] === 'class'
+  const showNames = multi && doc.students.length > 0
+  const steps = []
+  for (const e of events) {
+    const title = e.sn || 'Other'
+    let st = steps.find((x) => x.title === title)
+    if (!st) { st = { title, rows: [] }; steps.push(st) }
+    let r = st.rows.find((x) => x.name === e.n)
+    if (!r) { r = { name: e.n, art: eventArtName(doc, e), n: 0, v: 0, who: [] }; st.rows.push(r) }
+    r.n += 1; r.v += e.v
+    const nm = names[e.s] ? doc.students.find((x) => x.id === e.s) : null
+    if (nm) { const label = pickName(nm, doc.students); if (!r.who.includes(label)) r.who.push(label) }
+  }
   if (!keys.length) return <Empty text="No points given in a lesson yet." />
   return (
     <>
@@ -339,19 +353,40 @@ function LessonView({ doc, update, ids, multi }) {
         </select>
       </div>
       <Totals events={events} />
-      <ul className="cr-report__list">
-        {events.map((e) => (
-          <li key={e.id}>
-            <span className="cr-report__icon"><Art name={eventArtName(doc, e)} className="cr-art" /></span>
-            <span className="cr-report__what">
-              <b>{e.n}</b>
-              <small>{multi && `${names[e.s] || '(deleted student)'} · `}{e.sn || ''}</small>
-            </span>
-            <span className={`cr-report__val ${e.v < 0 ? 'is-neg' : ''}`}>{e.v > 0 ? `+${e.v}` : e.v}</span>
-            {update && <button className="cr-iconbtn cr-iconbtn--sm" onClick={() => removeEvent(e.id)} aria-label="Undo point" title="Undo"><Icon.close /></button>}
-          </li>
-        ))}
-      </ul>
+      {grouped ? (
+        // osztály / csoport: feladatonként, azon belül kategóriánként egy sor
+        steps.map((st) => (
+          <section key={st.title} className="cr-lgroup">
+            <h5>{st.title}</h5>
+            <ul className="cr-report__list cr-report__list--grouped">
+              {st.rows.map((r) => (
+                <li key={r.name}>
+                  <span className="cr-report__icon"><Art name={r.art} className="cr-art" /></span>
+                  <span className="cr-report__what">
+                    <b>{r.name} <span className="cr-muted">×{r.n}</span></b>
+                    {showNames && <small>{r.who.join(', ')}</small>}
+                  </span>
+                  <span className={`cr-report__val ${r.v < 0 ? 'is-neg' : ''}`}>{r.v > 0 ? `+${r.v}` : r.v}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
+      ) : (
+        <ul className="cr-report__list">
+          {events.map((e) => (
+            <li key={e.id}>
+              <span className="cr-report__icon"><Art name={eventArtName(doc, e)} className="cr-art" /></span>
+              <span className="cr-report__what">
+                <b>{e.n}</b>
+                <small>{e.sn || ''}</small>
+              </span>
+              <span className={`cr-report__val ${e.v < 0 ? 'is-neg' : ''}`}>{e.v > 0 ? `+${e.v}` : e.v}</span>
+              {update && <button className="cr-iconbtn cr-iconbtn--sm" onClick={() => removeEvent(e.id)} aria-label="Undo point" title="Undo"><Icon.close /></button>}
+            </li>
+          ))}
+        </ul>
+      )}
     </>
   )
 }
@@ -508,7 +543,7 @@ const VIEWS = [
 export function ReportPanel({ doc, update, ids, isClass = false, studentId = null, publicView = false }) {
   const yearStart = periodBounds(doc, 'year', 0).from.getTime()
   const hasPast = doc.events.some((e) => e.t < yearStart)
-  const views = [...(isClass ? [{ id: 'overview', label: 'Overview' }] : []), ...VIEWS, ...(hasPast ? [{ id: 'all', label: 'All years' }] : [])]
+  const views = [...(isClass && !publicView ? [{ id: 'overview', label: 'Overview' }] : []), ...VIEWS, ...(hasPast ? [{ id: 'all', label: 'All years' }] : [])]
   const [view, setView] = useState(views[0].id)
   const multi = ids.length > 1
   return (

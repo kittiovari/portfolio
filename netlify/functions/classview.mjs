@@ -43,7 +43,8 @@ export default async (req, context) => {
     const ids = new Set(students.map((s) => s.id))
     const events = (doc.events || [])
       .filter((e) => e.v > 0 && ids.has(e.s))
-      .map((e) => ({ id: e.id, s: e.s, k: e.k, n: e.n, i: e.i, v: e.v, t: e.t, l: e.l, sn: e.sn }))
+      // névtelenül: a közös jelszóval csak osztályszintű összesítés látszik, egyéni nem
+      .map((e) => ({ id: e.id, s: 'class', k: e.k, n: e.n, i: e.i, v: e.v, t: e.t, l: e.l, sn: e.sn }))
     const today = dayKey()
     // csoportok csak arra a napra érvényesek, amikor készültek
     const groups = (doc.groups || []).map((g) => ({ id: g.id, name: g.name, ids: (g.ids || []).filter((id) => ids.has(id)) }))
