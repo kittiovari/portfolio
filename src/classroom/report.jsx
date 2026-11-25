@@ -115,10 +115,10 @@ function Totals({ events }) {
   const pos = events.filter((e) => e.v > 0).reduce((s, e) => s + e.v, 0)
   const neg = events.filter((e) => e.v < 0).reduce((s, e) => s - e.v, 0)
   return (
-    <div className="cr-report__nums">
-      <span><b className="is-pos">+{pos}</b> positive</span>
-      <span><b className="is-neg">−{neg}</b> needs work</span>
-      <span><b>{pos - neg}</b> net</span>
+    <div className="cr-stats">
+      <div className="cr-stat cr-stat--pos"><b>+{pos}</b><span>positive</span></div>
+      <div className="cr-stat cr-stat--neg"><b>−{neg}</b><span>needs work</span></div>
+      <div className="cr-stat"><b>{pos - neg}</b><span>net points</span></div>
     </div>
   )
 }
@@ -192,7 +192,7 @@ function Compare({ doc, ids, view, offset, publicView }) {
   const prev = periodBounds(doc, view, offset - 1)
   const a = metrics(doc, ids, cur.from, cur.to)
   const b = metrics(doc, ids, prev.from, prev.to)
-  if (!b.events) return <p className="cr-muted cr-compare__none">Nothing to compare with yet ({PERIOD_NAME[view]} had no points).</p>
+  if (!b.events) return <p className="cr-compare__none">No points {PERIOD_NAME[view]} – the comparison appears once there is data to compare.</p>
   const multi = ids.length > 1
   const rows = [
     { label: multi ? 'Net points / student' : 'Net points', now: a.net, before: b.net, good: 'up' },
@@ -315,7 +315,7 @@ function AllYears({ doc, ids, multi, publicView }) {
           })}
         </ul>
       </div>
-      <Donut slices={slicesOf(doc, events)} />
+      <section className="cr-rsec"><h4>Points by category</h4><Donut slices={slicesOf(doc, events)} /></section>
       <TrackedStats doc={doc} events={events} multi={multi} />
     </>
   )
@@ -369,7 +369,7 @@ function PeriodView({ doc, ids, view, multi, publicView }) {
         <>
           <Totals events={events} />
           <Compare doc={doc} ids={ids} view={view} offset={offset} publicView={publicView} />
-          <Donut slices={slicesOf(doc, events)} />
+          <section className="cr-rsec"><h4>Points by category</h4><Donut slices={slicesOf(doc, events)} /></section>
           <TrackedStats doc={doc} events={events} multi={multi} />
         </>
       )}

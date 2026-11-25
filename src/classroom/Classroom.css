@@ -1240,7 +1240,7 @@ span.cr-sk { cursor: default; }
 .cr-pnav { display: flex; align-items: center; justify-content: center; gap: 0.6rem; margin-bottom: 0.6rem; }
 .cr-pnav b { font-family: var(--font-heading); min-width: 12rem; text-align: center; }
 .cr-donut { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.4rem; margin: 0.6rem 0 1rem; }
-.cr-donut svg { width: 170px; height: 170px; flex-shrink: 0; }
+.cr-donut > svg { width: 170px; height: 170px; flex-shrink: 0; }
 .cr-donut path { transition: opacity 0.15s; cursor: default; }
 .cr-donut__num { font: 700 26px var(--font-heading, sans-serif); fill: #241422; }
 .cr-donut__lbl { font-size: 10px; fill: #6b6168; }
@@ -1305,7 +1305,7 @@ span.cr-sk { cursor: default; }
   .cr-seg--report button { white-space: nowrap; padding: 0.4rem 0.7rem; font-size: 0.85rem; }
   .cr-pnav b { min-width: 0; font-size: 0.95rem; }
   .cr-donut { justify-content: center; }
-  .cr-donut svg { width: 150px; height: 150px; }
+  .cr-donut > svg { width: 150px; height: 150px; }
   .cr-tracked, .cr-alerts, .cr-overview { padding: 0.65rem; }
   .cr-tracked__row { grid-template-columns: 1.4rem 1fr 2.4rem; }
   .cr-tracked__when { grid-column: 2 / -1; }
@@ -1370,13 +1370,13 @@ span.cr-sk { cursor: default; }
 .cr-lcard__from { display: block; font-size: 0.75rem; color: #A67C12; margin-top: 0.15rem; }
 
 /* Saját illusztrációk */
-.cr-art { width: 1.5em; height: 1.5em; flex-shrink: 0; vertical-align: -0.35em; display: inline-block; }
-.cr-art--xs { width: 1.15em; height: 1.15em; vertical-align: -0.22em; }
-.cr-art--sm { width: 1.35em; height: 1.35em; vertical-align: -0.3em; margin-right: 0.15em; }
-.cr-art--md { width: 1.8em; height: 1.8em; }
-.cr-art--lg { width: 2.2em; height: 2.2em; }
-.cr-art--xl { width: 3.2em; height: 3.2em; }
-.cr-art--toast { width: 64px; height: 64px; }
+svg.cr-art { width: 1.5em; height: 1.5em; flex-shrink: 0; vertical-align: -0.35em; display: inline-block; }
+svg.cr-art.cr-art--xs { width: 1.15em; height: 1.15em; vertical-align: -0.22em; }
+svg.cr-art.cr-art--sm { width: 1.35em; height: 1.35em; vertical-align: -0.3em; margin-right: 0.15em; }
+svg.cr-art.cr-art--md { width: 1.8em; height: 1.8em; }
+svg.cr-art.cr-art--lg { width: 2.2em; height: 2.2em; }
+svg.cr-art.cr-art--xl { width: 3.2em; height: 3.2em; }
+svg.cr-art.cr-art--toast { width: 64px; height: 64px; }
 .cr-iconpick__grid button { display: grid; place-items: center; }
 .cr-report__icon .cr-art { width: 1.7em; height: 1.7em; }
 /* Diákoldal: kiemelt következő házi */
@@ -1445,3 +1445,17 @@ span.cr-sk { cursor: default; }
 .cr-tcard__title { padding-right: 0; margin-right: 3.4rem; }
 .cr-lcard.is-selected { box-shadow: 0 0 0 2.5px var(--ink), 0 18px 34px -18px rgba(36, 20, 34, 0.55); }
 .cr-lcard.is-selected .cr-tcard__badge { transform: rotate(0deg) scale(1.08); }
+
+/* Riport: összesítő csempék, egységes szekciókártyák */
+.cr-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin: 0.2rem 0 0.4rem; }
+.cr-stat { display: flex; flex-direction: column; gap: 0.1rem; padding: 0.75rem 0.9rem; border-radius: 16px; background: #FAF8F6; }
+.cr-stat b { font-family: var(--font-heading); font-size: 1.6rem; line-height: 1.1; }
+.cr-stat span { font-size: 0.78rem; font-weight: 600; color: var(--muted); }
+.cr-stat--pos { background: #EEF5EF; } .cr-stat--pos b { color: #3F7D4E; }
+.cr-stat--neg { background: #FBEFEE; } .cr-stat--neg b { color: #B4443B; }
+.cr-compare__none { margin: 0.1rem 0 0; font-size: 0.8rem; color: var(--muted); }
+.cr-rsec { margin-top: 1rem; padding: 0.8rem; border-radius: 16px; border: 1px solid var(--line); }
+.cr-rsec h4 { font-family: var(--font-heading); font-size: 0.98rem; margin: 0 0 0.2rem; }
+.cr-rsec .cr-donut { margin: 0.4rem 0 0; }
+.cr-donut__legend li span { display: inline-flex; align-items: center; gap: 0.35rem; min-width: 0; }
+@media (max-width: 560px) { .cr-stat { padding: 0.6rem; } .cr-stat b { font-size: 1.3rem; } }
