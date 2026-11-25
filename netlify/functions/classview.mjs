@@ -29,9 +29,15 @@ export default async (req, context) => {
       .filter((e) => e.v > 0 && ids.has(e.s))
       .map((e) => ({ id: e.id, s: e.s, n: e.n, i: e.i, v: e.v, t: e.t }))
     const groups = (doc.groups || []).map((g) => ({ id: g.id, name: g.name, ids: (g.ids || []).filter((id) => ids.has(id)) }))
-    const today = (doc.today?.[dayKey()] || []).map((it) => ({ id: it.id, text: it.text, done: Boolean(it.done) }))
+    // A mai óraterv; ha mára nincs, a következő betervezett alkalomé (dátummal)
+    const todayKey = dayKey()
+    let planDate = todayKey
+    if (!doc.today?.[todayKey]?.length) {
+      planDate = Object.keys(doc.today || {}).filter((k) => k > todayKey && doc.today[k]?.length).sort()[0] || todayKey
+    }
+    const today = (doc.today?.[planDate] || []).map((it) => ({ id: it.id, text: it.text, done: Boolean(it.done) }))
 
-    return json(200, { students, events, groups, today, directions: doc.directions || [] }, { Vary: 'Cookie' })
+    return json(200, { students, events, groups, today, planDate, isToday: planDate === todayKey, directions: doc.directions || [] }, { Vary: 'Cookie' })
   } catch (err) {
     console.error('classview failed', cls, err?.message)
     return json(500, { error: 'store' })

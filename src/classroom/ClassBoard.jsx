@@ -53,7 +53,9 @@ export default function ClassBoard({ cls }) {
         <div className="cr-board__info">
           {data.today.length > 0 && (
             <div className="cr-board__card cr-board__card--today">
-              <h3>☀️ Mai napirend</h3>
+              <h3>📅 {data.isToday === false && data.planDate
+                ? `Következő óra – ${new Date(data.planDate + 'T12:00').toLocaleDateString('hu-HU', { month: 'long', day: 'numeric', weekday: 'long' })}`
+                : 'Mai óraterv'}</h3>
               <ul>{data.today.map((it) => <li key={it.id} className={it.done ? 'is-done' : ''}>{it.text}</li>)}</ul>
             </div>
           )}

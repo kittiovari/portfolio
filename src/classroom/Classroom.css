@@ -661,3 +661,27 @@
 .cr-board__card--today { background: #FBF4DC; }
 .cr-board__card li.is-done { text-decoration: line-through; opacity: 0.5; }
 .cr-readonly .cr-target__content { max-height: calc(100vh - 160px); }
+
+/* ── Óraterv ── */
+.cr-planchip { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.4rem 0.95rem; border: 1px solid rgba(36, 20, 34, 0.12); border-radius: 999px; background: #FBF4DC; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: box-shadow 0.2s; }
+.cr-planchip:hover { box-shadow: 0 6px 16px -10px rgba(36, 20, 34, 0.45); }
+.cr-plan__nav { display: flex; align-items: center; gap: 0.5rem; }
+.cr-plan__nav .cr-iconbtn { background: rgba(36, 20, 34, 0.06); }
+.cr-plan__date { position: relative; flex: 1; text-align: center; font-family: var(--font-heading); font-size: 1.15rem; font-weight: 600; cursor: pointer; padding: 0.4rem; border-radius: 12px; }
+.cr-plan__date:hover { background: rgba(36, 20, 34, 0.04); }
+.cr-sheet .cr-plan__date input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; padding: 0; }
+.cr-plan__date b { color: var(--muted); }
+.cr-plan__upcoming { display: flex; gap: 0.35rem; overflow-x: auto; padding: 0.7rem 0 0.2rem; scrollbar-width: thin; }
+.cr-plan__chip { display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap; padding: 0.3rem 0.7rem; border: 1px solid rgba(36, 20, 34, 0.12); border-radius: 999px; background: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+.cr-plan__chip small { min-width: 18px; height: 18px; display: grid; place-items: center; border-radius: 999px; background: #F3E3A6; font-size: 0.7rem; }
+.cr-plan__chip.is-active { background: var(--ink); color: #fff !important; border-color: var(--ink); }
+.cr-plan__chip.is-active small { background: rgba(255, 255, 255, 0.25); }
+.cr-plan .cr-today { margin-top: 0.9rem; }
+.cr-plan .cr-hint--center { margin-top: 1rem; }
+.cr-sheet .cr-today input.cr-today__text:not([type='checkbox']) { flex: 1; min-width: 0; padding: 0.3rem 0.4rem; border: 1px solid transparent; background: transparent; font-size: 1.05rem; }
+.cr-sheet .cr-today input.cr-today__text:not([type='checkbox']):focus { background: #fff; border-color: rgba(36, 20, 34, 0.2); box-shadow: none; }
+.cr-today li.is-done .cr-today__text { text-decoration: line-through; opacity: 0.5; }
+.cr-today li > .cr-today__move { display: flex; flex: 0 0 auto; }
+.cr-today__move .cr-iconbtn--sm { width: 26px; font-weight: 700; color: var(--muted); }
+.cr-today__move .cr-iconbtn--sm:disabled { opacity: 0.25; }
+.cr-plan__note { margin-top: 0.8rem; font-size: 0.8rem; }
