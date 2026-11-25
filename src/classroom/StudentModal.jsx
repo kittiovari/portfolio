@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import Avatar, { ClassAvatar } from './Avatar.jsx'
 import { Sheet, Icon } from './ui.jsx'
+import { ReportPanel } from './report.jsx'
 import {
   AVATAR, RANGES, sortStudents, pickName, POINT_RULES, RULE_LABELS, rangeBounds, inRange, fullName, uid, parseName, randomAvatar, toCsv, download, dayKey,
 } from './model.js'
@@ -46,7 +47,7 @@ export function TargetModal({ doc, target, points, onAward, update, onClose, ini
         <div className="cr-target__content">
           {tab === 'rules' && <PointRules doc={doc} update={update} />}
           {tab === 'members' && <ClassMembers doc={doc} update={update} />}
-          {tab === 'report' && <Report doc={doc} ids={ids} title={title} update={update} />}
+          {tab === 'report' && <ReportPanel doc={doc} update={update} ids={ids} isClass={target.type === 'class'} studentId={student?.id || null} />}
           {tab === 'custom' && student && <Customize student={student} update={update} onClose={onClose} />}
         </div>
       </div>
@@ -197,93 +198,6 @@ function GivePoints({ doc, update, onGive, editable = false, rulesOnly = false }
         )}
       </div>
     </>
-  )
-}
-
-// ── Pontjelentés: időszak, összesítés, lista, törlés, CSV ──
-function Report({ doc, ids, title, update }) {
-  const [range, setRange] = useState('week')
-  const idSet = useMemo(() => new Set(ids), [ids])
-  const bounds = rangeBounds(range)
-  const events = doc.events.filter((e) => idSet.has(e.s) && inRange(e.t, bounds)).sort((a, b) => b.t - a.t)
-  const pos = events.filter((e) => e.v > 0).reduce((s, e) => s + e.v, 0)
-  const neg = events.filter((e) => e.v < 0).reduce((s, e) => s - e.v, 0)
-  const pct = pos + neg ? Math.round((pos / (pos + neg)) * 100) : null
-  const names = Object.fromEntries(doc.students.map((s) => [s.id, fullName(s)]))
-  const multi = ids.length > 1
-
-  // Készségenkénti összesítés
-  const bySkill = {}
-  for (const e of events) {
-    const k = `${e.i} ${e.n}`
-    bySkill[k] = bySkill[k] || { icon: e.i, name: e.n, v: 0, n: 0, neg: e.v < 0 }
-    bySkill[k].v += e.v
-    bySkill[k].n += 1
-  }
-  const skills = Object.values(bySkill).sort((a, b) => b.n - a.n)
-
-  const exportCsv = () => {
-    const rows = [['Date', 'Time', 'Student', 'Skill', 'Points']]
-    for (const e of [...events].reverse()) {
-      const d = new Date(e.t)
-      rows.push([dayKey(d), d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }), names[e.s] || '(deleted student)', e.n, e.v])
-    }
-    const label = RANGES.find((r) => r.id === range)?.label ?? ''
-    download(`points – ${title} – ${label}.csv`, toCsv(rows))
-  }
-  const removeEvent = (id) => update((d) => ({ ...d, events: d.events.filter((e) => e.id !== id) }))
-
-  return (
-    <div className="cr-report">
-      <div className="cr-report__bar">
-        <select value={range} onChange={(e) => setRange(e.target.value)} aria-label="Period">
-          {RANGES.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
-        </select>
-        <span className="cr-spacer" />
-      </div>
-
-      {!events.length ? (
-        <div className="cr-empty">
-          <span className="cr-empty__icon">🏆</span>
-          <b>No points in this period</b>
-          <p>Choose another period.</p>
-        </div>
-      ) : (
-        <>
-          <div className="cr-report__summary">
-            <div className="cr-meter" role="img" aria-label={`${pct}% positive`}>
-              <span style={{ width: `${pct}%` }} />
-            </div>
-            <div className="cr-report__nums">
-              <span><b className="is-pos">+{pos}</b> positive</span>
-              <span><b className="is-neg">−{neg}</b> needs work</span>
-              <span><b>{pct}%</b> positive</span>
-            </div>
-          </div>
-          <div className="cr-report__skills">
-            {skills.map((s) => (
-              <span key={s.icon + s.name} className={`cr-pill ${s.neg ? 'is-neg' : ''}`}>{s.icon} {s.name} <b>×{s.n}</b></span>
-            ))}
-          </div>
-          <ul className="cr-report__list">
-            {events.map((e) => {
-              const d = new Date(e.t)
-              return (
-                <li key={e.id}>
-                  <span className="cr-report__icon" aria-hidden="true">{e.i}</span>
-                  <span className="cr-report__what">
-                    <b>{e.n}</b>
-                    <small>{multi && `${names[e.s] || '(deleted student)'} · `}{e.sn ? `${e.sn} · ` : ''}{d.toLocaleDateString('en-GB', { month: 'short', day: 'numeric', weekday: 'short' })} {d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</small>
-                  </span>
-                  <span className={`cr-report__val ${e.v < 0 ? 'is-neg' : ''}`}>{e.v > 0 ? `+${e.v}` : e.v}</span>
-                  <button className="cr-iconbtn cr-iconbtn--sm" onClick={() => removeEvent(e.id)} aria-label="Undo point" title="Undo"><Icon.close /></button>
-                </li>
-              )
-            })}
-          </ul>
-        </>
-      )}
-    </div>
   )
 }
 

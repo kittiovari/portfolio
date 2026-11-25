@@ -566,6 +566,7 @@ export function ClassSettings({ doc, update, onClose, className = '' }) {
     return { ...d, schedule: list.some(match) ? list.filter((s) => !match(s)) : [...list, { id: uid(), day, period: p }] }
   })
   const cal = doc.calendar || {}
+  const setUnits = (fn) => update((d) => ({ ...d, units: fn(d.units || []) }))
   const setCal = (patch) => update((d) => ({ ...d, calendar: { ...(d.calendar || {}), ...(typeof patch === 'function' ? patch(d.calendar || {}) : patch) } }))
   const shortDays = [...(doc.shortDays || [])].sort()
   const [newShort, setNewShort] = useState('')
@@ -643,6 +644,22 @@ export function ClassSettings({ doc, update, onClose, className = '' }) {
       </ul>
       <button className="cr-btn cr-btn--sm" onClick={() => setCal((c) => ({ breaks: [...(c.breaks || []), { id: uid(), name: '', from: '', to: '' }] }))}>
         <Icon.plus />Add break / day off
+      </button>
+
+      <h3 className="cr-settings__h">Units</h3>
+      <ul className="cr-breaks">
+        {[...(doc.units || [])].sort((a, b) => ((a.from || '9') < (b.from || '9') ? -1 : 1)).map((u) => (
+          <li key={u.id}>
+            <input value={u.name} placeholder="Unit name, e.g. Unit 3 – Food" onChange={(e) => setUnits((l) => l.map((x) => (x.id === u.id ? { ...x, name: e.target.value } : x)))} aria-label="Unit name" />
+            <input type="date" value={u.from || ''} onChange={(e) => setUnits((l) => l.map((x) => (x.id === u.id ? { ...x, from: e.target.value, to: x.to && x.to >= e.target.value ? x.to : e.target.value } : x)))} aria-label="Start" />
+            <span className="cr-muted">–</span>
+            <input type="date" value={u.to || ''} min={u.from || undefined} onChange={(e) => setUnits((l) => l.map((x) => (x.id === u.id ? { ...x, to: e.target.value } : x)))} aria-label="End" />
+            <button className="cr-iconbtn cr-iconbtn--sm" aria-label="Remove unit" onClick={() => setUnits((l) => l.filter((x) => x.id !== u.id))}><Icon.close /></button>
+          </li>
+        ))}
+      </ul>
+      <button className="cr-btn cr-btn--sm" onClick={() => setUnits((l) => [...l, { id: uid(), name: '', from: '', to: '' }])}>
+        <Icon.plus />Add unit
       </button>
     </Sheet>
   )

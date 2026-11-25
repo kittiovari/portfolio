@@ -1234,3 +1234,51 @@ span.cr-sk { cursor: default; }
 .cr-members__list li { display: flex; align-items: center; gap: 0.5rem; padding: 0.2rem 0.4rem; border-radius: 12px; background: #FAF8F6; }
 .cr-members__list .cr-avatar { width: 30px; height: 34px; flex-shrink: 0; }
 .cr-sheet .cr-members__list input { flex: 1; min-width: 0; padding: 0.3rem 0.5rem; font-size: 0.9rem; }
+
+/* Riportok */
+.cr-seg--report { display: inline-flex; flex-wrap: wrap; margin-bottom: 0.8rem; }
+.cr-pnav { display: flex; align-items: center; justify-content: center; gap: 0.6rem; margin-bottom: 0.6rem; }
+.cr-pnav b { font-family: var(--font-heading); min-width: 12rem; text-align: center; }
+.cr-donut { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.4rem; margin: 0.6rem 0 1rem; }
+.cr-donut svg { width: 170px; height: 170px; flex-shrink: 0; }
+.cr-donut path { transition: opacity 0.15s; cursor: default; }
+.cr-donut__num { font: 700 26px var(--font-heading, sans-serif); fill: #241422; }
+.cr-donut__lbl { font-size: 10px; fill: #6b6168; }
+.cr-donut__legend { list-style: none; padding: 0; margin: 0; flex: 1 1 220px; display: flex; flex-direction: column; gap: 0.25rem; }
+.cr-donut__legend li { display: grid; grid-template-columns: 12px 1fr auto 2.6rem; align-items: center; gap: 0.5rem; font-size: 0.88rem; }
+.cr-donut__legend i { width: 12px; height: 12px; border-radius: 4px; }
+.cr-donut__legend small { text-align: right; font-weight: 700; }
+.is-pos { color: #3F7D4E; } .is-neg { color: #B4443B; }
+.cr-tracked, .cr-alerts, .cr-overview { margin-top: 1rem; padding: 0.8rem; border-radius: 16px; background: #FAF8F6; }
+.cr-tracked h4, .cr-alerts h4, .cr-overview h4 { font-family: var(--font-heading); font-size: 0.98rem; margin: 0 0 0.5rem; }
+.cr-tracked__row { display: grid; grid-template-columns: 1.6rem minmax(9rem, auto) 2.6rem 1fr; align-items: start; gap: 0.4rem; padding: 0.3rem 0; border-top: 1px solid rgba(36, 20, 34, 0.06); font-size: 0.88rem; }
+.cr-tracked__row.is-zero { opacity: 0.45; }
+.cr-tracked__when { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+.cr-tracked__when span { padding: 0.05rem 0.45rem; border-radius: 999px; background: #fff; font-size: 0.78rem; }
+.cr-alert { display: flex; align-items: center; gap: 0.6rem; padding: 0.35rem 0.4rem; border-radius: 12px; flex-wrap: wrap; }
+.cr-alert + .cr-alert { border-top: 1px solid rgba(36, 20, 34, 0.06); }
+.cr-alert .cr-avatar { width: 30px; height: 34px; flex-shrink: 0; }
+.cr-alert__who { display: flex; flex-direction: column; min-width: 9rem; flex: 1; }
+.cr-alert__who small { color: var(--muted); }
+.cr-alert__lv { min-width: 2rem; padding: 0.1rem 0.45rem; border-radius: 999px; font-weight: 700; font-size: 0.8rem; text-align: center; background: #fab219; color: #241422; }
+.cr-alert.is-l2 .cr-alert__lv { background: #ec835a; }
+.cr-alert.is-l3 .cr-alert__lv { background: #d03b3b; color: #fff; }
+.cr-dots { display: inline-flex; align-items: center; gap: 3px; }
+.cr-dots i { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(36, 20, 34, 0.25); background: #fff; }
+.cr-dots i:nth-child(5n) { margin-right: 4px; }
+.cr-dots i.is-on { background: #8c8a85; border-color: #8c8a85; }
+.cr-dots i.is-l1 { background: #fab219; border-color: #fab219; }
+.cr-dots i.is-l2 { background: #ec835a; border-color: #ec835a; }
+.cr-dots i.is-l3 { background: #d03b3b; border-color: #d03b3b; }
+.cr-dots b { font-size: 0.78rem; margin-left: 2px; }
+.cr-overview .cr-report__bar { margin-bottom: 0.2rem; }
+.cr-overview__range { font-size: 0.82rem; margin: 0 0 0.5rem; }
+.cr-bars { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.3rem; }
+.cr-bars li { display: grid; grid-template-columns: minmax(6rem, 9rem) 1fr 2.6rem; align-items: center; gap: 0.5rem; font-size: 0.88rem; }
+.cr-bars__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cr-bars__track { display: grid; grid-template-columns: 1fr 2fr; gap: 2px; }
+.cr-bars__neg, .cr-bars__pos { display: flex; height: 12px; }
+.cr-bars__neg { justify-content: flex-end; }
+.cr-bars__neg i { background: #d03b3b; border-radius: 4px 0 0 4px; }
+.cr-bars__pos i { background: #3F7D4E; border-radius: 0 4px 4px 0; }
+.cr-bars li > b { text-align: right; }
