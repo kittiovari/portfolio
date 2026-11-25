@@ -3,7 +3,7 @@ import { Reorder, useDragControls } from 'framer-motion'
 import { Sheet, Icon } from './ui.jsx'
 import {
   LESSON_MIN, ORG_FORMS, TAGS, WEEKDAYS, addMinutes, dayKey, getPlan, lessonLabel, lessonTimeline, newItem, nextLessonKey,
-  splitKey, tagOf, uid, previousHomework, withSkeleton, TASK_TAGS,
+  splitKey, tagOf, uid, previousHomework, withSkeleton, TASK_TAGS, plannedKeys,
 } from './model.js'
 
 /*
@@ -119,10 +119,10 @@ export function Linkify({ text }) {
 
 // ── Tanári szerkesztő ──
 // Fix váz: 1. Warmer, 2. Homework review | saját feladatok (húzhatók) | Future homework, Self-reflection
-export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings }) {
+export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings, initialKey }) {
   const timeline = lessonTimeline(doc)
   const hasSchedule = (doc.schedule || []).length > 0
-  const [key, setKey] = useState(() => nextLessonKey(doc) || dayKey())
+  const [key, setKey] = useState(() => initialKey || nextLessonKey(doc) || dayKey())
   const [open, setOpen] = useState(null)
   const [busy, setBusy] = useState(0)
   const [error, setError] = useState('')
@@ -277,7 +277,7 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings }
 }
 
 // Óraválasztó: egyedi gomb + lenyíló lista (a natív select helyett)
-function LessonPicker({ value, options, nextKey, planned, onChange }) {
+export function LessonPicker({ value, options, nextKey, planned, onChange }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
   useEffect(() => {
@@ -586,5 +586,89 @@ export function PlanTimeline({ plan, cls, heading, startTime }) {
         })}
       </ol>
     </div>
+  )
+}
+
+// ── Tanári osztálynézet: az óra idővonala, feladathoz kötött pontozással ──
+// Választható órák: a már megtartott (betervezett) órák, az éppen aktuális óra,
+// és a következő, már előkészített órák.
+export function LessonBoard({ doc, cls, active, onSelect, onEdit }) {
+  const today = dayKey()
+  const nowKey = nextLessonKey(doc)
+  const planned = plannedKeys(doc)
+  const current = nowKey && splitKey(nowKey).date === today ? nowKey : null
+  const options = [...new Set([...planned, ...(current ? [current] : [])])].sort()
+  const initial = current || planned.find((k) => !nowKey || k >= nowKey) || planned[planned.length - 1] || nowKey
+  const [key, setKey] = useState(initial)
+  const track = useRef(null)
+
+  const plan = key ? withSkeleton(getPlan(doc, key)) : { title: '', items: [] }
+  const isPlanned = key && planned.includes(key)
+  const prevHw = key ? previousHomework(doc, key) : null
+  const items = plan.items.filter((it) => !(it.role === 'hwreview' && !prevHw))
+  const { time } = key ? splitKey(key) : {}
+
+  // a kijelölt feladat középre csúszik
+  useEffect(() => {
+    if (!active?.itemId) return
+    track.current?.querySelector(`[data-step="${active.itemId}"]`)?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' })
+  }, [active?.itemId])
+
+  const changeLesson = (k) => { setKey(k); onSelect(null) }
+  let acc = 0
+
+  return (
+    <section className="cr-lboard" aria-label="Lesson timeline">
+      <div className="cr-lboard__head">
+        <span className="cr-lboard__icon" aria-hidden="true">📅</span>
+        {options.length > 0 && key ? (
+          <LessonPicker value={key} options={options.includes(key) ? options : [key, ...options]} nextKey={nowKey} planned={(k) => planned.includes(k)} onChange={changeLesson} />
+        ) : (
+          <b className="cr-lboard__none">No lessons yet</b>
+        )}
+        <button className="cr-btn cr-btn--sm" onClick={() => onEdit(key)}><Icon.pencil />{isPlanned ? 'Edit plan' : 'Plan this lesson'}</button>
+      </div>
+      {plan.title && <p className="cr-lboard__title">{plan.title}</p>}
+
+      {isPlanned ? (
+        <>
+          <p className={`cr-lboard__hint ${active ? 'is-on' : ''}`}>
+            {active
+              ? <>Points now count for <b>{active.title}</b> <button className="cr-link" onClick={() => onSelect(null)}>Stop</button></>
+              : 'Tap a task to log the points you give during it.'}
+          </p>
+          <ol className="cr-timeline__track cr-lboard__track" ref={track}>
+            {items.map((it, i) => {
+              const start = addMinutes(time, acc)
+              acc += it.role === 'hwreview' && !prevHw ? 0 : Number(it.minutes) || 0
+              const title = it.role === 'hwreview'
+                ? `Homework review: ${prevHw.items.map((h) => h.aim).filter(Boolean).join(' · ') || 'homework'}`
+                : it.aim || ROLE_LABEL[it.role] || `Task ${i + 1}`
+              const tags = (it.role ? [tagOf(it.role === 'reflection' ? 'reflection' : it.role)] : (it.tags || []).map(tagOf)).filter(Boolean)
+              const org = ORG_FORMS.find((o) => o.id === it.org)
+              const evs = doc.events.filter((e) => e.l === key && e.st === it.id)
+              const sum = evs.reduce((s, e) => s + e.v, 0)
+              const kids = new Set(evs.map((e) => e.s)).size
+              const sel = active?.key === key && active?.itemId === it.id
+              return (
+                <li key={it.id} data-step={it.id} className={`cr-tcard cr-lcard ${sel ? 'is-selected' : ''}`} style={{ '--tg': tags[0]?.color || '#C9B8C6' }}>
+                  <button className="cr-lcard__btn" onClick={() => onSelect(sel ? null : { key, itemId: it.id, title })} aria-pressed={sel}>
+                    <span className="cr-tcard__kind">{i + 1} · {it.minutes} min{start ? ` · ${start}` : ''}</span>
+                    {tags.length > 0 && <span className="cr-tcard__skills">{tags.map((t) => <span key={t.id} className="cr-tag" style={{ '--tg': t.color }}>{t.label}</span>)}</span>}
+                    <b className="cr-tcard__title">{title}</b>
+                    {org && <span className="cr-tcard__org"><OrgIcon id={org.id} />{org.label}</span>}
+                    <span className={`cr-lcard__pts ${evs.length ? 'has' : ''}`}>
+                      {evs.length ? `${sum > 0 ? '+' : ''}${sum} pts · ${kids} student${kids === 1 ? '' : 's'}` : sel ? 'Give points above ↑' : 'No points yet'}
+                    </span>
+                  </button>
+                </li>
+              )
+            })}
+          </ol>
+        </>
+      ) : (
+        <p className="cr-hint cr-hint--center">{key ? 'This lesson has no plan yet.' : 'Add your timetable in Class settings, then plan your first lesson.'}</p>
+      )}
+    </section>
   )
 }

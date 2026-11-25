@@ -8,7 +8,7 @@ import { TargetModal, AddStudents, GroupEditor } from '../classroom/StudentModal
 import {
   Toolkit, RandomTool, GroupMakerTool, DirectionsTool, TpsTool,
 } from '../classroom/tools.jsx'
-import { PlanEditor, ClassSettings } from '../classroom/plan.jsx'
+import { PlanEditor, ClassSettings, LessonBoard } from '../classroom/plan.jsx'
 import { SessionSetup, SessionPlayer } from '../classroom/session.jsx'
 import { useClassroom } from '../classroom/useClassroom.js'
 import { ATTENDANCE, CLASSES, dayKey, fullName, getPlan, lessonLabel, nextLessonKey, pointsBy, sortStudents, uid } from '../classroom/model.js'
@@ -47,9 +47,10 @@ export default function Classroom() {
   const [floats, setFloats] = useState([])
   const [muted, setMutedState] = useState(isMuted())
   const [session, setSession] = useState(null) // futó „Időzítő és zene”
+  const [activeStep, setActiveStep] = useState(null) // { key, itemId, title } – erre a feladatra mennek a pontok
 
   useEffect(() => { try { localStorage.setItem('cr-class', cls) } catch { /* */ } }, [cls])
-  useEffect(() => { setMode('normal'); setSelected(new Set()); setModal(null) }, [cls])
+  useEffect(() => { setMode('normal'); setSelected(new Set()); setModal(null); setActiveStep(null) }, [cls])
   useEffect(() => {
     if (!toast) return
     const id = setTimeout(() => setToast(null), 2200)
@@ -67,11 +68,12 @@ export default function Classroom() {
   // ── Pont adása (egy vagy több diáknak) ──
   const award = (ids, skill, label) => {
     const now = Date.now()
-    const evs = ids.map((s) => ({ id: uid(), s, k: skill.id, n: skill.name, i: skill.icon, v: skill.value, t: now }))
+    const step = activeStep ? { l: activeStep.key, st: activeStep.itemId, sn: activeStep.title } : {}
+    const evs = ids.map((s) => ({ id: uid(), s, k: skill.id, n: skill.name, i: skill.icon, v: skill.value, t: now, ...step }))
     update((d) => ({ ...d, events: [...d.events, ...evs] }))
     play(skill.value > 0 ? 'positive' : 'negative')
     const one = ids.length === 1 ? doc.students.find((s) => s.id === ids[0]) : null
-    setToast({ key: now, student: one, label: one ? fullName(one) : label, skill, count: ids.length })
+    setToast({ key: now, student: one, label: one ? fullName(one) : label, skill, count: ids.length, step: activeStep?.title })
     setFloats((f) => [...f, ...ids.map((s) => ({ key: `${now}-${s}`, s, v: skill.value }))])
     setTimeout(() => setFloats((f) => f.filter((x) => !x.key.startsWith(`${now}-`))), 1400)
     if (mode === 'select') { setMode('normal'); setSelected(new Set()) }
@@ -196,16 +198,6 @@ export default function Classroom() {
           <button role="tab" aria-selected={view === 'students'} className={view === 'students' ? 'is-active' : ''} onClick={() => setView('students')}>Students</button>
           <button role="tab" aria-selected={view === 'groups'} className={view === 'groups' ? 'is-active' : ''} onClick={() => setView('groups')}>Groups</button>
         </div>
-        {mode === 'normal' && (
-          <button className="cr-planchip" onClick={() => setModal({ kind: 'tool', id: 'today' })}>
-            <span aria-hidden="true">📅</span>
-            {(() => {
-              const k = nextLessonKey(doc)
-              const n = k ? getPlan(doc, k).items.length : 0
-              return k ? `Next lesson: ${lessonLabel(k)}${n ? ` · ${n} step${n === 1 ? '' : 's'}` : ' · not planned yet'}` : 'Lesson plan'
-            })()}
-          </button>
-        )}
         {mode === 'attendance' && <p className="cr-modehint">Attendance – tap a student: present → absent → late → left early</p>}
         {mode === 'select' && <p className="cr-modehint">Select who gets points ({selected.size})</p>}
       </div>
@@ -261,6 +253,10 @@ export default function Classroom() {
         )}
         {!doc.students.length && view === 'students' && (
           <p className="cr-hint cr-hint--center">Start by adding students – you can paste several names at once.</p>
+        )}
+        {mode !== 'attendance' && (
+          <LessonBoard key={cls} doc={doc} cls={cls} active={activeStep} onSelect={setActiveStep}
+            onEdit={(k) => setModal({ kind: 'tool', id: 'today', key: k })} />
         )}
       </main>
 
@@ -318,7 +314,7 @@ export default function Classroom() {
         {modal?.kind === 'tool' && modal.id === 'groups' && <GroupMakerTool key="groups" doc={doc} update={update} onClose={() => { closeModal(); setView('groups') }} onBack={backToKit} />}
         {modal?.kind === 'tool' && modal.id === 'directions' && <DirectionsTool key="dir" doc={doc} update={update} onClose={closeModal} onBack={backToKit} />}
         {modal?.kind === 'tool' && modal.id === 'tps' && <TpsTool key="tps" doc={doc} update={update} onClose={closeModal} onBack={backToKit} />}
-        {modal?.kind === 'tool' && modal.id === 'today' && <PlanEditor key="today" doc={doc} update={update} cls={cls} onClose={closeModal} onBack={modal.fromKit ? backToKit : undefined} onOpenSettings={() => setModal({ kind: 'settings' })} />}
+        {modal?.kind === 'tool' && modal.id === 'today' && <PlanEditor key="today" doc={doc} update={update} cls={cls} initialKey={modal.key} onClose={closeModal} onBack={modal.fromKit ? backToKit : undefined} onOpenSettings={() => setModal({ kind: 'settings' })} />}
         {modal?.kind === 'settings' && <ClassSettings key="settings" doc={doc} update={update} onClose={closeModal} />}
       </AnimatePresence>
 
@@ -336,7 +332,7 @@ export default function Classroom() {
             <span className="cr-toast__avatar">{toast.student ? <Avatar a={toast.student.avatar} /> : <ClassAvatar />}</span>
             <span className="cr-toast__text">
               <b>{toast.label}</b>
-              <span>{toast.skill.value > 0 ? `+${toast.skill.value}` : toast.skill.value} · {toast.skill.name}{toast.count > 1 ? ` · ${toast.count} students` : ''}</span>
+              <span>{toast.skill.value > 0 ? `+${toast.skill.value}` : toast.skill.value} · {toast.skill.name}{toast.count > 1 ? ` · ${toast.count} students` : ''}{toast.step ? ` · ${toast.step}` : ''}</span>
             </span>
             <motion.span className="cr-toast__icon" initial={{ rotate: -20, scale: 0.4 }} animate={{ rotate: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 12, delay: 0.1 }}>
               {toast.skill.icon}

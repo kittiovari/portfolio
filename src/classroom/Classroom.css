@@ -930,3 +930,26 @@ span.cr-sk { cursor: default; }
 .cr-compose__btn:hover { background: rgba(36, 20, 34, 0.06); color: var(--ink); }
 .cr-compose__link { display: flex; gap: 0.4rem; flex-wrap: wrap; padding: 0.45rem 0.5rem; border-top: 1px solid rgba(36, 20, 34, 0.07); background: #FCFAF7; }
 .cr-sheet .cr-compose__link input { flex: 1 1 180px; padding: 0.4rem 0.6rem; font-size: 0.88rem; }
+
+/* ── Tanári osztálynézet: óra-idővonal + feladathoz kötött pontozás ── */
+.cr-lboard { margin-top: 2rem; padding-top: 1.4rem; border-top: 1px solid var(--line); }
+.cr-lboard__head { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.cr-lboard__icon { font-size: 1.3rem; }
+.cr-lboard .cr-lpick { flex: 1; max-width: 420px; }
+.cr-lboard .cr-lpick__btn { justify-content: flex-start; background: rgba(255, 255, 255, 0.7); }
+.cr-lboard__none { flex: 1; font-family: var(--font-heading); }
+.cr-lboard__title { margin-top: 0.5rem; font-family: var(--font-heading); font-weight: 600; font-size: 1.15rem; }
+.cr-lboard__hint { margin-top: 0.4rem; font-size: 0.88rem; color: var(--muted); }
+.cr-lboard__hint.is-on { color: var(--ink); }
+.cr-lboard__hint .cr-link { display: inline; padding: 0 0.3rem; text-decoration: underline; }
+.cr-lboard__track { padding-left: calc(50% - 150px); padding-right: calc(50% - 150px); }
+.cr-lcard { padding: 0; transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s; }
+.cr-lcard__btn { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 0.45rem; padding: 0.9rem 1rem; border: none; background: transparent; text-align: left; cursor: pointer; color: var(--ink); font: inherit; border-radius: inherit; }
+.cr-lcard:hover { transform: translateY(-2px); }
+.cr-lboard__track:has(.is-selected) .cr-lcard:not(.is-selected) { opacity: 0.6; }
+.cr-lcard.is-selected { transform: translateY(-4px) scale(1.03); box-shadow: 0 0 0 2.5px var(--ink), 0 18px 34px -18px rgba(36, 20, 34, 0.55); }
+.cr-lcard__pts { margin-top: auto; font-size: 0.78rem; font-weight: 600; color: var(--muted); }
+.cr-lcard__pts.has { color: #3F7D4E; }
+@media (max-width: 720px) { .cr-lboard__track { padding-left: 0.2rem; padding-right: 0.2rem; } }
+
+.cr-lboard__track { scrollbar-width: thin; scrollbar-color: rgba(36,20,34,.2) transparent; }

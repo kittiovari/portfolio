@@ -242,7 +242,7 @@ function Report({ doc, ids, title, update }) {
                   <span className="cr-report__icon" aria-hidden="true">{e.i}</span>
                   <span className="cr-report__what">
                     <b>{e.n}</b>
-                    <small>{multi && `${names[e.s] || '(deleted student)'} · `}{d.toLocaleDateString('en-GB', { month: 'short', day: 'numeric', weekday: 'short' })} {d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</small>
+                    <small>{multi && `${names[e.s] || '(deleted student)'} · `}{e.sn ? `${e.sn} · ` : ''}{d.toLocaleDateString('en-GB', { month: 'short', day: 'numeric', weekday: 'short' })} {d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</small>
                   </span>
                   <span className={`cr-report__val ${e.v < 0 ? 'is-neg' : ''}`}>{e.v > 0 ? `+${e.v}` : e.v}</span>
                   <button className="cr-iconbtn cr-iconbtn--sm" onClick={() => removeEvent(e.id)} aria-label="Undo point" title="Undo"><Icon.close /></button>
