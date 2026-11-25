@@ -1435,3 +1435,13 @@ span.cr-sk { cursor: default; }
 
 .cr-class__add { flex-shrink: 0; align-self: center; width: 34px; height: 34px; }
 .cr-sheet .cr-upkeep__input { flex: 1 1 200px; min-width: 0; padding: 0.4rem 0.6rem; font-size: 0.88rem; }
+
+/* Óralépés-kártyák: színes sáv helyett lágy, tónusos fejléc és illusztrált jelvény */
+.cr-tcard { border-top: none; border: 1px solid color-mix(in srgb, var(--tg) 22%, rgba(36, 20, 34, 0.06)); background: linear-gradient(180deg, color-mix(in srgb, var(--tg) 14%, #fff) 0, color-mix(in srgb, var(--tg) 5%, #fff) 4.6rem, #fff 7rem); box-shadow: 0 10px 26px -18px color-mix(in srgb, var(--tg) 70%, #241422); overflow: visible; }
+.cr-tcard { position: relative; }
+.cr-tcard__badge { position: absolute; top: 0.75rem; right: 0.75rem; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 16px; background: #fff; box-shadow: 0 4px 12px -6px color-mix(in srgb, var(--tg) 80%, #241422), inset 0 0 0 1.5px color-mix(in srgb, var(--tg) 30%, transparent); transform: rotate(-4deg); pointer-events: none; z-index: 1; }
+.cr-tcard__badge .cr-art { width: 32px; height: 32px; }
+.cr-tcard__kind { color: color-mix(in srgb, var(--tg) 70%, #241422); letter-spacing: 0.04em; }
+.cr-tcard__title { padding-right: 0; margin-right: 3.4rem; }
+.cr-lcard.is-selected { box-shadow: 0 0 0 2.5px var(--ink), 0 18px 34px -18px rgba(36, 20, 34, 0.55); }
+.cr-lcard.is-selected .cr-tcard__badge { transform: rotate(0deg) scale(1.08); }

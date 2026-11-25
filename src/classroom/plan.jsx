@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Reorder, useDragControls } from 'framer-motion'
 import { Sheet, Icon } from './ui.jsx'
-import { Art, SkillArt, fileArt } from './art.jsx'
+import { Art, SkillArt, fileArt, stepArt } from './art.jsx'
 import { KretaSheet } from './kreta.jsx'
 import { YearPanel, FilesPanel, AccessPanel } from './upkeep.jsx'
 import {
@@ -689,6 +689,7 @@ export function PlanTimeline({ plan, cls, heading, startTime }) {
           const tags = (it.tags || []).map(tagOf).filter(Boolean)
           return (
             <li key={it.id} className={`cr-tcard ${it.done ? 'is-done' : ''}`} style={{ '--tg': tags[0]?.color || '#C9B8C6' }}>
+              <span className="cr-tcard__badge"><Art name={stepArt(it)} className="cr-art" /></span>
               <span className="cr-tcard__kind">Step {i + 1} · {it.minutes} min{start ? ` · ${start}` : ''}{it.done && ' · done ✓'}</span>
               {tags.length > 0 && <span className="cr-tcard__skills">{tags.map((t) => <span key={t.id} className="cr-tag" style={{ '--tg': t.color }}>{t.label}</span>)}</span>}
               {it.aim && <b className="cr-tcard__title">{it.aim}</b>}
@@ -809,6 +810,7 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
               return (
                 <li key={it.id} data-step={it.id} className={`cr-tcard cr-lcard ${sel ? 'is-selected' : ''} ${it.moved ? 'is-moved' : ''}`} style={{ '--tg': tags[0]?.color || '#C9B8C6' }}>
                   <button className="cr-lcard__btn" onClick={() => { if (it.role !== 'homework') onSelect(sel ? null : { key, itemId: it.id, title, role: it.role || null }) }} aria-pressed={sel}>
+                    <span className="cr-tcard__badge"><Art name={stepArt(it)} className="cr-art" /></span>
                     <span className="cr-tcard__kind">{i + 1} · {it.minutes} min{start ? ` · ${start}` : ''}</span>
                     {tags.length > 0 && <span className="cr-tcard__skills">{tags.map((t) => <span key={t.id} className="cr-tag" style={{ '--tg': t.color }}>{t.label}</span>)}</span>}
                     <b className="cr-tcard__title">{title}</b>

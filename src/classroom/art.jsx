@@ -127,6 +127,74 @@ export const ART = {
       <path d="M19.4 17.4l5.2 5.2M24.6 17.4l-5.2 5.2" />
     </>
   ),
+  // ── óralépések ──
+  attendance: (
+    <>
+      <rect x="8" y="7" width="24" height="29" rx="3" fill={C.paper} />
+      <rect x="14" y="4" width="12" height="6" rx="2" fill={C.sky} />
+      <circle cx="16" cy="19" r="3" fill={C.sage} strokeWidth="1.3" />
+      <path d="M11.5 28.5c.8-3 2.4-4.5 4.5-4.5s3.7 1.5 4.5 4.5" strokeWidth="1.3" />
+      <path d="M23 21l2 2 4-4.5" stroke={C.green} strokeWidth="2" />
+    </>
+  ),
+  reflection: (
+    <>
+      <ellipse cx="20" cy="17" rx="11" ry="13" fill={C.lilac} />
+      <ellipse cx="20" cy="17" rx="7.5" ry="9.5" fill={C.paper} strokeWidth="1.3" />
+      <path d="M20 30v6M14 36h12" />
+      <path d="M20 21.5l-3-3a2 2 0 0 1 3-2.6 2 2 0 0 1 3 2.6z" fill={C.red} strokeWidth="1.1" />
+    </>
+  ),
+  reading: (
+    <>
+      <path d="M4 10c6-2.5 11-2.5 16 1 5-3.5 10-3.5 16-1v22c-6-2.5-11-2.5-16 1-5-3.5-10-3.5-16-1z" fill={C.sky} />
+      <path d="M20 11v22" />
+      <path d="M8 16c3-.8 6-.8 8.5.4M8 21c3-.8 6-.8 8.5.4M23.5 16.4c2.5-1.2 5.5-1.2 8.5-.4M23.5 21.4c2.5-1.2 5.5-1.2 8.5-.4" strokeWidth="1.2" opacity=".55" />
+    </>
+  ),
+  writing: (
+    <>
+      <rect x="6" y="7" width="20" height="27" rx="3" fill={C.paper} />
+      <path d="M10 14h12M10 19h9M10 24h7" strokeWidth="1.3" opacity=".55" />
+      <path d="M31 9l3 3-12 12-4.5 1.5 1.5-4.5z" fill={C.sage} />
+    </>
+  ),
+  speaking: (
+    <>
+      <path d="M6 9h18a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3H14l-5 4v-4H6a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3z" fill={C.peach} />
+      <path d="M30 16h4a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3h-1v4l-5-4h-6a3 3 0 0 1-3-3v-1" fill={C.sky} />
+      <path d="M9 15h12M9 19h8" strokeWidth="1.3" opacity=".55" />
+    </>
+  ),
+  listening: (
+    <>
+      <path d="M7 24v-4a13 13 0 0 1 26 0v4" />
+      <rect x="5" y="22" width="7" height="11" rx="3" fill={C.lilac} />
+      <rect x="28" y="22" width="7" height="11" rx="3" fill={C.lilac} />
+      <path d="M17 17v6M20 14v12M23 17v6" stroke={C.gold} strokeWidth="1.6" />
+    </>
+  ),
+  grammar: (
+    <>
+      <path d="M7 13h8a3 3 0 1 1 6 0h8v8a3 3 0 1 0 0 6v8H7v-8a3 3 0 1 1 0-6z" fill={C.rose} />
+      <path d="M13 25h6M16 22v6" strokeWidth="1.4" opacity=".6" />
+    </>
+  ),
+  vocabulary: (
+    <>
+      <rect x="5" y="10" width="17" height="21" rx="3" fill={C.butter} transform="rotate(-8 13 20)" />
+      <rect x="18" y="9" width="17" height="21" rx="3" fill={C.lilac} transform="rotate(7 26 20)" />
+      <text x="13.5" y="25" textAnchor="middle" fontSize="11" fontWeight="800" fill={INK} stroke="none" fontFamily="system-ui, sans-serif" transform="rotate(-8 13 20)">A</text>
+      <text x="26.5" y="24" textAnchor="middle" fontSize="11" fontWeight="800" fill={INK} stroke="none" fontFamily="system-ui, sans-serif" transform="rotate(7 26 20)">b</text>
+    </>
+  ),
+  pronunciation: (
+    <>
+      <path d="M8 16a12 12 0 0 1 24 0c0 6-4 8-4 12a5 5 0 0 1-9 2" fill={C.peach} />
+      <path d="M16 17a4 4 0 0 1 8 0c0 2.5-2 3.5-2 5.5" strokeWidth="1.4" />
+      <path d="M34 22q3 3 0 6M37 19q5 6 0 12" stroke={C.gold} strokeWidth="1.5" />
+    </>
+  ),
   // ── felület ──
   homework: (
     <>
@@ -262,4 +330,12 @@ export function eventArtName(doc, e) {
   const all = [...(doc?.skills?.positive || []), ...(doc?.skills?.negative || [])]
   const sk = all.find((k) => k.id === e.k)
   return artName(sk || { key: e.auto === 'late' ? 'late' : null, icon: e.i, value: e.v })
+}
+// Egy óralépés illusztrációja: a fix lépés szerepe, különben az első címke
+const STEP_ART = { attendance: 'attendance', warmer: 'energy', hwreview: 'hw_done', homework: 'homework', reflection: 'reflection', reading: 'reading', listening: 'listening', speaking: 'speaking', writing: 'writing', grammar: 'grammar', vocabulary: 'vocabulary', pronunciation: 'pronunciation' }
+export function stepArt(it) {
+  if (it.role && STEP_ART[it.role]) return STEP_ART[it.role]
+  if (it.auto === 'hwreview') return 'hw_done'
+  const t = (it.tags || []).find((x) => STEP_ART[x])
+  return t ? STEP_ART[t] : 'directions'
 }
