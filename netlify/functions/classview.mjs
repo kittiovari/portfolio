@@ -46,7 +46,7 @@ export default async (req, context) => {
       .map((e) => ({ id: e.id, s: e.s, k: e.k, n: e.n, i: e.i, v: e.v, t: e.t, l: e.l, sn: e.sn }))
     const today = dayKey()
     // csoportok csak arra a napra érvényesek, amikor készültek
-    const groups = (doc.groupsDate && doc.groupsDate >= today ? doc.groups || [] : []).map((g) => ({ id: g.id, name: g.name, ids: (g.ids || []).filter((id) => ids.has(id)) }))
+    const groups = (doc.groups || []).map((g) => ({ id: g.id, name: g.name, ids: (g.ids || []).filter((id) => ids.has(id)) }))
     const deskmates = (doc.deskmates || []).map((d) => d.filter((id) => ids.has(id))).filter((d) => d.length)
     const skills = [...(doc.skills?.positive || []), ...(doc.skills?.negative || [])].map((k) => ({ id: k.id, key: k.key, name: k.name, icon: k.icon, value: k.value }))
 

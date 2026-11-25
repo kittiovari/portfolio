@@ -785,6 +785,12 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
           <b className="cr-lboard__none">No lessons yet</b>
         )}
         <button className="cr-btn cr-btn--sm" onClick={() => onEdit(key)}><Icon.pencil />{isPlanned ? 'Edit plan' : 'Plan this lesson'}</button>
+        {/* Új óraterv: a következő, még be nem tervezett órához */}
+        <button className="cr-btn cr-btn--sm" title="Plan the next unplanned lesson" onClick={() => {
+          const from = nowKey || today
+          const free = lessonTimeline(doc).find((k) => k >= from && !planned.includes(k))
+          onEdit(free || nowKey || today)
+        }}><Icon.plus />New plan</button>
         {isPlanned && <button className="cr-btn cr-btn--sm" onClick={() => setKreta(true)} title="Copy for E-Kréta, download files"><Icon.download />E-Kréta</button>}
       </div>
       {kreta && key && <KretaSheet doc={doc} cls={cls} lessonKey={key} onClose={() => setKreta(false)} />}
@@ -892,14 +898,6 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
       ) : (
         <p className="cr-hint cr-hint--center">{key ? 'This lesson has no plan yet.' : 'Add your timetable in Class settings, then plan your first lesson.'}</p>
       )}
-      {/* Új óraterv: a következő, még be nem tervezett órához */}
-      <button className="cr-btn cr-btn--primary cr-btn--sm cr-lboard__new" onClick={() => {
-        const from = nowKey || today
-        const free = lessonTimeline(doc).find((k) => k >= from && !planned.includes(k))
-        onEdit(free || nowKey || today)
-      }}>
-        <Icon.plus />New lesson plan
-      </button>
     </section>
   )
 }

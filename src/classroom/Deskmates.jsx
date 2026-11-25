@@ -53,12 +53,10 @@ export default function Deskmates({ doc, update, points, onGive }) {
     <div className="cr-desks-wrap">
       <div className="cr-desks">
         {desks.map((d, i) => {
-          const total = d.reduce((sum, id) => sum + (points[id] || 0), 0)
           return (
             <div key={i} className={`cr-desk ${picked && !d.includes(picked) ? 'is-target' : ''}`} {...dropProps(i)}>
               <div className="cr-desk__head">
                 <b>Desk {i + 1}</b>
-                <span className={`cr-badge ${total < 0 ? 'is-neg' : ''}`}>{total}</span>
                 <span className="cr-spacer" />
                 <button className="cr-iconbtn cr-iconbtn--sm" title="Give points to this pair" aria-label="Give points to this pair"
                   onClick={(e) => { e.stopPropagation(); onGive(d, `Desk ${i + 1}`) }}><Icon.plus /></button>

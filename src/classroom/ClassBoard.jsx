@@ -6,6 +6,7 @@ import { sortStudents, fullName, pickName, lessonLabel } from './model.js'
 import { PlanTimeline, Resource, Linkify } from './plan.jsx'
 import { Art } from './art.jsx'
 import { ReportPanel } from './report.jsx'
+import SeasonScene from './SeasonScene.jsx'
 import './Classroom.css'
 
 /*
@@ -186,7 +187,7 @@ export default function ClassBoard({ cls }) {
           </div>
         ) : (
           <div className="cr-grid cr-grid--groups">
-            {!data.groups.length && <p className="cr-hint">No groups today.</p>}
+            {!data.groups.length && <p className="cr-hint">No groups yet.</p>}
             {data.groups.map((g) => {
               const members = sortStudents(g.ids.map((id) => data.students.find((s) => s.id === id)).filter(Boolean))
               const sum = members.reduce((a, s) => a + (points[s.id] || 0), 0)
@@ -204,6 +205,9 @@ export default function ClassBoard({ cls }) {
           </div>
         )}
       </div>
+
+      {/* évszakos tájkép a lap alján – ugyanaz, mint a tanári oldalon */}
+      <SeasonScene />
 
       <AnimatePresence>
         {open && (() => {

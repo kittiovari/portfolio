@@ -1465,3 +1465,12 @@ svg.cr-art.cr-art--toast { width: 64px; height: 64px; }
 .cr-theme { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.6rem 0.4rem 0.5rem; border: 1.5px solid var(--line); border-radius: 16px; background: #fff; cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--ink); text-align: center; }
 .cr-theme .cr-avatar { width: 64px; height: 72px; }
 .cr-theme.is-active { border-color: var(--ink); background: #FBF4DC; box-shadow: 0 6px 16px -10px rgba(36, 20, 34, 0.5); }
+
+/* Kijelölt feladat: a nézetválasztó helyett a munkaforma */
+.cr-formlabel { display: inline-flex; align-items: center; gap: 0.6rem; margin: 0; padding: 0.4rem 0.9rem 0.4rem 0.5rem; border-radius: 999px; background: #fff; border: 1px solid var(--line); font-size: 0.9rem; color: var(--muted); }
+.cr-formlabel b { color: var(--ink); }
+.cr-formlabel .cr-orgicon { width: 40px; height: 31px; color: var(--ink); flex-shrink: 0; }
+/* Diákoldal: az évszakos tájkép a tabló alján */
+.cr-board { position: relative; padding-bottom: 250px; }
+.cr-board > .season { border-radius: 0 0 24px 24px; }
+.cr-board > .cr-main, .cr-board > .cr-subbar, .cr-board > .cr-board__info, .cr-board > .cr-board__lesson { position: relative; z-index: 1; }

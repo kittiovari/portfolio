@@ -323,7 +323,7 @@ export function AddStudents({ update, onClose }) {
 
 // ── Csoport szerkesztése ──
 export function GroupEditor({ doc, group, update, onClose }) {
-  const todays = doc.groupsDate && doc.groupsDate >= dayKey() ? doc.groups : []
+  const todays = doc.groups || []
   const [name, setName] = useState(group?.name ?? `Group ${todays.length + 1}`)
   const [ids, setIds] = useState(new Set(group?.ids ?? []))
   const toggle = (id) => setIds((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
@@ -332,9 +332,8 @@ export function GroupEditor({ doc, group, update, onClose }) {
     const item = { id: group?.id ?? uid(), name: name.trim() || 'Group', ids: [...ids] }
     // a csoportok mindig a mai napra szólnak: régi napi beosztásból újat kezdünk
     update((d) => {
-      const live = d.groupsDate && d.groupsDate >= dayKey()
-      const base = live ? d.groups : []
-      return { ...d, groupsDate: live ? d.groupsDate : dayKey(), groups: group ? base.map((g) => (g.id === group.id ? item : g)) : [...base, item] }
+      const base = d.groups || []
+      return { ...d, groupsDate: d.groupsDate || dayKey(), groups: group ? base.map((g) => (g.id === group.id ? item : g)) : [...base, item] }
     })
     onClose()
   }

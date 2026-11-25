@@ -8,7 +8,7 @@ import { TargetModal, AddStudents, GroupEditor, HomeworkWizard, AttendanceWizard
 import {
   Toolkit, RandomTool, GroupMakerTool, DirectionsTool, TpsTool,
 } from '../classroom/tools.jsx'
-import { PlanEditor, ClassSettings, LessonBoard } from '../classroom/plan.jsx'
+import { PlanEditor, ClassSettings, LessonBoard, OrgIcon } from '../classroom/plan.jsx'
 import { SessionSetup, SessionPlayer } from '../classroom/session.jsx'
 import { useClassroom } from '../classroom/useClassroom.js'
 import { SkillArt } from '../classroom/art.jsx'
@@ -98,7 +98,8 @@ export default function Classroom() {
   const presentIds = doc ? doc.students.filter((s) => !absent(s.id)).map((s) => s.id) : []
   // a csoportok csak arra a napra érvényesek, amikor készültek – minden új órán üresen indul
   // a csoportok a mai vagy egy előre megtervezett (későbbi) óra napjára érvényesek
-  const groupsToday = doc && doc.groupsDate && doc.groupsDate >= today ? doc.groups : []
+  // a csoportok megmaradnak, amíg újat nem készítünk → az új csoportmunkánál a korábbi az alapértelmezett
+  const groupsToday = doc?.groups || []
 
   // ── Pontadás: mindig egy kijelölt lépéshez (feladathoz) kötve ──
   const [notice, setNotice] = useState(null)
@@ -240,17 +241,21 @@ export default function Classroom() {
       </div>
 
       <div className="cr-subbar">
-        <div className="cr-seg" role="tablist" aria-label="View">
-          <button role="tab" aria-selected={view === 'students'} className={view === 'students' ? 'is-active' : ''} onClick={() => setView('students')}>Students</button>
-          <button role="tab" aria-selected={view === 'pairs'} className={view === 'pairs' ? 'is-active' : ''} onClick={() => setView('pairs')}>Pairs</button>
-          <button role="tab" aria-selected={view === 'groups'} className={view === 'groups' ? 'is-active' : ''} onClick={() => setView('groups')}>Groups</button>
-        </div>
+        {activeStep ? (
+          <p className="cr-formlabel"><OrgIcon id={stepOrgNow || 'frontal'} /><span><b>{activeStep.title}</b> · {stepOrgNow === 'pairs' ? 'pair work – tap a desk or a student' : stepOrgNow === 'groups' ? 'group work – tap a group or a student' : stepOrgNow === 'individual' ? 'individual work – tap a student' : 'tap a student or the class'}</span></p>
+        ) : (
+          <div className="cr-seg" role="tablist" aria-label="View">
+            <button role="tab" aria-selected={view === 'students'} className={view === 'students' ? 'is-active' : ''} onClick={() => setView('students')}>Students</button>
+            <button role="tab" aria-selected={view === 'pairs'} className={view === 'pairs' ? 'is-active' : ''} onClick={() => setView('pairs')}>Pairs</button>
+            <button role="tab" aria-selected={view === 'groups'} className={view === 'groups' ? 'is-active' : ''} onClick={() => setView('groups')}>Groups</button>
+          </div>
+        )}
         {mode === 'attendance' && <p className="cr-modehint">Attendance – tap a student: present → absent → late → left early</p>}
         {mode === 'select' && <p className="cr-modehint">Select who gets points ({selected.size})</p>}
       </div>
 
       <main className="cr-main">
-        {view === 'students' ? (activeStep ? null : (
+        {view === 'students' ? ((
           <div className="cr-grid">
             <button
               className={`cr-tile cr-tile--class ${mode !== 'normal' ? 'is-dim' : ''}`}
@@ -278,7 +283,6 @@ export default function Classroom() {
           <div className="cr-grid cr-grid--groups">
             {groupsToday.map((g) => {
               const members = g.ids.map((id) => doc.students.find((s) => s.id === id)).filter(Boolean)
-              const total = members.reduce((sum, s) => sum + (points[s.id] || 0), 0)
               return (
                 <div key={g.id} className="cr-group">
                   <button className="cr-group__main" onClick={() => members.length && (activeStep ? givePoints(members.map((s) => s.id)) : setModal({ kind: 'target', target: { type: 'multi', ids: members.map((s) => s.id), title: g.name } }))}>
@@ -288,7 +292,6 @@ export default function Classroom() {
                     </span>
                     <span className="cr-group__name">
                       <b>{g.name}</b>
-                      <span className={`cr-badge ${total < 0 ? 'is-neg' : ''}`}>{total}</span>
                     </span>
                     <small>{members.map((s) => pickName(s, doc.students)).join(', ') || 'empty'}</small>
                   </button>
@@ -300,11 +303,19 @@ export default function Classroom() {
                 </div>
               )
             })}
-            <button className="cr-tile cr-tile--add cr-group--add" onClick={() => setModal({ kind: 'group', group: null })}>
-              <span className="cr-tile__plus"><Icon.plus /></span>
-              <span className="cr-tile__first">New group</span>
-              <small className="cr-muted">or: Toolkit → Group maker</small>
-            </button>
+            {activeStep ? (
+              <button className="cr-tile cr-tile--add cr-group--add" onClick={() => setModal({ kind: 'tool', id: 'groups', size: null, date: today, fromBoard: true })}>
+                <span className="cr-tile__plus"><Icon.shuffle /></span>
+                <span className="cr-tile__first">{groupsToday.length ? 'Make new groups' : 'Make groups'}</span>
+                {groupsToday.length > 0 && <small className="cr-muted">or keep these from last time</small>}
+              </button>
+            ) : (
+              <button className="cr-tile cr-tile--add cr-group--add" onClick={() => setModal({ kind: 'group', group: null })}>
+                <span className="cr-tile__plus"><Icon.plus /></span>
+                <span className="cr-tile__first">New group</span>
+                <small className="cr-muted">or: Toolkit → Group maker</small>
+              </button>
+            )}
             {groupsToday.length > 1 && (
               <button className="cr-link cr-groups__clear" onClick={() => { if (window.confirm('Delete all groups? Students and their points stay.')) update((d) => ({ ...d, groups: [] })) }}>
                 <Icon.trash />Delete all groups
