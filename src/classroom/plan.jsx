@@ -252,7 +252,7 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings }
           {left > 0 && <span className="cr-timebar__free" style={{ flexGrow: left }} />}
         </div>
         <span className="cr-timebar__text">
-          <b>{total}</b> / {length} min · {left > 0 ? `${left} min left` : left === 0 ? 'perfect fit ✓' : `${-left} min over!`}
+          <b>{total}</b> / {length} min{left >= 0 ? ' · ' : ''}{left > 0 ? `${left} min left` : left === 0 ? 'perfect fit ✓' : null}
         </span>
       </div>
 
@@ -302,7 +302,7 @@ function PlanRow({ item, step, start, cls, review, open, onToggle, onChange, onF
     setLinkForm(null)
   }
   const removeRes = (r) => { removeFile(cls, r); onChange((it) => ({ resources: (it.resources || []).filter((x) => x.id !== r.id) })) }
-  const shownTags = role ? [tagOf(role === 'warmer' ? 'warmer' : role === 'hwreview' ? 'hwreview' : role === 'homework' ? 'homework' : 'reflection')] : (item.tags || []).map(tagOf).filter(Boolean)
+  const shownTags = role === 'reflection' ? [] : role ? [tagOf(role === 'warmer' ? 'warmer' : role === 'hwreview' ? 'hwreview' : role === 'homework' ? 'homework' : 'reflection')] : (item.tags || []).map(tagOf).filter(Boolean)
 
   const Wrap = draggable ? Reorder.Item : 'li'
   const wrapProps = draggable
