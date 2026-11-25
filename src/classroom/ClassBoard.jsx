@@ -54,7 +54,8 @@ export default function ClassBoard({ cls }) {
         <PlanTimeline
           plan={data.plan}
           cls={cls}
-          heading={data.isToday === false && data.planDate ? `📅 Next lesson – ${dayLabel(data.planDate, { month: 'long', day: 'numeric', weekday: 'long' })}` : '📅 Today’s lesson plan'}
+          heading={`📅 ${data.isToday ? 'Today' : 'Next lesson'} – ${dayLabel(data.planDate, { weekday: 'long', day: 'numeric', month: 'long' })}${data.planTime ? `, ${data.planTime}` : ''}`}
+          startTime={data.planTime}
         />
       )}
       {data.directions?.length > 0 && (

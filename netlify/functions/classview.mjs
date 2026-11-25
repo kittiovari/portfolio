@@ -29,28 +29,31 @@ export default async (req, context) => {
       .filter((e) => e.v > 0 && ids.has(e.s))
       .map((e) => ({ id: e.id, s: e.s, n: e.n, i: e.i, v: e.v, t: e.t }))
     const groups = (doc.groups || []).map((g) => ({ id: g.id, name: g.name, ids: (g.ids || []).filter((id) => ids.has(id)) }))
-    // A mai óraterv; ha mára nincs, a következő betervezett alkalomé (dátummal)
-    const getPlan = (k) => doc.plans?.[k] || (doc.today?.[k]?.length
-      ? { title: '', items: doc.today[k].map((it) => ({ id: it.id, kind: 'task', title: it.text, note: '', skills: [], resources: [], done: Boolean(it.done) })) }
-      : null)
+    // A következő (vagy ma zajló) betervezett óra – kulcs: 'YYYY-MM-DD@HH:MM' vagy 'YYYY-MM-DD'
+    const SKILL_TAG = { R: 'reading', L: 'listening', S: 'speaking', W: 'writing', G: 'grammar', V: 'vocabulary' }
+    const normItem = (it) => (it.aim !== undefined ? it : {
+      id: it.id, minutes: it.minutes ?? 5, aim: it.title || it.text || '', activity: it.note || '', org: '', equipment: '',
+      tags: [...(it.kind === 'warmup' ? ['warmer'] : it.kind === 'homework' ? ['homework'] : []), ...(it.skills || []).map((x) => SKILL_TAG[x]).filter(Boolean)],
+      resources: it.resources || [], done: Boolean(it.done),
+    })
+    const plansAll = { ...Object.fromEntries(Object.entries(doc.today || {}).map(([k, v]) => [k, { title: '', items: v }])), ...(doc.plans || {}) }
     const todayKey = dayKey()
-    let planDate = todayKey
-    if (!getPlan(todayKey)?.items?.length) {
-      const keys = [...new Set([...Object.keys(doc.plans || {}), ...Object.keys(doc.today || {})])]
-      planDate = keys.filter((k) => k > todayKey && getPlan(k)?.items?.length).sort()[0] || todayKey
-    }
-    const p = getPlan(planDate)
+    const planKey = Object.keys(plansAll).filter((k) => k.slice(0, 10) >= todayKey && (plansAll[k]?.items?.length)).sort()[0] || null
+    const p = planKey ? plansAll[planKey] : null
     const plan = p ? {
       title: String(p.title || ''),
-      items: (p.items || []).map((it) => ({
-        id: it.id, kind: it.kind, title: it.title, note: it.note, skills: it.skills || [], done: Boolean(it.done),
+      items: (p.items || []).map(normItem).map((it) => ({
+        id: it.id, minutes: Number(it.minutes) || 0, aim: it.aim || '', activity: it.activity || '', org: it.org || '', equipment: it.equipment || '',
+        tags: it.tags || [], done: Boolean(it.done),
         resources: (it.resources || []).map((r) => (r.type === 'file'
           ? { id: r.id, type: 'file', fileId: r.fileId, name: r.name, mime: r.mime, size: r.size }
           : { id: r.id, type: 'link', url: r.url, name: r.name })),
       })),
     } : { title: '', items: [] }
+    const planDate = planKey ? planKey.slice(0, 10) : null
+    const planTime = planKey && planKey.includes('@') ? planKey.split('@')[1] : null
 
-    return json(200, { students, events, groups, plan, planDate, isToday: planDate === todayKey, directions: doc.directions || [] }, { Vary: 'Cookie' })
+    return json(200, { students, events, groups, plan, planDate, planTime, isToday: planDate === todayKey, directions: doc.directions || [] }, { Vary: 'Cookie' })
   } catch (err) {
     console.error('classview failed', cls, err?.message)
     return json(500, { error: 'store' })

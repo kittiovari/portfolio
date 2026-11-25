@@ -1,7 +1,10 @@
 import { useRef, useState } from 'react'
 import { Reorder, useDragControls } from 'framer-motion'
 import { Sheet, Icon } from './ui.jsx'
-import { KINDS, SKILLS, EXTRA_TAGS, dayKey, getPlan, plannedDays, skillCoverage, uid } from './model.js'
+import {
+  LESSON_MIN, ORG_FORMS, TAGS, WEEKDAYS, addMinutes, dayKey, getPlan, lessonLabel, lessonTimeline, newItem, nextLessonKey,
+  reflectionItem, splitKey, tagOf, uid,
+} from './model.js'
 
 /*
   Óraterv – osztályonként, naponként (előre több alkalomra is).
@@ -13,7 +16,6 @@ import { KINDS, SKILLS, EXTRA_TAGS, dayKey, getPlan, plannedDays, skillCoverage,
 
 // ── Dátum-segédek ──
 const parseDay = (k) => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d) }
-const shiftDay = (k, n) => { const d = parseDay(k); d.setDate(d.getDate() + n); return dayKey(d) }
 export const dayLabel = (k, opts = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }) => parseDay(k).toLocaleDateString('en-GB', opts)
 
 // ── Fájlok ──
@@ -115,17 +117,35 @@ export function Linkify({ text }) {
   return parts.map((p, i) => (/^https?:\/\//.test(p) ? <a key={i} href={p} target="_blank" rel="noopener noreferrer">{hostOf(p)}</a> : p))
 }
 
-// ── Tanári szerkesztő ──
-export function PlanEditor({ doc, update, cls, onClose, onBack }) {
-  const todayKey = dayKey()
-  const [key, setKey] = useState(todayKey)
+// ── Tanári szerkesztő: kompakt sorok, kattintásra kinyíló részletek ──
+export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings }) {
+  const timeline = lessonTimeline(doc)
+  const hasSchedule = (doc.schedule || []).length > 0
+  const [key, setKey] = useState(() => nextLessonKey(doc) || dayKey())
+  const [open, setOpen] = useState(null) // kinyitott sor azonosítója
   const [busy, setBusy] = useState(0)
   const [error, setError] = useState('')
   const plan = getPlan(doc, key)
-  const coverage = skillCoverage(plan)
-  const missing = coverage.filter((s) => !s.ok)
-  const days = plannedDays(doc).filter((k) => k >= todayKey)
-  const rel = key === todayKey ? 'Today' : key === shiftDay(todayKey, 1) ? 'Tomorrow' : key === shiftDay(todayKey, -1) ? 'Yesterday' : null
+  const { date, time } = splitKey(key)
+  const length = doc.lessonLength || LESSON_MIN
+  const total = plan.items.reduce((s, it) => s + (Number(it.minutes) || 0), 0)
+  const left = length - total
+
+  // léptetés: órarend szerint, különben naponként
+  const idx = timeline.indexOf(key)
+  const step = (dir) => {
+    if (hasSchedule && timeline.length) {
+      const i = idx >= 0 ? idx + dir : dir > 0 ? timeline.findIndex((k) => k > key) : timeline.filter((k) => k < key).length - 1
+      if (timeline[i]) { setKey(timeline[i]); setOpen(null) }
+      return
+    }
+    const d = new Date(`${date}T12:00`)
+    d.setDate(d.getDate() + dir)
+    setKey(dayKey(d))
+    setOpen(null)
+  }
+  const nextKey = nextLessonKey(doc)
+  const upcoming = timeline.filter((k) => !nextKey || k >= nextKey).slice(0, 12)
 
   const setPlan = (fn) => update((d) => {
     const next = fn(getPlan(d, key))
@@ -133,14 +153,28 @@ export function PlanEditor({ doc, update, cls, onClose, onBack }) {
     if (next.items.length || next.title) plans[key] = next
     else delete plans[key]
     const today = { ...(d.today || {}) }
-    delete today[key] // a régi napirend átkerült az óratervbe
+    // a régi, csak dátumos terv átkerült az órarendi órához
+    if (time && plans[date] && key !== date) delete plans[date]
+    delete today[date]
     return { ...d, plans, today }
   })
-  // patch lehet objektum vagy függvény (a legfrissebb kártyából számol – gyors kattintásoknál is pontos)
+  // patch lehet objektum vagy függvény (mindig a legfrissebb sorból számol)
   const setItem = (id, patch) => setPlan((p) => ({ ...p, items: p.items.map((it) => (it.id === id ? { ...it, ...(typeof patch === 'function' ? patch(it) : patch) } : it)) }))
-  const addItem = (kind = 'task') => setPlan((p) => ({ ...p, items: [...p.items, { id: uid(), kind, title: '', note: '', skills: [], resources: [], done: false }] }))
+  const addItem = () => {
+    const it = newItem()
+    setPlan((p) => {
+      const items = [...p.items]
+      if (!items.length) return { ...p, items: [it, reflectionItem()] }
+      // a záró önreflexió mindig az utolsó marad
+      const last = items[items.length - 1]
+      if (last.tags?.includes('reflection')) items.splice(items.length - 1, 0, it)
+      else items.push(it)
+      return { ...p, items }
+    })
+    setOpen(it.id)
+  }
   const removeItem = (it) => {
-    if (it.resources?.length && !window.confirm('This card and its uploaded files will be deleted. Are you sure?')) return
+    if (it.resources?.length && !window.confirm('This step and its uploaded files will be deleted. Continue?')) return
     it.resources?.forEach((r) => removeFile(cls, r))
     setPlan((p) => ({ ...p, items: p.items.filter((x) => x.id !== it.id) }))
   }
@@ -150,7 +184,7 @@ export function PlanEditor({ doc, update, cls, onClose, onBack }) {
       setBusy((n) => n + 1)
       try {
         const r = await uploadFile(cls, f)
-        setPlan((p) => ({ ...p, items: p.items.map((it) => (it.id === itemId ? { ...it, resources: [...(it.resources || []), r] } : it)) }))
+        setItem(itemId, (it) => ({ resources: [...(it.resources || []), r] }))
       } catch (e) {
         setError(e.message)
       } finally {
@@ -159,50 +193,69 @@ export function PlanEditor({ doc, update, cls, onClose, onBack }) {
     }
   }
 
+  // kezdési időpontok lépésenként
+  let acc = 0
+  const starts = plan.items.map((it) => { const s = addMinutes(time, acc); acc += Number(it.minutes) || 0; return s })
+
   return (
     <Sheet title="Lesson plan" color="#E0B33A" icon={<Icon.sun />} onClose={onClose} onBack={onBack} wide className="cr-sheet--darktext cr-plan cr-plan--xl">
+      {/* Melyik óra? – órarend szerint léptetve */}
       <div className="cr-plan__nav">
-        <button className="cr-iconbtn" onClick={() => setKey(shiftDay(key, -1))} aria-label="Previous day"><Icon.back /></button>
-        <label className="cr-plan__date">
-          <span>{rel && <b>{rel} · </b>}{dayLabel(key)}</span>
-          <input type="date" value={key} onChange={(e) => e.target.value && setKey(e.target.value)} aria-label="Choose date" />
-        </label>
-        <button className="cr-iconbtn" onClick={() => setKey(shiftDay(key, 1))} aria-label="Next day"><Icon.next /></button>
+        <button className="cr-iconbtn" onClick={() => step(-1)} aria-label="Previous lesson"><Icon.back /></button>
+        <div className="cr-plan__lesson">
+          {hasSchedule ? (
+            <select value={key} onChange={(e) => { setKey(e.target.value); setOpen(null) }} aria-label="Lesson">
+              {!upcoming.includes(key) && <option value={key}>{lessonLabel(key, { weekday: 'long', day: 'numeric', month: 'long' })}</option>}
+              {upcoming.map((k) => (
+                <option key={k} value={k}>
+                  {lessonLabel(k, { weekday: 'long', day: 'numeric', month: 'long' })}{k === nextKey ? ' (next)' : ''}{getPlan(doc, k).items.length ? ' ✓' : ''}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <label className="cr-plan__date">
+              <span>{lessonLabel(key, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
+              <input type="date" value={date} onChange={(e) => e.target.value && setKey(e.target.value)} aria-label="Date" />
+            </label>
+          )}
+        </div>
+        <button className="cr-iconbtn" onClick={() => step(1)} aria-label="Next lesson"><Icon.next /></button>
       </div>
-      <div className="cr-plan__days">
-        {key !== todayKey && <button className="cr-plan__chip" onClick={() => setKey(todayKey)}>↩ Today</button>}
-        {days.map((k) => (
-          <button key={k} className={`cr-plan__chip ${k === key ? 'is-active' : ''}`} onClick={() => setKey(k)}>
-            {k === todayKey ? 'Today' : dayLabel(k, { month: 'short', day: 'numeric', weekday: 'short' })}
-            <small>{getPlan(doc, k).items.length}</small>
-          </button>
-        ))}
-      </div>
+      {!hasSchedule && (
+        <p className="cr-hint cr-hint--center">
+          Tip: add your weekly timetable in <button className="cr-link" onClick={onOpenSettings}>Class settings</button> to step from lesson to lesson.
+        </p>
+      )}
 
-      <input className="cr-plan__title" value={plan.title || ''} placeholder="Lesson title, e.g. Lesson 4 – Past simple"
+      <input className="cr-plan__title" value={plan.title || ''} placeholder="Lesson title, e.g. Unit 5 – Past simple"
         onChange={(e) => setPlan((p) => ({ ...p, title: e.target.value }))} aria-label="Lesson title" />
 
-      {/* 4 skill: a házi feladattal együtt mindegyik szerepeljen */}
-      <div className={`cr-skillbar ${missing.length ? '' : 'is-complete'}`}>
-        {coverage.map((s) => (
-          <span key={s.id} className={`cr-skillbar__item ${s.ok ? 'is-ok' : ''}`} style={{ '--sk': s.color }} title={s.label}>
-            {s.ok ? '✓' : '○'} {s.label}
-          </span>
-        ))}
-        <span className="cr-skillbar__msg">
-          {!plan.items.length ? 'Add some tasks' : missing.length
-            ? `Missing: ${missing.map((s) => s.label).join(', ')} – you could add it to the homework`
-            : 'All 4 skills covered 🎉'}
+      {/* Időkeret: 45 perc */}
+      <div className={`cr-timebar ${left < 0 ? 'is-over' : left === 0 ? 'is-full' : ''}`}>
+        <div className="cr-timebar__track" aria-hidden="true">
+          {plan.items.map((it) => (
+            <span key={it.id} style={{ flexGrow: Number(it.minutes) || 0, background: tagOf(it.tags?.[0])?.color || '#C9B8C6' }} title={`${it.aim || 'Step'} – ${it.minutes} min`} />
+          ))}
+          {left > 0 && <span className="cr-timebar__free" style={{ flexGrow: left }} />}
+        </div>
+        <span className="cr-timebar__text">
+          <b>{total}</b> / {length} min · {left > 0 ? `${left} min left` : left === 0 ? 'perfect fit ✓' : `${-left} min over!`}
         </span>
       </div>
 
       {error && <p className="cr-hint is-neg" role="alert">{error}</p>}
       {busy > 0 && <p className="cr-hint" role="status">Uploading… ({busy})</p>}
 
-      <Reorder.Group as="ol" axis="y" values={plan.items} onReorder={(items) => setPlan((p) => ({ ...p, items }))} className="cr-pcards">
+      {plan.items.length > 0 && (
+        <div className="cr-prow cr-prow--head" aria-hidden="true">
+          <span /><span>Step</span><span>Time</span><span>Aim</span><span>Form</span><span />
+        </div>
+      )}
+      <Reorder.Group as="ol" axis="y" values={plan.items} onReorder={(items) => setPlan((p) => ({ ...p, items }))} className="cr-prows">
         {plan.items.map((it, i) => (
-          <PlanCard
-            key={it.id} item={it} index={i} count={plan.items.length} cls={cls}
+          <PlanRow
+            key={it.id} item={it} index={i} count={plan.items.length} start={starts[i]} cls={cls}
+            open={open === it.id} onToggle={() => setOpen(open === it.id ? null : it.id)}
             onChange={(patch) => setItem(it.id, patch)}
             onRemove={() => removeItem(it)}
             onMove={(dir) => setPlan((p) => { const a = [...p.items]; [a[i + dir], a[i]] = [a[i], a[i + dir]]; return { ...p, items: a } })}
@@ -212,23 +265,24 @@ export function PlanEditor({ doc, update, cls, onClose, onBack }) {
       </Reorder.Group>
 
       <div className="cr-pcards__add">
-        {KINDS.map((k) => (
-          <button key={k.id} className="cr-btn" onClick={() => addItem(k.id)}><span aria-hidden="true">{k.icon}</span>+ {k.label}</button>
-        ))}
+        <button className="cr-btn cr-btn--primary" onClick={addItem}><Icon.plus />Add task</button>
       </div>
-      <p className="cr-hint cr-plan__note">To add a resource: use the “Link” / “File” button on a card, drag a file onto it, or paste a screenshot (Ctrl+V). On the class page students see today’s plan, or the next one if there’s none for today.</p>
+      <p className="cr-hint cr-plan__note">Click a row to edit details. Drag ⠿ to reorder. Add resources with Link / File, by dropping a file on the row, or pasting a screenshot (Ctrl+V). Students see the next lesson's plan on the class page.</p>
     </Sheet>
   )
 }
 
-function PlanCard({ item, index, count, cls, onChange, onRemove, onMove, onFiles }) {
+function PlanRow({ item, index, count, start, cls, open, onToggle, onChange, onRemove, onMove, onFiles }) {
   const controls = useDragControls()
   const fileRef = useRef(null)
-  const [linkForm, setLinkForm] = useState(null) // { url, name }
+  const [linkForm, setLinkForm] = useState(null)
   const [over, setOver] = useState(false)
-  const kind = KINDS.find((k) => k.id === item.kind) || KINDS[1]
-  const toggleSkill = (id) => onChange((it) => ({ skills: it.skills?.includes(id) ? it.skills.filter((s) => s !== id) : [...(it.skills || []), id] }))
-
+  const org = ORG_FORMS.find((o) => o.id === item.org)
+  const toggleTag = (id) => onChange((it) => {
+    const tags = it.tags?.includes(id) ? it.tags.filter((t) => t !== id) : [...(it.tags || []), id]
+    // az önreflexió mindig rövid (1–2 perc)
+    return id === 'reflection' && !it.tags?.includes(id) ? { tags, minutes: Math.min(Number(it.minutes) || 2, 2) } : { tags }
+  })
   const addLink = (e) => {
     e.preventDefault()
     const url = normalizeUrl(linkForm.url)
@@ -236,87 +290,146 @@ function PlanCard({ item, index, count, cls, onChange, onRemove, onMove, onFiles
     onChange((it) => ({ resources: [...(it.resources || []), { id: uid(), type: 'link', url, name: linkForm.name.trim() || hostOf(url) }] }))
     setLinkForm(null)
   }
-  const removeRes = (r) => {
-    removeFile(cls, r)
-    onChange((it) => ({ resources: (it.resources || []).filter((x) => x.id !== r.id) }))
-  }
+  const removeRes = (r) => { removeFile(cls, r); onChange((it) => ({ resources: (it.resources || []).filter((x) => x.id !== r.id) })) }
 
   return (
     <Reorder.Item
       value={item} dragListener={false} dragControls={controls}
-      className={`cr-pcard cr-pcard--${item.kind} ${item.done ? 'is-done' : ''} ${over ? 'is-over' : ''}`}
-      onPaste={(e) => {
-        const files = [...(e.clipboardData?.files || [])]
-        if (files.length) { e.preventDefault(); onFiles(files) }
-      }}
+      className={`cr-prow ${open ? 'is-open' : ''} ${item.done ? 'is-done' : ''} ${over ? 'is-over' : ''}`}
+      onPaste={(e) => { const files = [...(e.clipboardData?.files || [])]; if (files.length) { e.preventDefault(); onFiles(files) } }}
       onDragOver={(e) => { if (e.dataTransfer?.types?.includes('Files')) { e.preventDefault(); setOver(true) } }}
       onDragLeave={() => setOver(false)}
       onDrop={(e) => { if (e.dataTransfer?.files?.length) { e.preventDefault(); setOver(false); onFiles([...e.dataTransfer.files]) } }}
     >
-      <div className="cr-pcard__side">
-        <button className="cr-pcard__grip" onPointerDown={(e) => controls.start(e)} aria-label="Drag to move" title="Drag to reorder">⠿</button>
-        <span className="cr-pcard__num">{index + 1}</span>
-        <button className="cr-iconbtn cr-iconbtn--sm" disabled={index === 0} onClick={() => onMove(-1)} aria-label="Move up">↑</button>
-        <button className="cr-iconbtn cr-iconbtn--sm" disabled={index === count - 1} onClick={() => onMove(1)} aria-label="Move down">↓</button>
+      {/* Kompakt sor */}
+      <div className="cr-prow__line" onClick={(e) => { if (!e.target.closest('input, button, select, textarea, a')) onToggle() }}>
+        <button className="cr-pcard__grip" onPointerDown={(e) => controls.start(e)} aria-label="Drag to reorder" title="Drag to reorder">⠿</button>
+        <span className="cr-prow__step">{index + 1}</span>
+        <span className="cr-prow__time">
+          <span className="cr-prow__min">
+            <input type="number" min="1" max="45" value={item.minutes} onChange={(e) => onChange({ minutes: Math.max(0, Math.min(90, Number(e.target.value) || 0)) })} aria-label="Minutes" />
+            <small>min</small>
+          </span>
+          {start && <small className="cr-prow__clock">{start}</small>}
+        </span>
+        <span className="cr-prow__aim">
+          {item.tags?.length > 0 && (
+            <span className="cr-prow__tags">
+              {item.tags.map((t) => tagOf(t)).filter(Boolean).map((t) => <span key={t.id} className="cr-tag" style={{ '--tg': t.color }}>{t.label}</span>)}
+            </span>
+          )}
+          <input value={item.aim} placeholder="Aim – what students will be able to do" onChange={(e) => onChange({ aim: e.target.value })} aria-label="Aim" />
+        </span>
+        <span className="cr-prow__org" title={org?.label || ''}>{org ? <>{org.icon}<small>{org.label}</small></> : <small>–</small>}</span>
+        <span className="cr-prow__end">
+          {item.resources?.length > 0 && <span className="cr-prow__count" title="Resources">📎{item.resources.length}</span>}
+          <button className="cr-iconbtn cr-iconbtn--sm cr-prow__toggle" onClick={onToggle} aria-expanded={open} aria-label={open ? 'Collapse' : 'Edit details'}>
+            <Icon.next />
+          </button>
+        </span>
       </div>
 
-      <div className="cr-pcard__main">
-        <div className="cr-pcard__top">
-          <div className="cr-pcard__kinds" role="radiogroup" aria-label="Type">
-            {KINDS.map((k) => (
-              <button key={k.id} role="radio" aria-checked={item.kind === k.id} className={item.kind === k.id ? 'is-active' : ''} onClick={() => onChange({ kind: k.id })}>
-                <span aria-hidden="true">{k.icon}</span> {k.label}
-              </button>
-            ))}
-          </div>
-          <span className="cr-spacer" />
-          <label className="cr-pcard__done" title="Tick it off during the lesson">
-            <input type="checkbox" checked={Boolean(item.done)} onChange={(e) => onChange({ done: e.target.checked })} /> done
+      {/* Részletek */}
+      {open && (
+        <div className="cr-prow__details">
+          <label className="cr-pfield">
+            <span>Activity</span>
+            <textarea rows={3} value={item.activity || ''} placeholder="What happens: instructions, pages, exercises…" onChange={(e) => onChange({ activity: e.target.value })} />
           </label>
-          <button className="cr-iconbtn cr-iconbtn--sm" onClick={onRemove} aria-label="Delete card"><Icon.trash /></button>
-        </div>
-
-        <input className="cr-pcard__title" value={item.title} placeholder={`${kind.label}: e.g. ${item.kind === 'homework' ? 'WB p3/5–6' : item.kind === 'warmup' ? 'Quizlet quiz' : 'Coursebook p5/1 – Listening'}`}
-          onChange={(e) => onChange({ title: e.target.value })} aria-label="Title" />
-        <textarea className="cr-pcard__note" rows={2} value={item.note || ''} placeholder="Description, page numbers, instructions… (optional)"
-          onChange={(e) => onChange({ note: e.target.value })} aria-label="Description" />
-
-        <div className="cr-pcard__skills">
-          {[...SKILLS, ...EXTRA_TAGS].map((s) => (
-            <button key={s.id} className={`cr-sk ${item.skills?.includes(s.id) ? 'is-on' : ''} ${s.color ? '' : 'cr-sk--extra'}`} style={{ '--sk': s.color || '#8A7888' }}
-              onClick={() => toggleSkill(s.id)} aria-pressed={item.skills?.includes(s.id)}>{s.label}</button>
-          ))}
-        </div>
-
-        {item.resources?.length > 0 && (
-          <div className="cr-pcard__res">
-            {item.resources.map((r) => <Resource key={r.id} r={r} cls={cls} onRemove={() => removeRes(r)} />)}
+          <div className="cr-pfield">
+            <span>Organisation form</span>
+            <div className="cr-pcard__kinds" role="radiogroup" aria-label="Organisation form">
+              {ORG_FORMS.map((o) => (
+                <button key={o.id} role="radio" aria-checked={item.org === o.id} className={item.org === o.id ? 'is-active' : ''}
+                  onClick={() => onChange((it) => ({ org: it.org === o.id ? '' : o.id }))}>{o.icon} {o.label}</button>
+              ))}
+            </div>
           </div>
-        )}
-
-        {linkForm ? (
-          <form className="cr-pcard__linkform" onSubmit={addLink}>
-            <input value={linkForm.url} onChange={(e) => setLinkForm({ ...linkForm, url: e.target.value })} placeholder="https://… (learningapps, Quizlet, YouTube, Drive…)" autoFocus aria-label="Link" />
-            <input value={linkForm.name} onChange={(e) => setLinkForm({ ...linkForm, name: e.target.value })} placeholder="Name (optional)" aria-label="Link name" />
-            <button type="submit" className="cr-btn cr-btn--primary cr-btn--sm" disabled={!normalizeUrl(linkForm.url)}>Add</button>
-            <button type="button" className="cr-btn cr-btn--sm" onClick={() => setLinkForm(null)}>Cancel</button>
-          </form>
-        ) : (
-          <div className="cr-pcard__addres">
-            <button className="cr-btn cr-btn--sm" onClick={() => setLinkForm({ url: '', name: '' })}>🔗 Link</button>
-            <button className="cr-btn cr-btn--sm" onClick={() => fileRef.current?.click()}>📎 File / image / audio</button>
-            <input ref={fileRef} type="file" multiple hidden
-              accept="image/*,audio/*,video/mp4,video/webm,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.odt,.txt,.zip"
-              onChange={(e) => { const f = [...e.target.files]; e.target.value = ''; if (f.length) onFiles(f) }} />
+          <label className="cr-pfield">
+            <span>Equipment</span>
+            <input value={item.equipment || ''} placeholder="e.g. Coursebook, worksheet, laptop + speakers" onChange={(e) => onChange({ equipment: e.target.value })} />
+          </label>
+          <div className="cr-pfield">
+            <span>Tags</span>
+            <div className="cr-pcard__skills">
+              {TAGS.map((t, ti) => (
+                <span key={t.id} className="cr-tagwrap">
+                  {t.group && TAGS[ti - 1]?.group !== t.group && <small className="cr-tagwrap__group">{t.group}:</small>}
+                  <button className={`cr-sk ${item.tags?.includes(t.id) ? 'is-on' : ''}`} style={{ '--sk': t.color }} onClick={() => toggleTag(t.id)} aria-pressed={item.tags?.includes(t.id)}>{t.label}</button>
+                </span>
+              ))}
+            </div>
           </div>
-        )}
-      </div>
+          <div className="cr-pfield">
+            <span>Resources</span>
+            {item.resources?.length > 0 && <div className="cr-pcard__res">{item.resources.map((r) => <Resource key={r.id} r={r} cls={cls} onRemove={() => removeRes(r)} />)}</div>}
+            {linkForm ? (
+              <form className="cr-pcard__linkform" onSubmit={addLink}>
+                <input value={linkForm.url} onChange={(e) => setLinkForm({ ...linkForm, url: e.target.value })} placeholder="https://… (LearningApps, Quizlet, YouTube, Drive…)" autoFocus aria-label="Link" />
+                <input value={linkForm.name} onChange={(e) => setLinkForm({ ...linkForm, name: e.target.value })} placeholder="Name (optional)" aria-label="Link name" />
+                <button type="submit" className="cr-btn cr-btn--primary cr-btn--sm" disabled={!normalizeUrl(linkForm.url)}>Add</button>
+                <button type="button" className="cr-btn cr-btn--sm" onClick={() => setLinkForm(null)}>Cancel</button>
+              </form>
+            ) : (
+              <div className="cr-pcard__addres">
+                <button className="cr-btn cr-btn--sm" onClick={() => setLinkForm({ url: '', name: '' })}>🔗 Link</button>
+                <button className="cr-btn cr-btn--sm" onClick={() => fileRef.current?.click()}>📎 File / image / audio</button>
+                <input ref={fileRef} type="file" multiple hidden
+                  accept="image/*,audio/*,video/mp4,video/webm,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.odt,.txt,.zip"
+                  onChange={(e) => { const f = [...e.target.files]; e.target.value = ''; if (f.length) onFiles(f) }} />
+              </div>
+            )}
+          </div>
+          <div className="cr-prow__actions">
+            <button className="cr-iconbtn cr-iconbtn--sm" disabled={index === 0} onClick={() => onMove(-1)} aria-label="Move up">↑</button>
+            <button className="cr-iconbtn cr-iconbtn--sm" disabled={index === count - 1} onClick={() => onMove(1)} aria-label="Move down">↓</button>
+            <label className="cr-pcard__done"><input type="checkbox" checked={Boolean(item.done)} onChange={(e) => onChange({ done: e.target.checked })} /> done</label>
+            <span className="cr-spacer" />
+            <button className="cr-btn cr-btn--danger cr-btn--sm" onClick={onRemove}><Icon.trash />Delete step</button>
+          </div>
+        </div>
+      )}
     </Reorder.Item>
   )
 }
 
+// ── Osztálybeállítások: heti órarend, óra hossza ──
+export function ClassSettings({ doc, update, onClose }) {
+  const sched = [...(doc.schedule || [])].sort((a, b) => a.day - b.day || a.time.localeCompare(b.time))
+  const set = (fn) => update((d) => ({ ...d, schedule: fn(d.schedule || []) }))
+  const length = doc.lessonLength || LESSON_MIN
+  return (
+    <Sheet title="Class settings" onClose={onClose} className="cr-settings">
+      <h3 className="cr-settings__h">Weekly timetable</h3>
+      <p className="cr-hint">Your lessons with this class each week. The lesson planner uses these to step from lesson to lesson.</p>
+      <ul className="cr-sched">
+        {sched.map((s) => (
+          <li key={s.id}>
+            <select value={s.day} onChange={(e) => set((l) => l.map((x) => (x.id === s.id ? { ...x, day: Number(e.target.value) } : x)))} aria-label="Day">
+              {WEEKDAYS.map((w) => <option key={w.id} value={w.id}>{w.label}</option>)}
+            </select>
+            <input type="time" value={s.time} step="300" onChange={(e) => e.target.value && set((l) => l.map((x) => (x.id === s.id ? { ...x, time: e.target.value } : x)))} aria-label="Start time" />
+            <span className="cr-muted">– {addMinutes(s.time, length)}</span>
+            <span className="cr-spacer" />
+            <button className="cr-iconbtn cr-iconbtn--sm" onClick={() => set((l) => l.filter((x) => x.id !== s.id))} aria-label="Remove lesson"><Icon.close /></button>
+          </li>
+        ))}
+      </ul>
+      <button className="cr-btn" onClick={() => set((l) => [...l, { id: uid(), day: (sched[sched.length - 1]?.day % 5 || 0) + 1, time: sched[sched.length - 1]?.time || '08:00' }])}>
+        <Icon.plus />Add weekly lesson
+      </button>
+      <h3 className="cr-settings__h">Lesson length</h3>
+      <label className="cr-field cr-field--inline">
+        <span>Minutes per lesson</span>
+        <input type="number" min="20" max="120" step="5" value={length} onChange={(e) => update((d) => ({ ...d, lessonLength: Math.max(20, Math.min(120, Number(e.target.value) || LESSON_MIN)) }))} />
+      </label>
+    </Sheet>
+  )
+}
+
 // ── Diákoknak: Padlet-szerű idővonal ──
-export function PlanTimeline({ plan, cls, heading }) {
+export function PlanTimeline({ plan, cls, heading, startTime }) {
+  let acc = 0
   return (
     <div className="cr-timeline">
       <div className="cr-timeline__head">
@@ -325,18 +438,21 @@ export function PlanTimeline({ plan, cls, heading }) {
       </div>
       <ol className="cr-timeline__track">
         {plan.items.map((it, i) => {
-          const kind = KINDS.find((k) => k.id === it.kind) || KINDS[1]
+          const start = addMinutes(startTime, acc)
+          acc += Number(it.minutes) || 0
+          const org = ORG_FORMS.find((o) => o.id === it.org)
+          const tags = (it.tags || []).map(tagOf).filter(Boolean)
           return (
-            <li key={it.id} className={`cr-tcard cr-tcard--${it.kind} ${it.done ? 'is-done' : ''}`}>
-              <span className="cr-tcard__kind"><span aria-hidden="true">{kind.icon}</span> {kind.label}{it.done && ' · done ✓'}</span>
-              {it.title && <b className="cr-tcard__title">{i + 1}. {it.title}</b>}
-              {it.note && <p className="cr-tcard__note"><Linkify text={it.note} /></p>}
-              {it.skills?.length > 0 && (
-                <span className="cr-tcard__skills">
-                  {[...SKILLS, ...EXTRA_TAGS].filter((s) => it.skills.includes(s.id)).map((s) => (
-                    <span key={s.id} className="cr-sk is-on" style={{ '--sk': s.color || '#8A7888' }}>{s.label}</span>
-                  ))}
-                </span>
+            <li key={it.id} className={`cr-tcard ${it.done ? 'is-done' : ''}`} style={{ '--tg': tags[0]?.color || '#C9B8C6' }}>
+              <span className="cr-tcard__kind">Step {i + 1} · {it.minutes} min{start ? ` · ${start}` : ''}{it.done && ' · done ✓'}</span>
+              {tags.length > 0 && <span className="cr-tcard__skills">{tags.map((t) => <span key={t.id} className="cr-tag" style={{ '--tg': t.color }}>{t.label}</span>)}</span>}
+              {it.aim && <b className="cr-tcard__title">{it.aim}</b>}
+              {it.activity && <p className="cr-tcard__note"><Linkify text={it.activity} /></p>}
+              {(org || it.equipment) && (
+                <p className="cr-tcard__meta">
+                  {org && <span>{org.icon} {org.label}</span>}
+                  {it.equipment && <span>🎒 {it.equipment}</span>}
+                </p>
               )}
               {it.resources?.length > 0 && <div className="cr-tcard__res">{it.resources.map((r) => <Resource key={r.id} r={r} cls={cls} />)}</div>}
             </li>

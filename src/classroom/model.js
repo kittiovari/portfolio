@@ -130,39 +130,118 @@ export function rangeBounds(id, now = new Date()) {
 export const inRange = (t, [from, to]) => t >= from.getTime() && t < to.getTime()
 
 // ── Óraterv ──
-// doc.plans[YYYY-MM-DD] = { title, items: [{ id, kind, title, note, skills[], resources[], done }] }
+// doc.schedule = [{ id, day: 1–6 (hétfő = 1), time: 'HH:MM' }]  – heti órarend
+// doc.lessonLength = 45
+// doc.plans[kulcs] = { title, items: [{ id, minutes, aim, activity, org, equipment, tags[], resources[], done }] }
+//   kulcs: 'YYYY-MM-DD@HH:MM' (órarendi óra) vagy 'YYYY-MM-DD' (órarend nélkül)
 // resource: { id, type: 'link' | 'file', url?, fileId?, name, mime?, size? }
-export const SKILLS = [
-  { id: 'R', label: 'Reading', hu: 'Olvasás', color: '#5B8DB8' },
-  { id: 'L', label: 'Listening', hu: 'Hallás utáni értés', color: '#8A6BBE' },
-  { id: 'S', label: 'Speaking', hu: 'Beszéd', color: '#D9774F' },
-  { id: 'W', label: 'Writing', hu: 'Írás', color: '#4E9A6A' },
+export const LESSON_MIN = 45
+export const WEEKDAYS = [
+  { id: 1, short: 'Mon', label: 'Monday' },
+  { id: 2, short: 'Tue', label: 'Tuesday' },
+  { id: 3, short: 'Wed', label: 'Wednesday' },
+  { id: 4, short: 'Thu', label: 'Thursday' },
+  { id: 5, short: 'Fri', label: 'Friday' },
+  { id: 6, short: 'Sat', label: 'Saturday' },
 ]
-export const EXTRA_TAGS = [
-  { id: 'G', label: 'Grammar' },
-  { id: 'V', label: 'Vocabulary' },
+export const ORG_FORMS = [
+  { id: 'frontal', label: 'Frontal', icon: '🧑‍🏫' },
+  { id: 'individual', label: 'Individual', icon: '🙋' },
+  { id: 'pairs', label: 'In pairs', icon: '👯' },
+  { id: 'groups', label: 'In groups', icon: '👥' },
 ]
-export const KINDS = [
-  { id: 'warmup', label: 'Warm-up', icon: '🔥' },
-  { id: 'task', label: 'Task', icon: '📝' },
-  { id: 'homework', label: 'Homework', icon: '🏠' },
+export const TAGS = [
+  { id: 'warmer', label: 'Warmer', color: '#E0915A' },
+  { id: 'hwreview', label: 'Homework review', color: '#9A7B5B' },
+  { id: 'reading', label: 'Reading', color: '#5B8DB8' },
+  { id: 'listening', label: 'Listening', color: '#8A6BBE' },
+  { id: 'speaking', label: 'Speaking', color: '#D9774F' },
+  { id: 'writing', label: 'Writing', color: '#4E9A6A' },
+  { id: 'grammar', label: 'Grammar', group: 'Practice', color: '#B5527A' },
+  { id: 'pronunciation', label: 'Pronunciation', group: 'Practice', color: '#B5527A' },
+  { id: 'vocabulary', label: 'Vocabulary', group: 'Practice', color: '#B5527A' },
+  { id: 'homework', label: 'Future homework', color: '#3F6E9A' },
+  { id: 'reflection', label: 'Self-reflection', color: '#6B5A69' },
 ]
+export const tagOf = (id) => TAGS.find((t) => t.id === id)
 
-// A régi, egyszerű napirendet (doc.today) is óratervként adja vissza
+const z2 = (n) => String(n).padStart(2, '0')
+export const lessonKey = (date, time) => (time ? `${date}@${time}` : date)
+export const splitKey = (k) => { const [date, time = null] = String(k).split('@'); return { date, time } }
+const parseDate = (k) => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d) }
+export const addMinutes = (time, min) => {
+  if (!time) return null
+  const [h, m] = time.split(':').map(Number)
+  const t = h * 60 + m + min
+  return `${z2(Math.floor(t / 60) % 24)}:${z2(t % 60)}`
+}
+
+export const reflectionItem = () => ({ id: uid(), minutes: 2, aim: 'Self-reflection', activity: '', org: 'individual', equipment: '', tags: ['reflection'], resources: [], done: false })
+export const newItem = () => ({ id: uid(), minutes: 5, aim: '', activity: '', org: '', equipment: '', tags: [], resources: [], done: false })
+
+// Korábbi kártyák (kind/title/note/skills) átalakítása az új szerkezetre
+const SKILL_TAG = { R: 'reading', L: 'listening', S: 'speaking', W: 'writing', G: 'grammar', V: 'vocabulary' }
+function normalizeItem(it) {
+  if (it.aim !== undefined) return { tags: [], resources: [], ...it }
+  const tags = [...(it.kind === 'warmup' ? ['warmer'] : it.kind === 'homework' ? ['homework'] : []), ...(it.skills || []).map((s) => SKILL_TAG[s]).filter(Boolean)]
+  return { id: it.id, minutes: it.minutes ?? 5, aim: it.title || it.text || '', activity: it.note || '', org: '', equipment: '', tags, resources: it.resources || [], done: Boolean(it.done) }
+}
+const normalizePlan = (p) => ({ title: p?.title || '', items: (p?.items || []).map(normalizeItem) })
+
 export function getPlan(doc, key) {
-  if (doc.plans?.[key]) return doc.plans[key]
-  const old = doc.today?.[key]
-  if (old?.length) {
-    return { title: '', items: old.map((it) => ({ id: it.id, kind: 'task', title: it.text, note: '', skills: [], resources: [], done: Boolean(it.done) })) }
-  }
+  if (doc.plans?.[key]) return normalizePlan(doc.plans[key])
+  const { date, time } = splitKey(key)
+  // órarendi óránál a régi, csak dátumos terv is előkerül
+  if (time && doc.plans?.[date]) return normalizePlan(doc.plans[date])
+  const old = doc.today?.[date]
+  if (old?.length) return normalizePlan({ items: old })
   return { title: '', items: [] }
 }
-export const plannedDays = (doc) =>
-  [...new Set([...Object.keys(doc.plans || {}), ...Object.keys(doc.today || {})])].filter((k) => getPlan(doc, k).items.length).sort()
 
-export function skillCoverage(plan) {
-  const have = new Set(plan.items.flatMap((it) => it.skills || []))
-  return SKILLS.map((s) => ({ ...s, ok: have.has(s.id) }))
+export const plannedKeys = (doc) =>
+  [...new Set([...Object.keys(doc.plans || {}), ...Object.keys(doc.today || {})])].filter((k) => getPlan(doc, k).items.length || doc.plans?.[k]?.title).sort()
+
+// Az órarend szerinti órák egy időablakban (kulcsok, időrendben)
+export function scheduledLessons(doc, fromDate, days) {
+  const sched = [...(doc.schedule || [])].sort((a, b) => a.day - b.day || a.time.localeCompare(b.time))
+  if (!sched.length) return []
+  const out = []
+  const d = parseDate(fromDate)
+  for (let i = 0; i < days; i++) {
+    const wd = d.getDay() === 0 ? 7 : d.getDay()
+    for (const s of sched) if (s.day === wd) out.push(lessonKey(dayKey(d), s.time))
+    d.setDate(d.getDate() + 1)
+  }
+  return out
+}
+
+// Léptetéshez: órarendi órák (−60…+180 nap) + minden betervezett alkalom
+export function lessonTimeline(doc) {
+  const from = dayKey(new Date(Date.now() - 60 * 864e5))
+  const sched = scheduledLessons(doc, from, 240)
+  const schedDates = new Set(sched.map((k) => splitKey(k).date))
+  // a csak dátumos (órarend előtti) terv beolvad az aznapi órarendi órába
+  const planned = plannedKeys(doc).filter((k) => splitKey(k).time || !schedDates.has(k))
+  return [...new Set([...sched, ...planned])].sort()
+}
+
+// A következő (vagy most zajló) óra kulcsa
+export function nextLessonKey(doc, now = new Date()) {
+  const today = dayKey(now)
+  const nowTime = `${z2(now.getHours())}:${z2(now.getMinutes())}`
+  const len = doc.lessonLength || LESSON_MIN
+  return lessonTimeline(doc).find((k) => {
+    const { date, time } = splitKey(k)
+    if (date > today) return true
+    if (date < today) return false
+    return !time || addMinutes(time, len) > nowTime
+  }) || null
+}
+
+export const lessonLabel = (key, opts = { weekday: 'short', day: 'numeric', month: 'short' }) => {
+  const { date, time } = splitKey(key)
+  const d = parseDate(date).toLocaleDateString('en-GB', opts)
+  return time ? `${d} · ${time}` : d
 }
 
 // ── Jelenlét ──

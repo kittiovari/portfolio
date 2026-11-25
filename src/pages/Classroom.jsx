@@ -8,10 +8,10 @@ import { TargetModal, AddStudents, GroupEditor } from '../classroom/StudentModal
 import {
   Toolkit, RandomTool, GroupMakerTool, DirectionsTool, TpsTool,
 } from '../classroom/tools.jsx'
-import { PlanEditor } from '../classroom/plan.jsx'
+import { PlanEditor, ClassSettings } from '../classroom/plan.jsx'
 import { SessionSetup, SessionPlayer } from '../classroom/session.jsx'
 import { useClassroom } from '../classroom/useClassroom.js'
-import { ATTENDANCE, CLASSES, dayKey, fullName, getPlan, pointsBy, sortStudents, uid } from '../classroom/model.js'
+import { ATTENDANCE, CLASSES, dayKey, fullName, getPlan, lessonLabel, nextLessonKey, pointsBy, sortStudents, uid } from '../classroom/model.js'
 import '../components/PasswordModal.css'
 import '../classroom/Classroom.css'
 
@@ -129,6 +129,11 @@ export default function Classroom() {
         <button className="cr-iconbtn" onClick={() => { setMuted(!muted); setMutedState(!muted) }} aria-label={muted ? 'Sound on' : 'Sound off'} title={muted ? 'Sound on' : 'Sound off'}>
           {muted ? <Icon.mute /> : <Icon.sound />}
         </button>
+        {doc && (
+          <button className="cr-iconbtn" onClick={() => setModal({ kind: 'settings' })} aria-label="Class settings" title="Class settings (timetable)">
+            <Icon.gear />
+          </button>
+        )}
       </div>
     </header>
   )
@@ -194,7 +199,11 @@ export default function Classroom() {
         {mode === 'normal' && (
           <button className="cr-planchip" onClick={() => setModal({ kind: 'tool', id: 'today' })}>
             <span aria-hidden="true">📅</span>
-            {getPlan(doc, today).items.length ? `Today's plan · ${getPlan(doc, today).items.length} task${getPlan(doc, today).items.length === 1 ? '' : 's'}` : 'Lesson plan'}
+            {(() => {
+              const k = nextLessonKey(doc)
+              const n = k ? getPlan(doc, k).items.length : 0
+              return k ? `Next lesson: ${lessonLabel(k)}${n ? ` · ${n} step${n === 1 ? '' : 's'}` : ' · not planned yet'}` : 'Lesson plan'
+            })()}
           </button>
         )}
         {mode === 'attendance' && <p className="cr-modehint">Attendance – tap a student: present → absent → late → left early</p>}
@@ -309,7 +318,8 @@ export default function Classroom() {
         {modal?.kind === 'tool' && modal.id === 'groups' && <GroupMakerTool key="groups" doc={doc} update={update} onClose={() => { closeModal(); setView('groups') }} onBack={backToKit} />}
         {modal?.kind === 'tool' && modal.id === 'directions' && <DirectionsTool key="dir" doc={doc} update={update} onClose={closeModal} onBack={backToKit} />}
         {modal?.kind === 'tool' && modal.id === 'tps' && <TpsTool key="tps" doc={doc} update={update} onClose={closeModal} onBack={backToKit} />}
-        {modal?.kind === 'tool' && modal.id === 'today' && <PlanEditor key="today" doc={doc} update={update} cls={cls} onClose={closeModal} onBack={modal.fromKit ? backToKit : undefined} />}
+        {modal?.kind === 'tool' && modal.id === 'today' && <PlanEditor key="today" doc={doc} update={update} cls={cls} onClose={closeModal} onBack={modal.fromKit ? backToKit : undefined} onOpenSettings={() => setModal({ kind: 'settings' })} />}
+        {modal?.kind === 'settings' && <ClassSettings key="settings" doc={doc} update={update} onClose={closeModal} />}
       </AnimatePresence>
 
       {/* Időzítő és zene: futás közben teljes képernyő ↔ kompakt */}
