@@ -644,14 +644,6 @@ export function LessonBoard({ doc, cls, active, onSelect, onEdit, onCheckHomewor
         )}
         <button className="cr-btn cr-btn--sm" onClick={() => onEdit(key)}><Icon.pencil />{isPlanned ? 'Edit plan' : 'Plan this lesson'}</button>
       </div>
-      {/* Új óraterv: a következő, még be nem tervezett órához */}
-      <button className="cr-btn cr-btn--primary cr-btn--sm cr-lboard__new" onClick={() => {
-        const from = nowKey || today
-        const free = lessonTimeline(doc).find((k) => k >= from && !planned.includes(k))
-        onEdit(free || nowKey || today)
-      }}>
-        <Icon.plus />New lesson plan
-      </button>
       {plan.title && <p className="cr-lboard__title">{plan.title}</p>}
 
       {isPlanned ? (
@@ -693,6 +685,14 @@ export function LessonBoard({ doc, cls, active, onSelect, onEdit, onCheckHomewor
       ) : (
         <p className="cr-hint cr-hint--center">{key ? 'This lesson has no plan yet.' : 'Add your timetable in Class settings, then plan your first lesson.'}</p>
       )}
+      {/* Új óraterv: a következő, még be nem tervezett órához */}
+      <button className="cr-btn cr-btn--primary cr-btn--sm cr-lboard__new" onClick={() => {
+        const from = nowKey || today
+        const free = lessonTimeline(doc).find((k) => k >= from && !planned.includes(k))
+        onEdit(free || nowKey || today)
+      }}>
+        <Icon.plus />New lesson plan
+      </button>
     </section>
   )
 }
