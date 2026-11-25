@@ -6,8 +6,9 @@ import Avatar, { ClassAvatar } from '../classroom/Avatar.jsx'
 import { Icon, play, isMuted, setMuted } from '../classroom/ui.jsx'
 import { TargetModal, AddStudents, GroupEditor } from '../classroom/StudentModal.jsx'
 import {
-  Toolkit, TimerTool, RandomTool, GroupMakerTool, DirectionsTool, TpsTool, TodayTool, MusicTool, MusicPlayer,
+  Toolkit, RandomTool, GroupMakerTool, DirectionsTool, TpsTool, TodayTool,
 } from '../classroom/tools.jsx'
+import { SessionSetup, SessionPlayer } from '../classroom/session.jsx'
 import { useClassroom } from '../classroom/useClassroom.js'
 import { ATTENDANCE, CLASSES, dayKey, fullName, pointsBy, uid } from '../classroom/model.js'
 import '../components/PasswordModal.css'
@@ -44,7 +45,7 @@ export default function Classroom() {
   const [toast, setToast] = useState(null)
   const [floats, setFloats] = useState([])
   const [muted, setMutedState] = useState(isMuted())
-  const [music, setMusic] = useState(null) // relax | active | null
+  const [session, setSession] = useState(null) // futó „Időzítő és zene”
 
   useEffect(() => { try { localStorage.setItem('cr-class', cls) } catch { /* */ } }, [cls])
   useEffect(() => { setMode('normal'); setSelected(new Set()); setModal(null) }, [cls])
@@ -255,7 +256,7 @@ export default function Classroom() {
             <button className="cr-dockbtn" onClick={startAttendance} disabled={!doc.students.length}><Icon.clock />Jelenlét</button>
             <button className="cr-dockbtn" onClick={() => { setSelected(new Set()); setMode('select') }} disabled={!doc.students.length}><Icon.checkbox />Többes kijelölés</button>
             <button className="cr-dockbtn" onClick={() => setModal({ kind: 'tool', id: 'random' })} disabled={!doc.students.length}><Icon.shuffle />Véletlen</button>
-            <button className="cr-dockbtn" onClick={() => setModal({ kind: 'tool', id: 'timer' })}><Icon.timer />Időzítő</button>
+            <button className="cr-dockbtn" onClick={() => setModal({ kind: 'tool', id: 'session' })}><Icon.timer />Időzítő és zene</button>
           </>
         )}
         {mode === 'attendance' && (
@@ -290,21 +291,23 @@ export default function Classroom() {
         {modal?.kind === 'add' && <AddStudents key="add" update={update} onClose={closeModal} />}
         {modal?.kind === 'group' && <GroupEditor key="group" doc={doc} group={modal.group} update={update} onClose={closeModal} />}
         {modal?.kind === 'toolkit' && <Toolkit key="kit" onPick={openTool} onClose={closeModal} />}
-        {modal?.kind === 'tool' && modal.id === 'timer' && <TimerTool key="timer" onClose={closeModal} onBack={modal.fromKit ? backToKit : undefined} />}
+        {modal?.kind === 'tool' && modal.id === 'session' && (
+          <SessionSetup key="session" doc={doc} update={update} onClose={closeModal} onBack={modal.fromKit ? backToKit : undefined}
+            onStart={(s) => { setSession(s); closeModal() }} />
+        )}
         {modal?.kind === 'tool' && modal.id === 'random' && (
           <RandomTool key="random" doc={doc} onClose={closeModal}
             onGive={(id) => setModal({ kind: 'target', target: { type: 'student', id } })} />
         )}
         {modal?.kind === 'tool' && modal.id === 'groups' && <GroupMakerTool key="groups" doc={doc} update={update} onClose={() => { closeModal(); setView('groups') }} onBack={backToKit} />}
-        {modal?.kind === 'tool' && modal.id === 'music' && <MusicTool key="music" doc={doc} update={update} onClose={closeModal} onBack={backToKit} onPlay={(ch) => { setMusic(ch); closeModal() }} />}
         {modal?.kind === 'tool' && modal.id === 'directions' && <DirectionsTool key="dir" doc={doc} update={update} onClose={closeModal} onBack={backToKit} />}
         {modal?.kind === 'tool' && modal.id === 'tps' && <TpsTool key="tps" doc={doc} update={update} onClose={closeModal} onBack={backToKit} />}
         {modal?.kind === 'tool' && modal.id === 'today' && <TodayTool key="today" doc={doc} update={update} onClose={closeModal} onBack={backToKit} />}
       </AnimatePresence>
 
-      {/* Zene: lebegő mini lejátszó (az eszköztár bezárása után is szól) */}
+      {/* Időzítő és zene: futás közben teljes képernyő ↔ kompakt */}
       <AnimatePresence>
-        {music && <MusicPlayer key="player" doc={doc} channel={music} onChange={setMusic} onClose={() => setMusic(null)} />}
+        {session && <SessionPlayer key={session.key} session={session} onMode={(mode) => setSession((x) => x && { ...x, mode })} onClose={() => setSession(null)} />}
       </AnimatePresence>
 
       {/* Pontozás visszajelzése */}

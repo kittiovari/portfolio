@@ -120,6 +120,8 @@ export const Icon = {
   sound: svg('M4 9.5v5h3.5L12 18.5V5.5L7.5 9.5zM15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11'),
   mute: svg('M4 9.5v5h3.5L12 18.5V5.5L7.5 9.5zM16 9.5l5 5M21 9.5l-5 5'),
   next: svg('M9 6l6 6-6 6'),
+  expand: svg('M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5'),
+  compact: svg('M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5'),
   music: svg(<><path d="M9 18V5.5l11-2V16" /><circle cx="6.5" cy="18" r="2.5" /><circle cx="17.5" cy="16" r="2.5" /></>),
 }
 

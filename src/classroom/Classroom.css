@@ -467,35 +467,77 @@
 .cr-sheet--compact .cr-sheet__back { top: 50%; translate: 0 -50%; }
 .cr-sheet--compact .cr-sheet__hero ~ .cr-sheet__close { top: 12px; }
 .cr-sheet--compact .cr-sheet__body { padding: 1.1rem 1.2rem 1.2rem; }
-.cr-channels { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
-.cr-channel-wrap { position: relative; }
-.cr-channel {
-  width: 100%; display: flex; flex-direction: column; align-items: center; gap: 0.45rem; padding: 1rem 0.6rem 0.85rem;
-  border: 1px solid rgba(36, 20, 34, 0.12); border-radius: 18px; background: #fff; cursor: pointer;
-  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+/* ── Időzítő és zene ── */
+/* Beállító panel */
+.cr-setup .cr-sheet__body { display: flex; flex-direction: column; gap: 1.1rem; }
+.cr-setup__row h3 { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.45rem; }
+.cr-choice { display: flex; gap: 0.4rem; padding: 4px; border-radius: 16px; background: rgba(36, 20, 34, 0.06); }
+.cr-choice--wrap { flex-wrap: wrap; }
+.cr-choice > button, .cr-choice__custom {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; white-space: nowrap;
+  padding: 0.6rem 0.7rem; border: none; border-radius: 12px; background: transparent; cursor: pointer;
+  font-weight: 600; font-size: 0.92rem; color: var(--muted); transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
-.cr-channel:hover { transform: translateY(-2px); border-color: var(--ch); box-shadow: 0 12px 24px -18px rgba(36, 20, 34, 0.5); }
-.cr-channel__icon {
-  width: 64px; height: 64px; display: grid; place-items: center; border-radius: 50%;
-  background: color-mix(in srgb, var(--ch) 24%, #fff); font-size: 1.9rem;
-  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+.cr-choice > button svg { width: 16px; height: 16px; }
+.cr-choice > button:hover { color: var(--ink); }
+.cr-choice > button.is-active, .cr-choice__custom.is-active { background: #fff; color: var(--ink); box-shadow: 0 2px 8px -3px rgba(36, 20, 34, 0.3); }
+.cr-choice > button.is-active[style] { box-shadow: inset 0 -3px 0 var(--ch), 0 2px 8px -3px rgba(36, 20, 34, 0.3); }
+.cr-choice__custom { cursor: text; }
+.cr-sheet .cr-choice__custom input { width: 64px; padding: 0.15rem 0.3rem; text-align: center; font-weight: 600; border-radius: 8px; }
+.cr-setup__edit { margin-top: 0.3rem; font-size: 0.8rem; }
+.cr-setup__go { padding: 0.9rem; font-size: 1.05rem; border-radius: 14px; }
+
+/* Futó nézet – ugyanaz az elem két elrendezésben */
+.cr-session {
+  position: fixed; z-index: 1100; display: flex; flex-direction: column; color: #fff;
+  background: var(--tool); --ink: #241422;
 }
-.cr-channel:hover .cr-channel__icon { transform: rotate(-8deg) scale(1.06); }
-.cr-channel b { font-family: var(--font-heading); font-size: 1.1rem; font-weight: 600; }
-.cr-channel__edit { position: absolute; top: 6px; right: 6px; }
-.cr-player {
-  position: fixed; right: 18px; bottom: 96px; z-index: 40; width: min(340px, calc(100vw - 24px));
-  padding: 0.35rem 0.35rem 0.3rem; border-radius: 20px; background: #fff;
-  border: 1px solid var(--line); box-shadow: 0 20px 44px -22px rgba(36, 20, 34, 0.55);
+.cr-session button { font: inherit; }
+.cr-session__top { display: flex; align-items: center; gap: 0.4rem; }
+.cr-session__ch { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.8rem; border-radius: 999px; background: rgba(255, 255, 255, 0.18); font-weight: 700; font-size: 0.9rem; }
+.cr-session__btn { background: rgba(255, 255, 255, 0.18); color: #fff; }
+.cr-session__btn:hover { background: rgba(255, 255, 255, 0.32); }
+.cr-session__main { display: flex; flex-direction: column; align-items: center; }
+.cr-session__time { font-family: var(--font-heading); font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; line-height: 0.95; }
+.cr-session__msg { font-family: var(--font-heading); font-weight: 700; }
+.cr-session__ctrls { display: flex; align-items: center; justify-content: center; gap: 0.6rem; flex-wrap: wrap; }
+.cr-sbtn { display: grid; place-items: center; border: none; border-radius: 999px; background: rgba(255, 255, 255, 0.2); color: #fff !important; cursor: pointer; transition: background 0.2s, transform 0.15s; }
+.cr-sbtn:hover { background: rgba(255, 255, 255, 0.32); transform: scale(1.04); }
+.cr-sbtn--main { background: #fff; color: var(--tool) !important; }
+.cr-sbtn--main:hover { background: #fff; }
+.cr-sbtn--text { font-weight: 800 !important; }
+.cr-session__icon { font-size: clamp(5rem, 14vw, 9rem); }
+.cr-session__music { width: 100%; }
+.cr-session__embed iframe { display: block; border-radius: 12px; }
+.cr-session.is-done { animation: cr-flash 0.8s ease-in-out 4; }
+
+.cr-session--full { inset: 0; padding: 20px; gap: 1rem; }
+.cr-session--full .cr-session__btn { width: 46px; height: 46px; }
+.cr-session--full .cr-session__main { flex: 1; justify-content: center; gap: 1.4rem; }
+.cr-session--full .cr-session__time { font-size: clamp(6rem, 24vw, 19rem); }
+.cr-session--full .cr-session__msg { font-size: clamp(1.6rem, 4vw, 2.6rem); }
+.cr-session--full .cr-sbtn { width: 60px; height: 60px; }
+.cr-session--full .cr-sbtn svg { width: 24px; height: 24px; }
+.cr-session--full .cr-sbtn--main { width: 84px; height: 84px; }
+.cr-session--full .cr-sbtn--main svg { width: 34px; height: 34px; }
+.cr-session--full .cr-sbtn--text { width: auto; height: 60px; padding: 0 1.3rem; font-size: 1.1rem; }
+.cr-session--full .cr-session__music { width: min(480px, 100%); margin: 0 auto 6px; }
+
+.cr-session--compact {
+  right: 18px; bottom: 96px; z-index: 40; width: min(340px, calc(100vw - 24px));
+  padding: 0.55rem; gap: 0.45rem; border-radius: 22px; box-shadow: 0 22px 46px -22px rgba(36, 20, 34, 0.6);
 }
-.cr-player__bar { display: flex; align-items: center; gap: 0.2rem; padding: 0 0.1rem 0.3rem; }
-.cr-player__ch {
-  padding: 0.35rem 0.75rem; border: none; border-radius: 999px; background: transparent; cursor: pointer;
-  font-weight: 600; font-size: 0.85rem; color: var(--muted) !important;
-}
-.cr-player__ch.is-active { background: color-mix(in srgb, var(--ch) 20%, #fff); color: var(--ink) !important; }
-.cr-player__ch:disabled { opacity: 0.35; cursor: not-allowed; }
-.cr-player iframe { display: block; border-radius: 12px; }
+.cr-session--compact .cr-session__btn { width: 32px; height: 32px; }
+.cr-session--compact .cr-session__btn svg { width: 15px; height: 15px; }
+.cr-session--compact .cr-session__main { flex-direction: row; justify-content: space-between; gap: 0.5rem; padding: 0 0.2rem; }
+.cr-session--compact .cr-session__main:empty { display: none; }
+.cr-session--compact .cr-session__time { font-size: 2.3rem; }
+.cr-session--compact .cr-session__msg { display: none; }
+.cr-session--compact .cr-session__ctrls { gap: 0.3rem; flex-wrap: nowrap; }
+.cr-session--compact .cr-sbtn { width: 34px; height: 34px; }
+.cr-session--compact .cr-sbtn svg { width: 15px; height: 15px; }
+.cr-session--compact .cr-sbtn--text { width: auto; padding: 0 0.6rem; font-size: 0.78rem; }
+.cr-session--compact .cr-sbtn:first-child { display: none; }
 
 /* ── Pontozás visszajelzése ── */
 .cr-toast {
@@ -515,7 +557,7 @@
 
 /* ── Mobil ── */
 @media (max-width: 720px) {
-  .cr-player { right: 12px; bottom: 84px; }
+  .cr-session--compact { right: 12px; bottom: 84px; }
   .cr-top { flex-wrap: wrap; }
   .cr-class { font-size: 1rem; }
   .cr-status { display: none; }
@@ -535,4 +577,12 @@
 
 @media (prefers-reduced-motion: reduce) {
   .cr *, .cr-full, .cr-full * { animation: none !important; transition: none !important; }
+}
+
+/* Keskenyebb képernyőn az alsó sáv is összébb húzódik (görgetősáv nélkül) */
+.cr-dock { scrollbar-width: none; }
+.cr-dock::-webkit-scrollbar { display: none; }
+@media (max-width: 900px) {
+  .cr-dockbtn { padding: 0.6rem 0.7rem; font-size: 0.85rem; gap: 0.35rem; }
+  .cr-dockbtn svg { width: 16px; height: 16px; }
 }
