@@ -475,7 +475,6 @@ export function HomeworkWizard({ doc, presentIds, preselect = [], onSave, onClos
       ) : (
         <>
           <p className="cr-hwwiz__q">So these students didn't do it?</p>
-          <p className="cr-hint">Tap a student to excuse them (ill, absent last time, any reason) – they get no points.</p>
           <div className="cr-pickgrid">
             {rest.map((s) => {
               const ex = excused.has(s.id)
