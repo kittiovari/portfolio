@@ -6,7 +6,7 @@ import Avatar, { ClassAvatar } from '../classroom/Avatar.jsx'
 import { Icon, play, isMuted, setMuted } from '../classroom/ui.jsx'
 import { TargetModal, AddStudents, GroupEditor } from '../classroom/StudentModal.jsx'
 import {
-  Toolkit, TimerTool, RandomTool, GroupMakerTool, NoiseTool, DirectionsTool, TpsTool, TodayTool,
+  Toolkit, TimerTool, RandomTool, GroupMakerTool, DirectionsTool, TpsTool, TodayTool, MusicTool, MusicPlayer,
 } from '../classroom/tools.jsx'
 import { useClassroom } from '../classroom/useClassroom.js'
 import { ATTENDANCE, CLASSES, dayKey, fullName, pointsBy, uid } from '../classroom/model.js'
@@ -44,6 +44,7 @@ export default function Classroom() {
   const [toast, setToast] = useState(null)
   const [floats, setFloats] = useState([])
   const [muted, setMutedState] = useState(isMuted())
+  const [music, setMusic] = useState(null) // relax | active | null
 
   useEffect(() => { try { localStorage.setItem('cr-class', cls) } catch { /* */ } }, [cls])
   useEffect(() => { setMode('normal'); setSelected(new Set()); setModal(null) }, [cls])
@@ -295,10 +296,15 @@ export default function Classroom() {
             onGive={(id) => setModal({ kind: 'target', target: { type: 'student', id } })} />
         )}
         {modal?.kind === 'tool' && modal.id === 'groups' && <GroupMakerTool key="groups" doc={doc} update={update} onClose={() => { closeModal(); setView('groups') }} onBack={backToKit} />}
-        {modal?.kind === 'tool' && modal.id === 'noise' && <NoiseTool key="noise" onClose={closeModal} />}
+        {modal?.kind === 'tool' && modal.id === 'music' && <MusicTool key="music" doc={doc} update={update} onClose={closeModal} onBack={backToKit} onPlay={(ch) => { setMusic(ch); closeModal() }} />}
         {modal?.kind === 'tool' && modal.id === 'directions' && <DirectionsTool key="dir" doc={doc} update={update} onClose={closeModal} onBack={backToKit} />}
         {modal?.kind === 'tool' && modal.id === 'tps' && <TpsTool key="tps" doc={doc} update={update} onClose={closeModal} onBack={backToKit} />}
         {modal?.kind === 'tool' && modal.id === 'today' && <TodayTool key="today" doc={doc} update={update} onClose={closeModal} onBack={backToKit} />}
+      </AnimatePresence>
+
+      {/* Zene: lebegő mini lejátszó (az eszköztár bezárása után is szól) */}
+      <AnimatePresence>
+        {music && <MusicPlayer key="player" doc={doc} channel={music} onChange={setMusic} onClose={() => setMusic(null)} />}
       </AnimatePresence>
 
       {/* Pontozás visszajelzése */}

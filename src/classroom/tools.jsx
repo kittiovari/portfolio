@@ -8,10 +8,10 @@ export const TOOLS = [
   { id: 'timer', label: 'Időzítő', color: '#6A4BC4', icon: Icon.timer },
   { id: 'random', label: 'Véletlen diák', color: '#3F7D4E', icon: Icon.shuffle },
   { id: 'groups', label: 'Csoportkészítő', color: '#B4443B', icon: Icon.people },
-  { id: 'noise', label: 'Zajmérő', color: '#2E2A4A', icon: Icon.noise },
   { id: 'directions', label: 'Utasítások', color: '#2F6F73', icon: Icon.list },
   { id: 'tps', label: 'Gondold – Párban – Oszd meg', color: '#8A4FA0', icon: Icon.bubbles },
   { id: 'today', label: 'Mai nap', color: '#E0B33A', icon: Icon.sun, dark: true },
+  { id: 'music', label: 'Zene', color: '#B5752A', icon: Icon.music },
 ]
 const tool = (id) => TOOLS.find((t) => t.id === id)
 
@@ -249,74 +249,6 @@ function AvoidPairs({ doc, update, color, onBack, onClose }) {
   )
 }
 
-// ── Zajmérő ──
-export function NoiseTool({ onClose }) {
-  const t = tool('noise')
-  const [level, setLevel] = useState(0)
-  const [limit, setLimit] = useState(60)
-  const [error, setError] = useState('')
-  const [loud, setLoud] = useState(false)
-  const loudSince = useRef(0)
-
-  useEffect(() => {
-    let stream, ac, raf
-    let smooth = 0
-    navigator.mediaDevices?.getUserMedia({ audio: true })
-      .then((s) => {
-        stream = s
-        ac = new (window.AudioContext || window.webkitAudioContext)()
-        const an = ac.createAnalyser()
-        an.fftSize = 1024
-        ac.createMediaStreamSource(s).connect(an)
-        const data = new Float32Array(an.fftSize)
-        const loop = () => {
-          an.getFloatTimeDomainData(data)
-          let sum = 0
-          for (const v of data) sum += v * v
-          const db = 20 * Math.log10(Math.sqrt(sum / data.length) + 1e-6) // kb. -60 … 0
-          const lv = Math.min(100, Math.max(0, ((db + 60) / 50) * 100))
-          smooth = smooth * 0.85 + lv * 0.15
-          setLevel(Math.round(smooth))
-          raf = requestAnimationFrame(loop)
-        }
-        loop()
-      })
-      .catch(() => setError('A mikrofonhoz nem kaptunk hozzáférést. Engedélyezd a böngésző címsorában, majd nyisd meg újra.'))
-    if (!navigator.mediaDevices) setError('Ez a böngésző nem támogatja a mikrofont.')
-    return () => {
-      cancelAnimationFrame(raf)
-      stream?.getTracks().forEach((tr) => tr.stop())
-      ac?.close()
-    }
-  }, [])
-
-  useEffect(() => {
-    if (level > limit) {
-      if (!loudSince.current) loudSince.current = Date.now()
-      if (Date.now() - loudSince.current > 800) setLoud(true)
-    } else {
-      loudSince.current = 0
-      setLoud(false)
-    }
-  }, [level, limit])
-
-  const state = loud ? 'loud' : level > limit * 0.7 ? 'mid' : 'calm'
-  return (
-    <FullScreen color={t.color} onClose={onClose} className={`cr-noise is-${state}`}>
-      {error ? <p className="cr-full__msg">{error}</p> : (
-        <>
-          <div className="cr-noise__orb" style={{ '--lv': level / 100 }}><Icon.mic /></div>
-          <p className="cr-full__msg">{loud ? 'Túl hangos!' : state === 'mid' ? 'Figyeljünk a hangerőre' : 'Szép csendes 🙂'}</p>
-          <div className="cr-noise__bar"><span style={{ width: `${level}%` }} /><i style={{ left: `${limit}%` }} /></div>
-          <label className="cr-noise__limit">Határérték
-            <input type="range" min="15" max="95" value={limit} onChange={(e) => setLimit(Number(e.target.value))} />
-          </label>
-        </>
-      )}
-    </FullScreen>
-  )
-}
-
 // ── Utasítások ──
 export function DirectionsTool({ doc, update, onClose, onBack }) {
   const t = tool('directions')
@@ -462,5 +394,105 @@ export function TodayTool({ doc, update, onClose, onBack }) {
         <button className="cr-btn" type="submit"><Icon.plus />Hozzáadás</button>
       </form>
     </Sheet>
+  )
+}
+
+// ── Zene (Spotify-műsorlisták beágyazva) ──
+// A lejátszó a Spotify saját beágyazott lejátszója: ha ebben a böngészőben be
+// vagy jelentkezve a Spotify-ba, a teljes számokat játssza; bejelentkezés
+// nélkül csak 30 mp-es részleteket. A műsorlisták nyilvánosak legyenek.
+export const MUSIC_CHANNELS = [
+  { id: 'relax', label: 'Relax', sub: 'Csendes, önálló munkához', icon: '🌿', color: '#7FA88A' },
+  { id: 'active', label: 'Active', sub: 'Mozgáshoz, csapatmunkához', icon: '⚡', color: '#E0915A' },
+]
+
+// Spotify-link → műsorlista-azonosító (open.spotify.com/playlist/… vagy spotify:playlist:…)
+export function playlistId(link = '') {
+  const m = String(link).match(/playlist[/:]([A-Za-z0-9]{10,})/)
+  return m ? m[1] : null
+}
+
+export function MusicTool({ doc, update, onPlay, onClose, onBack }) {
+  const t = tool('music')
+  const [editing, setEditing] = useState(null)
+  const [draft, setDraft] = useState('')
+  const links = doc.music || {}
+
+  const choose = (ch) => {
+    if (playlistId(links[ch.id])) { onPlay(ch.id); return }
+    setEditing(ch.id)
+    setDraft(links[ch.id] || '')
+  }
+  const save = (e) => {
+    e.preventDefault()
+    if (!playlistId(draft)) return
+    update((d) => ({ ...d, music: { ...(d.music || {}), [editing]: draft.trim() } }))
+    onPlay(editing)
+  }
+
+  return (
+    <Sheet title={t.label} color={t.color} icon={<t.icon />} onClose={onClose} onBack={onBack}>
+      {editing ? (
+        <form className="cr-form" onSubmit={save}>
+          <h3>Classroom music – {MUSIC_CHANNELS.find((c) => c.id === editing).label}</h3>
+          <label className="cr-field">
+            <span>A Spotify-műsorlista linkje (Spotify → ⋯ → Megosztás → Link másolása)</span>
+            <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="https://open.spotify.com/playlist/…" autoFocus />
+          </label>
+          {draft && !playlistId(draft) && <p className="cr-hint is-neg">Ez nem Spotify-műsorlista link.</p>}
+          <div className="cr-form__actions">
+            <span className="cr-spacer" />
+            <button type="button" className="cr-btn" onClick={() => setEditing(null)}>Mégse</button>
+            <button type="submit" className="cr-btn cr-btn--primary" disabled={!playlistId(draft)}><Icon.play />Mentés és lejátszás</button>
+          </div>
+        </form>
+      ) : (
+        <>
+          <h3 className="cr-q">Válassz csatornát!</h3>
+          <div className="cr-channels">
+            {MUSIC_CHANNELS.map((ch) => (
+              <div key={ch.id} className="cr-channel-wrap">
+                <button className="cr-channel" onClick={() => choose(ch)} style={{ '--ch': ch.color }}>
+                  <span className="cr-channel__icon" aria-hidden="true">{ch.icon}</span>
+                  <b>{ch.label}</b>
+                  <small>{ch.sub}</small>
+                </button>
+                {playlistId(links[ch.id]) && (
+                  <button className="cr-link cr-link--center" onClick={() => { setEditing(ch.id); setDraft(links[ch.id]) }}><Icon.pencil />Link módosítása</button>
+                )}
+              </div>
+            ))}
+          </div>
+          <p className="cr-hint cr-hint--center">Teljes számokhoz jelentkezz be a Spotify-ba ebben a böngészőben (open.spotify.com).</p>
+        </>
+      )}
+    </Sheet>
+  )
+}
+
+// Lebegő mini lejátszó: az eszköztár bezárása után is szól tovább
+export function MusicPlayer({ doc, channel, onChange, onClose }) {
+  const ch = MUSIC_CHANNELS.find((c) => c.id === channel)
+  const id = playlistId(doc.music?.[channel])
+  if (!ch || !id) return null
+  return (
+    <motion.aside className="cr-player" style={{ '--ch': ch.color }} aria-label="Zenelejátszó"
+      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}>
+      <div className="cr-player__bar">
+        {MUSIC_CHANNELS.map((c) => (
+          <button key={c.id} className={`cr-player__ch ${c.id === channel ? 'is-active' : ''}`} onClick={() => onChange(c.id)}
+            disabled={!playlistId(doc.music?.[c.id])}>{c.icon} {c.label}</button>
+        ))}
+        <span className="cr-spacer" />
+        <button className="cr-iconbtn cr-iconbtn--sm" onClick={onClose} aria-label="Zene kikapcsolása"><Icon.close /></button>
+      </div>
+      <iframe
+        key={id}
+        title={`Classroom music – ${ch.label}`}
+        src={`https://open.spotify.com/embed/playlist/${id}?utm_source=generator&theme=0`}
+        width="100%" height="152" frameBorder="0" loading="lazy"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+      />
+    </motion.aside>
   )
 }

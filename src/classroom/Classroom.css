@@ -440,23 +440,6 @@
 .cr-groupres__row { display: flex; align-items: center; gap: 0.7rem; padding: 0.25rem 0; font-family: var(--font-heading); font-weight: 600; font-size: 1.3rem; }
 .cr-groupres__row .cr-avatar { width: 40px; height: 45px; flex-shrink: 0; }
 
-.cr-noise { transition: background 0.6s; }
-.cr-noise.is-mid { background: #7A6A2A; }
-.cr-noise.is-loud { background: #9C2F2A; }
-.cr-noise__orb {
-  width: calc(160px + var(--lv) * 220px); height: calc(160px + var(--lv) * 220px); border-radius: 50%;
-  display: grid; place-items: center; background: rgba(255, 255, 255, 0.16);
-  box-shadow: 0 0 0 calc(var(--lv) * 40px) rgba(255, 255, 255, 0.08); transition: width 0.12s, height 0.12s, box-shadow 0.12s;
-}
-.cr-noise__orb svg { width: 64px; height: 64px; }
-.cr-noise.is-loud .cr-noise__orb { animation: cr-shake 0.3s linear infinite; }
-@keyframes cr-shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
-.cr-noise__bar { position: relative; width: min(600px, 86vw); height: 16px; border-radius: 999px; background: rgba(255, 255, 255, 0.18); }
-.cr-noise__bar span { display: block; height: 100%; border-radius: inherit; background: #fff; transition: width 0.1s; }
-.cr-noise__bar i { position: absolute; top: -6px; bottom: -6px; width: 3px; margin-left: -1.5px; border-radius: 2px; background: #FFD66B; }
-.cr-noise__limit { display: flex; align-items: center; gap: 0.8rem; font-weight: 600; opacity: 0.9; }
-.cr-noise__limit input { width: 220px; accent-color: #FFD66B; }
-
 .cr-directions { list-style: none; display: flex; flex-direction: column; gap: 0.8rem; width: min(900px, 100%); text-align: left; }
 .cr-directions li {
   display: flex; align-items: center; gap: 1.2rem; padding: 1rem 1.4rem; border-radius: 22px; cursor: pointer;
@@ -476,6 +459,37 @@
 .cr-tps-pairs { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; max-width: 1000px; }
 .cr-tps-pairs span { padding: 0.4rem 0.9rem; border-radius: 999px; background: rgba(255, 255, 255, 0.92); color: var(--ink); font-weight: 600; }
 
+/* ── Zene ── */
+.cr-channels { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.cr-channel-wrap { display: flex; flex-direction: column; }
+.cr-channel {
+  display: flex; flex-direction: column; align-items: center; gap: 0.35rem; padding: 1.6rem 1rem 1.3rem;
+  border: 1px solid rgba(36, 20, 34, 0.12); border-radius: 22px; background: #fff; cursor: pointer;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+.cr-channel:hover { transform: translateY(-3px); border-color: var(--ch); box-shadow: 0 16px 30px -20px rgba(36, 20, 34, 0.5); }
+.cr-channel__icon {
+  width: 92px; height: 92px; display: grid; place-items: center; border-radius: 50%; margin-bottom: 0.4rem;
+  background: color-mix(in srgb, var(--ch) 22%, #fff); font-size: 2.6rem;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.cr-channel:hover .cr-channel__icon { transform: rotate(-8deg) scale(1.06); }
+.cr-channel b { font-family: var(--font-heading); font-size: 1.3rem; }
+.cr-channel small { color: var(--muted); font-size: 0.85rem; }
+.cr-player {
+  position: fixed; right: 18px; bottom: 96px; z-index: 40; width: min(380px, calc(100vw - 24px));
+  padding: 0.5rem 0.5rem 0.35rem; border-radius: 20px; background: #fff;
+  border: 1px solid var(--line); box-shadow: 0 20px 44px -22px rgba(36, 20, 34, 0.55);
+}
+.cr-player__bar { display: flex; align-items: center; gap: 0.3rem; padding: 0 0.2rem 0.45rem; }
+.cr-player__ch {
+  padding: 0.35rem 0.75rem; border: none; border-radius: 999px; background: transparent; cursor: pointer;
+  font-weight: 600; font-size: 0.85rem; color: var(--muted) !important;
+}
+.cr-player__ch.is-active { background: color-mix(in srgb, var(--ch) 20%, #fff); color: var(--ink) !important; }
+.cr-player__ch:disabled { opacity: 0.35; cursor: not-allowed; }
+.cr-player iframe { display: block; border-radius: 12px; }
+
 /* ── Pontozás visszajelzése ── */
 .cr-toast {
   position: fixed; left: 50%; bottom: 110px; translate: -50% 0; z-index: 1200;
@@ -494,6 +508,8 @@
 
 /* ── Mobil ── */
 @media (max-width: 720px) {
+  .cr-channels { grid-template-columns: 1fr; }
+  .cr-player { right: 12px; bottom: 84px; }
   .cr-top { flex-wrap: wrap; }
   .cr-class { font-size: 1rem; }
   .cr-status { display: none; }
