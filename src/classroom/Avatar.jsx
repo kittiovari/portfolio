@@ -337,6 +337,38 @@ function Extra({ theme, x, body, fill, layer }) {
   return null
 }
 
+
+// ── Haj, fejdísz, fejfedő (minden családban; 0 = nincs) ──
+export const HEADWEAR = ['None', 'Fringe', 'Curly', 'Long hair', 'Bun', 'Ponytail', 'Cap', 'Beanie', 'Top hat', 'Flower crown', 'Party hat', 'Headphones', 'Beret', 'Bandana']
+export const HAIR_COLORS = ['#6B4A3A', '#2F2430', '#E9C46A', '#D9774F', '#F4AFC4', '#8FB8E0']
+function Head({ h, hc, body, layer }) {
+  if (!h) return null
+  const t = body.top
+  const hw = Math.max(13, Math.min(26, (body.w[1] - body.w[0]) / 2 - 3))
+  const L = 50 - hw, R = 50 + hw
+  const hair = HAIR_COLORS[hc] ?? HAIR_COLORS[0]
+  const fringe = <path d={`M${L} ${t + 13}C${L} ${t - 5} ${R} ${t - 5} ${R} ${t + 13}C${R - 6} ${t + 5} ${56} ${t + 11} 50 ${t + 5}C${44} ${t + 11} ${L + 6} ${t + 5} ${L} ${t + 13}Z`} fill={hair} />
+  if (layer === 'back') {
+    if (h === 3) return <path d={`M${L - 1} ${t + 8}C${L - 9} ${t + 34} ${L - 8} ${t + 56} ${L + 1} ${t + 64}C${L + 3} ${t + 44} ${L + 4} ${t + 26} ${L + 6} ${t + 14}ZM${R + 1} ${t + 8}C${R + 9} ${t + 34} ${R + 8} ${t + 56} ${R - 1} ${t + 64}C${R - 3} ${t + 44} ${R - 4} ${t + 26} ${R - 6} ${t + 14}Z`} fill={hair} />
+    if (h === 5) return <path d={`M${R - 4} ${t + 2}C${R + 14} ${t - 2} ${R + 16} ${t + 22} ${R + 8} ${t + 36}C${R + 6} ${t + 24} ${R + 2} ${t + 14} ${R - 6} ${t + 10}Z`} fill={hair} />
+    return null
+  }
+  switch (h) {
+    case 1: case 3: case 5: return fringe
+    case 2: return <g fill={hair}>{[-0.85, -0.45, 0, 0.45, 0.85].map((k, i) => <circle key={i} cx={50 + k * hw} cy={t + 4 + Math.abs(k) * 6} r={7.5 - Math.abs(k) * 1.5} />)}</g>
+    case 4: return <>{fringe}<circle cx="50" cy={t - 7} r="7.5" fill={hair} /></>
+    case 6: return <><path d={`M${L} ${t + 10}C${L} ${t - 9} ${R} ${t - 9} ${R} ${t + 10}Z`} fill="#6E9CCB" /><path d={`M${R - 6} ${t + 10}H${R + 12}`} strokeWidth="4.4" /><circle cx="50" cy={t - 4} r="2" fill={INK} stroke="none" /></>
+    case 7: return <><path d={`M${L} ${t + 10}C${L} ${t - 11} ${R} ${t - 11} ${R} ${t + 10}Z`} fill="#D9675F" /><path d={`M${L - 1} ${t + 4}H${R + 1}V${t + 11}H${L - 1}Z`} fill="#F2A283" /><circle cx="50" cy={t - 9} r="5" fill={CREAM} /></>
+    case 8: return <><path d={`M38 ${t + 3}V${t - 22}H62V${t + 3}Z`} fill="#3A2B38" /><path d={`M38 ${t - 5}H62V${t - 1}H38Z`} fill={GOLD} stroke="none" /><path d={`M30 ${t + 3}H70`} strokeWidth="4.4" /></>
+    case 9: return <g strokeWidth="1.4">{[-0.8, -0.4, 0, 0.4, 0.8].map((k, i) => { const cx = 50 + k * hw, cy = t + 3 + Math.abs(k) * 6, c = ['#F4AFC4', '#F7D774', '#B59CD9', '#F2A283', '#9FD3E8'][i]; return <g key={i}>{[0, 72, 144, 216, 288].map((a) => <circle key={a} cx={cx + 3.6 * Math.cos(a * Math.PI / 180)} cy={cy + 3.6 * Math.sin(a * Math.PI / 180)} r="2.6" fill={c} />)}<circle cx={cx} cy={cy} r="1.8" fill={GOLD} /></g> })}<path d={`M${L + 2} ${t + 9}Q50 ${t - 2} ${R - 2} ${t + 9}`} stroke={LEAF} strokeWidth="2" fill="none" /></g>
+    case 10: return <><path d={`M41 ${t + 4}L50 ${t - 24}L59 ${t + 4}Z`} fill="#B59CD9" /><path d={`M44 ${t - 6}l9 4M42 ${t + 1}l14 0M47 ${t - 14}l5 2`} stroke={GOLD} strokeWidth="2" /><circle cx="50" cy={t - 25} r="3.4" fill="#F4AFC4" /></>
+    case 11: return <><path d={`M${L - 2} ${body.eyeY - 2}C${L - 4} ${t - 8} ${R + 4} ${t - 8} ${R + 2} ${body.eyeY - 2}`} strokeWidth="3.6" fill="none" /><rect x={L - 8} y={body.eyeY - 8} width="9" height="15" rx="4" fill="#D9675F" /><rect x={R - 1} y={body.eyeY - 8} width="9" height="15" rx="4" fill="#D9675F" /></>
+    case 12: return <><path d={`M${L - 4} ${t + 6}C${L - 2} ${t - 8} ${R + 6} ${t - 10} ${R + 4} ${t + 4}C${R} ${t + 9} ${L} ${t + 11} ${L - 4} ${t + 6}Z`} fill="#D9675F" /><path d={`M52 ${t - 6}l2 -5`} strokeWidth="2.4" /></>
+    case 13: return <><path d={`M${L} ${t + 6}C${L + 4} ${t - 6} ${R - 4} ${t - 6} ${R} ${t + 6}L${R} ${t + 11}H${L}Z`} fill="#6E9CCB" /><g fill="#fff" stroke="none">{[-0.5, 0, 0.5].map((k) => <circle key={k} cx={50 + k * hw} cy={t + 3} r="1.5" />)}</g><path d={`M${R} ${t + 8}l8 -4 1 8z`} fill="#6E9CCB" /></>
+    default: return null
+  }
+}
+
 export default function Avatar({ a = {}, className = 'cr-avatar', title, theme: forced, ...rest }) {
   const ctx = useAvatarTheme()
   const theme = forced || themeOf(ctx, a)
@@ -349,6 +381,7 @@ export default function Avatar({ a = {}, className = 'cr-avatar', title, theme: 
   const eyes = AVATAR.eyes[a.e] ?? 'two'
   const mouth = AVATAR.mouths[a.m] ?? 'smile'
   const x = Number.isInteger(a.x) ? a.x : 0
+  const h = Number.isInteger(a.h) ? a.h : 0
   const mouthY = body.eyeY + (eyes === 'one' ? 20 : eyes === 'big' ? 19 : 17)
 
   return (
@@ -368,6 +401,7 @@ export default function Avatar({ a = {}, className = 'cr-avatar', title, theme: 
       {/* talaj-árnyék */}
       <ellipse cx="50" cy="106" rx="28" ry="3.5" fill="rgba(36,20,34,.12)" stroke="none" />
       <Extra theme={theme} x={x} body={body} fill={fill} layer="back" />
+      <Head h={h} hc={a.hc} body={body} layer="back" />
       {body.back?.(fill)}
       {/* lábak */}
       {body.legs !== false && <path d="M36 100v5h9v-5M55 100v5h9v-5" fill={fill} />}
@@ -382,6 +416,7 @@ export default function Avatar({ a = {}, className = 'cr-avatar', title, theme: 
       })()}
       {body.front?.(fill)}
       <Extra theme={theme} x={x} body={body} fill={fill} layer="front" />
+      <Head h={h} hc={a.hc} body={body} layer="front" />
       {/* pír */}
       <circle cx="31" cy={mouthY - 2} r="4" fill="#F08A9B" stroke="none" opacity=".45" />
       <circle cx="69" cy={mouthY - 2} r="4" fill="#F08A9B" stroke="none" opacity=".45" />

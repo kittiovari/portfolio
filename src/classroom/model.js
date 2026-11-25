@@ -65,6 +65,8 @@ export const AVATAR = {
 const pick = (arr) => Math.floor(Math.random() * arr.length)
 export const randomAvatar = () => ({
   c: pick(AVATAR.colors), b: pick(AVATAR.bodies), e: pick(AVATAR.eyes), m: pick(AVATAR.mouths), x: pick(AVATAR.extras),
+  // haj/fejfedő: az esetek felében nincs (szabadon hagyható)
+  h: Math.random() < 0.5 ? 0 : 1 + Math.floor(Math.random() * 13), hc: Math.floor(Math.random() * 6),
 })
 
 // „Léderer Emma” → { last: 'Léderer', first: 'Emma' } (magyar névsorrend)

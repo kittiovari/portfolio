@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import Avatar, { ClassAvatar, useAvatarTheme, themeOf, themeColors, themeBodies, AVATAR_THEMES } from './Avatar.jsx'
+import Avatar, { ClassAvatar, useAvatarTheme, themeOf, themeColors, themeBodies, AVATAR_THEMES, HEADWEAR, HAIR_COLORS } from './Avatar.jsx'
 import { Sheet, Icon } from './ui.jsx'
 import { Art, SkillArt, ART_CHOICES } from './art.jsx'
 import { ReportPanel } from './report.jsx'
@@ -244,7 +244,8 @@ const FEATURES = [
   { key: 'b', label: 'Body', list: AVATAR.bodies },
   { key: 'e', label: 'Eyes', list: AVATAR.eyes },
   { key: 'm', label: 'Mouth', list: AVATAR.mouths },
-  { key: 'x', label: 'Head', list: AVATAR.extras },
+  { key: 'x', label: 'Extra', list: AVATAR.extras },
+  { key: 'h', label: 'Hair & hats', list: HEADWEAR },
 ]
 
 export function AvatarEditor({ value, onChange }) {
@@ -287,6 +288,15 @@ export function AvatarEditor({ value, onChange }) {
             ))}
           </div>
         ))}
+        {[1, 2, 3, 4, 5].includes(value.h) && (
+          <div className="cr-avedit__row" role="radiogroup" aria-label="Hair colour">
+            <span>Hair colour</span>
+            {HAIR_COLORS.map((c, i) => (
+              <button type="button" key={c} role="radio" aria-checked={(value.hc ?? 0) === i} aria-label={`Hair colour ${i + 1}`}
+                className={`cr-swatch ${(value.hc ?? 0) === i ? 'is-active' : ''}`} style={{ background: c }} onClick={() => set('hc', i)} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

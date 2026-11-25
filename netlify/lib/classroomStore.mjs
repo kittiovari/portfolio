@@ -221,6 +221,12 @@ export function cleanAvatar(a) {
     out[k] = v
   }
   if (a.t != null) { if (!AV_THEMES.includes(a.t)) return null; out.t = a.t }
+  for (const [k, n] of [['h', 14], ['hc', 6]]) {
+    if (a[k] == null) continue
+    const v = Number(a[k])
+    if (!Number.isInteger(v) || v < 0 || v >= n) return null
+    out[k] = v
+  }
   return out
 }
 export const sameAvatar = (x, y) => JSON.stringify(cleanAvatar(x) || {}) === JSON.stringify(cleanAvatar(y) || {})
