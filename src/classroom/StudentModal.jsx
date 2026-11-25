@@ -53,10 +53,37 @@ export function TargetModal({ doc, target, points, onAward, update, onClose, ini
 }
 
 // ── Pont adása: pozitív / fejlesztendő készségek, szerkeszthetők ──
+// ── Ikonválasztó: a csillagra (aktuális ikonra) kattintva nyíló rács ──
+const ICON_GROUPS = [
+  { label: 'Dicséret', icons: ['⭐', '🌟', '✨', '👑', '🏆', '🥇', '🥈', '🥉', '🏅', '🎖️', '💎', '🎉', '🎊', '🚀', '🔥', '💯', '👍', '👏', '🙌', '💪', '🤝', '❤️', '😊', '😎'] },
+  { label: 'Tanulás', icons: ['📚', '📖', '📝', '✏️', '🖊️', '📁', '📒', '🎒', '💡', '🧠', '🔍', '🧪', '🔬', '🧩', '🎯', '📈', '🗣️', '💬', '🎤', '🎧', '🌍', '🎓', '🏫', '🗺️'] },
+  { label: 'Közösség', icons: ['🤗', '🫶', '🙋', '👋', '🧹', '🌱', '🌈', '☀️', '🎨', '🎭', '🎵', '⚽', '🧘', '🐢', '🦉', '🐝', '🍀', '🎁'] },
+  { label: 'Fejlesztendő', icons: ['⚠️', '👎', '⏰', '🕐', '📵', '🔇', '🗑️', '❌', '🚫', '😴', '🙊', '🛸', '🦖', '🐌', '🌧️', '💤'] },
+]
+
+// A rács a mezősor alatt nyílik ki (nem lebeg), így a panel görgetése sem vágja le
+function IconGrid({ value, onPick }) {
+  return (
+    <div className="cr-iconpick__pop" role="group" aria-label="Ikonok">
+      {ICON_GROUPS.map((g) => (
+        <div key={g.label} className="cr-iconpick__group">
+          <span>{g.label}</span>
+          <div className="cr-iconpick__grid">
+            {g.icons.map((ic) => (
+              <button type="button" key={ic} className={ic === value ? 'is-active' : ''} onClick={() => onPick(ic)}>{ic}</button>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function GivePoints({ doc, update, onGive }) {
   const [kind, setKind] = useState('positive')
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState(null) // { id?, name, icon, value }
+  const [picking, setPicking] = useState(false)
   const list = doc.skills[kind]
 
   const saveSkill = (e) => {
@@ -69,6 +96,7 @@ function GivePoints({ doc, update, onGive }) {
       skills: { ...d.skills, [kind]: form.id ? d.skills[kind].map((s) => (s.id === form.id ? item : s)) : [...d.skills[kind], item] },
     }))
     setForm(null)
+    setPicking(false)
   }
   const removeSkill = () => {
     update((d) => ({ ...d, skills: { ...d.skills, [kind]: d.skills[kind].filter((s) => s.id !== form.id) } }))
@@ -80,10 +108,12 @@ function GivePoints({ doc, update, onGive }) {
       <form className="cr-form" onSubmit={saveSkill}>
         <h3>{form.id ? 'Készség szerkesztése' : 'Új készség'}</h3>
         <div className="cr-form__row">
-          <label className="cr-field cr-field--icon">
+          <div className="cr-field cr-field--icon">
             <span>Ikon</span>
-            <input value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} maxLength={4} placeholder="⭐" />
-          </label>
+            <button type="button" className="cr-iconpick__btn" onClick={() => setPicking((o) => !o)} aria-expanded={picking} aria-label="Ikon kiválasztása">
+              {form.icon || (kind === 'positive' ? '⭐' : '⚠️')}
+            </button>
+          </div>
           <label className="cr-field">
             <span>Megnevezés</span>
             <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} autoFocus maxLength={60} />
@@ -95,6 +125,7 @@ function GivePoints({ doc, update, onGive }) {
             </select>
           </label>
         </div>
+        {picking && <IconGrid value={form.icon} onPick={(icon) => { setForm({ ...form, icon }); setPicking(false) }} />}
         <div className="cr-form__actions">
           {form.id && <button type="button" className="cr-btn cr-btn--danger" onClick={removeSkill}><Icon.trash />Törlés</button>}
           <span className="cr-spacer" />

@@ -623,3 +623,29 @@
 .cr-session--compact .cr-mbar__art { width: 44px; height: 44px; }
 .cr-session--compact .cr-mbar__vol { width: 100%; }
 .cr-session--compact .cr-mbar__vol input { flex: 1; width: auto; }
+
+/* Ikonválasztó (új / szerkesztett készség) */
+.cr-iconpick { position: relative; }
+.cr-iconpick__btn {
+  width: 100%; height: 50px; display: grid; place-items: center; font-size: 1.7rem; line-height: 1;
+  border: 1px solid rgba(36, 20, 34, 0.16); border-radius: 12px; background: #fff; cursor: pointer;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.cr-iconpick__btn:hover { border-color: var(--ink); }
+.cr-iconpick__btn[aria-expanded='true'] { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(36, 20, 34, 0.08); }
+.cr-iconpick__pop {
+  padding: 0.8rem; border-radius: 18px; background: #FAF8F6; border: 1px solid var(--line);
+  animation: cr-pick-in 0.2s ease-out;
+}
+@keyframes cr-pick-in { from { opacity: 0; transform: translateY(-6px); } }
+.cr-iconpick__group + .cr-iconpick__group { margin-top: 0.7rem; }
+.cr-iconpick__group > span { display: block; margin: 0 0 0.3rem 0.2rem; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.cr-iconpick__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 0.25rem; }
+.cr-iconpick__grid button {
+  height: 44px; display: grid; place-items: center; font-size: 1.5rem; line-height: 1;
+  border: 1.5px solid transparent; border-radius: 12px; background: transparent; cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+.cr-iconpick__grid button:hover { background: #F6F2EE; transform: scale(1.12); }
+.cr-iconpick__grid button.is-active { border-color: var(--ink); background: #fff; }
+.cr-iconpick__grid button:hover { background: #fff; }
