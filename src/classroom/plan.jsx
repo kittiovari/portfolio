@@ -341,7 +341,7 @@ function PlanRow({ item, step, start, cls, review, open, onToggle, onChange, onF
           ) : compactOnly ? (
             <span className="cr-prow__locked">Self-reflection</span>
           ) : (
-            <input value={item.aim} placeholder={AIM_PLACEHOLDER[role] || 'Aim – what students will be able to do'} onChange={(e) => onChange({ aim: e.target.value })} aria-label="Aim" />
+            <input value={item.aim} placeholder="Title" onChange={(e) => onChange({ aim: e.target.value })} aria-label="Title" />
           )}
         </span>
         <span className="cr-prow__org" title={org?.label || ''}>{org && !compactOnly ? <>{org.icon}<small>{org.label}</small></> : null}</span>
