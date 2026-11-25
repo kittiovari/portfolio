@@ -64,11 +64,6 @@ export default function ClassBoard({ cls }) {
     if (code) fetchMe(cls, code).then(setMe).catch(() => ssSet(codeKey(cls), null))
   }, [cls])
 
-  const points = useMemo(() => {
-    const m = {}
-    for (const e of data?.events || []) m[e.s] = (m[e.s] || 0) + e.v
-    return m
-  }, [data])
 
   // a riportok „doc”-ja: nyilvános (csak pozitív) és saját (minden adatom)
   const publicDoc = useMemo(() => data && ({
@@ -83,7 +78,6 @@ export default function ClassBoard({ cls }) {
   if (!data) return error ? <p className="cr-hint">Couldn't load the class page right now. Please try again later.</p> : <div className="cr-skeleton" />
 
   const students = sortStudents(data.students)
-  const total = Object.values(points).reduce((a, b) => a + b, 0)
   // diák avatarja: a saját kódjával nyílik a saját riportja
   const openStudent = (s) => (me?.id === s.id ? setOpen({ ids: [s.id], title: fullName(s), student: s }) : setAsking(s))
   const meStudent = me && data.students.find((s) => s.id === me.id)
@@ -159,15 +153,9 @@ export default function ClassBoard({ cls }) {
 
       <div className="cr-main">
         {!students.length ? (
-          <p className="cr-hint cr-hint--center">Your points will appear here soon.</p>
+          <p className="cr-hint cr-hint--center">Your class will appear here soon.</p>
         ) : (
           <div className="cr-grid">
-            <button className="cr-tile cr-tile--class" onClick={() => setOpen({ ids: ['class'], title: 'Class', isClass: true })}>
-              <span className="cr-tile__art"><ClassAvatar /></span>
-              <span className="cr-badge">{total}</span>
-              <span className="cr-tile__last">&nbsp;</span>
-              <span className="cr-tile__first">Class</span>
-            </button>
             {students.map((s) => (
               <button key={s.id} className={`cr-tile ${me?.id === s.id ? 'is-me' : ''}`} onClick={() => openStudent(s)} aria-label={`${s.first} – open with personal code`}>
                 <span className="cr-tile__art"><Avatar a={s.avatar} /></span>
@@ -184,8 +172,8 @@ export default function ClassBoard({ cls }) {
 
       {/* a diákoldalon a lapok azonnal záródnak (kilépő animáció nélkül) */}
       <>
-        {open && (() => {
-          const mine = me && open.student?.id === me.id
+        {open && me && open.student?.id === me.id && (() => {
+          const mine = true
           const doc = mine ? myDoc : publicDoc
           const sum = open.ids.reduce((a, id) => a + doc.events.filter((e) => e.s === id).reduce((x, e) => x + e.v, 0), 0)
           return (

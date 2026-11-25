@@ -271,7 +271,7 @@ export function AvatarEditor({ value, onChange }) {
         )}
         <div className="cr-avedit__row" role="radiogroup" aria-label="Colour">
           <span>Colour</span>
-          {themeColors(theme).map((c, i) => (
+          {(themeBodies(theme)[value.b]?.palette || themeColors(theme)).map((c, i) => (
             <button type="button" key={c} role="radio" aria-checked={value.c === i} aria-label={`Colour ${i + 1}`}
               className={`cr-swatch ${value.c === i ? 'is-active' : ''}`} style={{ background: c }} onClick={() => set('c', i)} />
           ))}

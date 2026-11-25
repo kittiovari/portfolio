@@ -41,14 +41,13 @@ export default async (req, context) => {
 
     const students = (doc.students || []).map((s) => ({ id: s.id, first: s.first, last: s.last, avatar: s.avatar }))
     const ids = new Set(students.map((s) => s.id))
-    const events = (doc.events || [])
-      .filter((e) => e.v > 0 && ids.has(e.s))
-      // névtelenül: a közös jelszóval csak osztályszintű összesítés látszik, egyéni nem
-      .map((e) => ({ id: e.id, s: 'class', k: e.k, n: e.n, i: e.i, v: e.v, t: e.t, l: e.l, sn: e.sn }))
+    // a közös jelszóval semmilyen pontadat nem megy ki (osztályösszesítő sem):
+    // mindenki csak a saját eredményét látja, a személyes kódjával (/api/studentview)
+    const events = []
     const today = dayKey()
     // csoportok csak arra a napra érvényesek, amikor készültek
-    const groups = (doc.groups || []).map((g) => ({ id: g.id, name: g.name, ids: (g.ids || []).filter((id) => ids.has(id)) }))
-    const deskmates = (doc.deskmates || []).map((d) => d.filter((id) => ids.has(id))).filter((d) => d.length)
+    const groups = []
+    const deskmates = []
     const skills = [...(doc.skills?.positive || []), ...(doc.skills?.negative || [])].map((k) => ({ id: k.id, key: k.key, name: k.name, icon: k.icon, value: k.value }))
 
     // Minden betervezett óra (a tanév idővonala), a házi-ellenőrzés az előző óra házijából
