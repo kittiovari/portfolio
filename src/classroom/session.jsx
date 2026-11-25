@@ -51,17 +51,17 @@ export function SessionSetup({ doc, update, onStart, onClose, onBack }) {
   if (editLink) {
     const ch = MUSIC_CHANNELS.find((c) => c.id === editLink)
     return (
-      <Sheet title="Időzítő és zene" color={COLOR} icon={<Icon.timer />} onClose={onClose} onBack={() => setEditLink(null)} className="cr-sheet--compact">
+      <Sheet title="Timer & music" color={COLOR} icon={<Icon.timer />} onClose={onClose} onBack={() => setEditLink(null)} className="cr-sheet--compact">
         <form className="cr-form" onSubmit={saveLink}>
           <label className="cr-field">
-            <span>{ch.icon} {ch.label} – Spotify-műsorlista linkje</span>
+            <span>{ch.icon} {ch.label} – Spotify playlist link</span>
             <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="https://open.spotify.com/playlist/…" autoFocus />
           </label>
-          {draft && !playlistId(draft) && <p className="cr-hint is-neg">Ez nem Spotify-műsorlista link.</p>}
+          {draft && !playlistId(draft) && <p className="cr-hint is-neg">This isn't a Spotify playlist link.</p>}
           <div className="cr-form__actions">
             <span className="cr-spacer" />
-            <button type="button" className="cr-btn" onClick={() => setEditLink(null)}>Mégse</button>
-            <button type="submit" className="cr-btn cr-btn--primary" disabled={!playlistId(draft)}>Mentés</button>
+            <button type="button" className="cr-btn" onClick={() => setEditLink(null)}>Cancel</button>
+            <button type="submit" className="cr-btn cr-btn--primary" disabled={!playlistId(draft)}>Save</button>
           </div>
         </form>
       </Sheet>
@@ -69,11 +69,11 @@ export function SessionSetup({ doc, update, onStart, onClose, onBack }) {
   }
 
   return (
-    <Sheet title="Időzítő és zene" color={COLOR} icon={<Icon.timer />} onClose={onClose} onBack={onBack} className="cr-sheet--compact cr-setup">
+    <Sheet title="Timer & music" color={COLOR} icon={<Icon.timer />} onClose={onClose} onBack={onBack} className="cr-sheet--compact cr-setup">
       <div className="cr-setup__row">
-        <h3>Zene</h3>
+        <h3>Music</h3>
         <div className="cr-choice">
-          <button className={!music ? 'is-active' : ''} onClick={() => setMusic(null)}>Nincs</button>
+          <button className={!music ? 'is-active' : ''} onClick={() => setMusic(null)}>None</button>
           {MUSIC_CHANNELS.map((c) => (
             <button key={c.id} className={music === c.id ? 'is-active' : ''} onClick={() => setMusic(c.id)} style={{ '--ch': c.color }}>
               <span aria-hidden="true">{c.icon}</span> {c.label}
@@ -83,7 +83,7 @@ export function SessionSetup({ doc, update, onStart, onClose, onBack }) {
         <div className="cr-setup__links">
           {music && (
             <button className="cr-link cr-setup__edit" onClick={() => { setEditLink(music); setDraft(linkOf(doc, music)) }}>
-              <Icon.pencil />Lista cseréje
+              <Icon.pencil />Change playlist
             </button>
           )}
           <SpotifyStatus />
@@ -91,29 +91,29 @@ export function SessionSetup({ doc, update, onStart, onClose, onBack }) {
       </div>
 
       <div className="cr-setup__row">
-        <h3>Időzítő</h3>
+        <h3>Timer</h3>
         <div className="cr-choice cr-choice--wrap">
-          <button className={!minutes && !custom ? 'is-active' : ''} onClick={() => { setMinutes(null); setCustom('') }}>Nincs</button>
+          <button className={!minutes && !custom ? 'is-active' : ''} onClick={() => { setMinutes(null); setCustom('') }}>None</button>
           {MINUTES.map((m) => (
-            <button key={m} className={minutes === m && !custom ? 'is-active' : ''} onClick={() => { setMinutes(m); setCustom('') }}>{m} perc</button>
+            <button key={m} className={minutes === m && !custom ? 'is-active' : ''} onClick={() => { setMinutes(m); setCustom('') }}>{m} min</button>
           ))}
           <label className={`cr-choice__custom ${custom ? 'is-active' : ''}`}>
-            <input type="number" min="0.5" max="180" step="0.5" value={custom} placeholder="egyéni" onChange={(e) => setCustom(e.target.value)} aria-label="Egyéni idő percben" /> perc
+            <input type="number" min="0.5" max="180" step="0.5" value={custom} placeholder="custom" onChange={(e) => setCustom(e.target.value)} aria-label="Custom time in minutes" /> min
           </label>
         </div>
       </div>
 
       <div className="cr-setup__row">
-        <h3>Nézet</h3>
+        <h3>View</h3>
         <div className="cr-choice">
-          <button className={mode === 'full' ? 'is-active' : ''} onClick={() => setMode('full')}><Icon.expand />Teljes képernyő</button>
-          <button className={mode === 'compact' ? 'is-active' : ''} onClick={() => setMode('compact')}><Icon.compact />Kompakt</button>
+          <button className={mode === 'full' ? 'is-active' : ''} onClick={() => setMode('full')}><Icon.expand />Full screen</button>
+          <button className={mode === 'compact' ? 'is-active' : ''} onClick={() => setMode('compact')}><Icon.compact />Compact</button>
         </div>
       </div>
 
       <button className="cr-btn cr-btn--primary cr-setup__go" disabled={!canStart}
         onClick={() => onStart({ music, link: music ? linkOf(doc, music) : null, seconds, mode, key: Date.now() })}>
-        <Icon.play />Indítás
+        <Icon.play />Start
       </button>
     </Sheet>
   )
@@ -125,29 +125,29 @@ function SpotifyStatus() {
   if (!isConfigured()) return null
   return on ? (
     <span className="cr-spotify is-on">
-      <span className="cr-spotify__dot" />Spotify csatlakozva
-      <button className="cr-link" onClick={() => { disconnect(); setOn(false) }}>Bontás</button>
+      <span className="cr-spotify__dot" />Spotify connected
+      <button className="cr-link" onClick={() => { disconnect(); setOn(false) }}>Disconnect</button>
     </span>
   ) : (
     <button className="cr-spotify" onClick={() => connect()}>
-      <span className="cr-spotify__dot" />Csatlakozás a Spotify-fiókhoz
+      <span className="cr-spotify__dot" />Connect your Spotify account
     </button>
   )
 }
 
 // Visszatérés a Spotify bejelentkezés után (/osztalyterem/spotify)
 export function SpotifyCallback() {
-  const [msg, setMsg] = useState('Kapcsolódás a Spotify-hoz…')
+  const [msg, setMsg] = useState('Connecting to Spotify…')
   useEffect(() => {
     finishLogin(window.location.search).then(({ ok, back, error }) => {
       if (ok) window.location.replace(back)
-      else setMsg(error === 'access_denied' ? 'A Spotify-kapcsolatot nem engedélyezted.' : 'Nem sikerült csatlakozni a Spotify-hoz.')
+      else setMsg(error === 'access_denied' ? 'You didn\'t allow the Spotify connection.' : 'Couldn\'t connect to Spotify.')
     })
   }, [])
   return (
     <div className="cr cr-callback">
       <p>{msg}</p>
-      <a className="cr-btn" href="/osztalyterem">Vissza az Osztályterembe</a>
+      <a className="cr-btn" href="/osztalyterem">Back to the Classroom</a>
     </div>
   )
 }
@@ -219,7 +219,7 @@ function useSdkPlayer(uri, playlist) {
     loadSdk().then((Spotify) => {
       if (!alive) return
       p = new Spotify.Player({
-        name: 'Kittipedia Osztályterem',
+        name: 'Kittipedia Classroom',
         getOAuthToken: (cb) => { getToken().then(cb).catch(() => alive && set({ error: 'auth' })) },
         volume: savedVolume(),
       })
@@ -277,11 +277,11 @@ function useSdkPlayer(uri, playlist) {
 }
 
 const SDK_ERRORS = {
-  auth: 'Lejárt a Spotify-kapcsolat – csatlakozz újra.',
-  premium: 'A saját lejátszóhoz Spotify Premium kell.',
-  play: 'Nem sikerült elindítani a lejátszást. Próbáld a lejátszás gombbal.',
-  init: 'Ez a böngésző nem támogatja a Spotify lejátszót.',
-  sdk: 'A Spotify lejátszó nem töltődött be. Ellenőrizd az internetkapcsolatot.',
+  auth: 'Spotify connection expired – please reconnect.',
+  premium: 'The built-in player needs Spotify Premium.',
+  play: 'Couldn\'t start playback. Try the play button.',
+  init: 'This browser doesn\'t support the Spotify player.',
+  sdk: 'The Spotify player didn\'t load. Check your internet connection.',
 }
 
 function MusicBar({ m }) {
@@ -289,7 +289,7 @@ function MusicBar({ m }) {
     return (
       <div className="cr-mbar cr-mbar--error">
         <span>{SDK_ERRORS[m.error] || SDK_ERRORS.sdk}</span>
-        {m.error === 'auth' && <button className="cr-pillbtn cr-pillbtn--sm" onClick={() => connect()}>Csatlakozás</button>}
+        {m.error === 'auth' && <button className="cr-pillbtn cr-pillbtn--sm" onClick={() => connect()}>Connect</button>}
       </div>
     )
   }
@@ -297,19 +297,19 @@ function MusicBar({ m }) {
     <div className="cr-mbar">
       <span className="cr-mbar__art">{m.track?.image ? <img src={m.track.image} alt="" /> : <Icon.music />}</span>
       <span className="cr-mbar__text">
-        <b>{m.track?.name || (m.ready ? '…' : 'Kapcsolódás a Spotify-hoz…')}</b>
+        <b>{m.track?.name || (m.ready ? '…' : 'Connecting to Spotify…')}</b>
         <small>{m.track?.artist || (m.error === 'play' ? SDK_ERRORS.play : '')}</small>
       </span>
       <span className="cr-mbar__ctrls">
-        <button className="cr-mbtn" onClick={m.prev} aria-label="Előző szám"><Icon.prev /></button>
-        <button className="cr-mbtn cr-mbtn--main" onClick={m.toggle} aria-label={m.paused ? 'Zene indítása' : 'Zene szüneteltetése'}>
+        <button className="cr-mbtn" onClick={m.prev} aria-label="Previous track"><Icon.prev /></button>
+        <button className="cr-mbtn cr-mbtn--main" onClick={m.toggle} aria-label={m.paused ? 'Play music' : 'Pause music'}>
           {m.paused ? <Icon.play /> : <Icon.pause />}
         </button>
-        <button className="cr-mbtn" onClick={m.next} aria-label="Következő szám"><Icon.skip /></button>
+        <button className="cr-mbtn" onClick={m.next} aria-label="Next track"><Icon.skip /></button>
       </span>
-      <label className="cr-mbar__vol" title="Hangerő">
+      <label className="cr-mbar__vol" title="Volume">
         <Icon.sound />
-        <input type="range" min="0" max="1" step="0.05" value={m.volume} onChange={(e) => m.setVolume(Number(e.target.value))} aria-label="Hangerő" />
+        <input type="range" min="0" max="1" step="0.05" value={m.volume} onChange={(e) => m.setVolume(Number(e.target.value))} aria-label="Volume" />
       </label>
     </div>
   )
@@ -357,31 +357,31 @@ export function SessionPlayer({ session, onMode, onClose }) {
       className={`cr-session ${full ? 'cr-session--full' : 'cr-session--compact'} ${done ? 'is-done' : ''}`}
       style={{ '--tool': COLOR, '--ch': ch?.color || COLOR }}
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      aria-label="Időzítő és zene"
+      aria-label="Timer & music"
     >
       <div className="cr-session__top">
         {ch && <span className="cr-session__ch"><span aria-hidden="true">{ch.icon}</span> {ch.label}</span>}
         <span className="cr-spacer" />
         <button className="cr-iconbtn cr-session__btn" onClick={() => onMode(full ? 'compact' : 'full')}
-          aria-label={full ? 'Kompakt nézet' : 'Teljes képernyő'} title={full ? 'Kompakt nézet' : 'Teljes képernyő'}>
+          aria-label={full ? 'Compact view' : 'Full screen'} title={full ? 'Compact view' : 'Full screen'}>
           {full ? <Icon.compact /> : <Icon.expand />}
         </button>
-        <button className="cr-iconbtn cr-session__btn" onClick={onClose} aria-label="Leállítás és bezárás" title="Leállítás"><Icon.close /></button>
+        <button className="cr-iconbtn cr-session__btn" onClick={onClose} aria-label="Stop and close" title="Stop"><Icon.close /></button>
       </div>
 
       <div className="cr-session__main">
         {hasTimer ? (
           <>
             <div className="cr-session__time" aria-live="polite">{fmtTime(timer.left)}</div>
-            {done && <p className="cr-session__msg">Lejárt az idő!</p>}
+            {done && <p className="cr-session__msg">Time's up!</p>}
             <div className="cr-session__ctrls">
-              <button className="cr-sbtn" onClick={() => { setDone(false); timer.reset() }} aria-label="Időzítő újra" title="Újra"><Icon.reset /></button>
+              <button className="cr-sbtn" onClick={() => { setDone(false); timer.reset() }} aria-label="Restart timer" title="Restart"><Icon.reset /></button>
               <button className="cr-sbtn cr-sbtn--main" onClick={() => (done ? extend(60) : timer.toggle())}
-                aria-label={timer.running ? 'Időzítő szünet' : 'Időzítő indítása'}>
+                aria-label={timer.running ? 'Pause timer' : 'Start timer'}>
                 {timer.running ? <Icon.pause /> : <Icon.play />}
               </button>
-              <button className="cr-sbtn cr-sbtn--text" onClick={() => extend(60)} title="Meghosszabbítás 1 perccel">+1 perc</button>
-              <button className="cr-sbtn cr-sbtn--text" onClick={() => extend(300)} title="Meghosszabbítás 5 perccel">+5 perc</button>
+              <button className="cr-sbtn cr-sbtn--text" onClick={() => extend(60)} title="Add 1 minute">+1 min</button>
+              <button className="cr-sbtn cr-sbtn--text" onClick={() => extend(300)} title="Add 5 minutes">+5 min</button>
             </div>
           </>
         ) : (
@@ -393,7 +393,7 @@ export function SessionPlayer({ session, onMode, onClose }) {
         <div className="cr-session__music">
           {useSdk ? <MusicBar m={sdk} />
             : embed.error
-              ? <p className="cr-hint">A Spotify-lejátszó nem töltődött be. Ellenőrizd az internetkapcsolatot.</p>
+              ? <p className="cr-hint">The Spotify player didn't load. Check your internet connection.</p>
               : <div ref={host} className="cr-session__embed" />}
         </div>
       )}

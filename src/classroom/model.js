@@ -15,25 +15,25 @@ const skill = (name, icon, value) => ({ id: uid(), name, icon, value })
 export function defaultSkills() {
   return {
     positive: [
-      skill('5* dolgozat', '👑', 1),
-      skill('Aktív órai részvétel', '💡', 1),
-      skill('Csapatverseny 1. hely', '🥇', 3),
-      skill('Csapatverseny 2. hely', '🥈', 2),
-      skill('Csapatverseny 3. hely', '🥉', 1),
-      skill('Elkészített házi feladat', '👍', 2),
-      skill('Hibátlan házi feladat', '📁', 1),
-      skill('Hibátlan órai feladat', '🎒', 1),
-      skill('Jót mondtál/kérdeztél!', '🔍', 1),
-      skill('Szorgalmi feladat', '🎨', 1),
-      skill('Szuper Quizlet-felelős voltál!', '🧪', 2),
+      skill('Top mark (5) on a test', '👑', 1),
+      skill('Active participation', '💡', 1),
+      skill('Team challenge – 1st place', '🥇', 3),
+      skill('Team challenge – 2nd place', '🥈', 2),
+      skill('Team challenge – 3rd place', '🥉', 1),
+      skill('Homework done', '👍', 2),
+      skill('Perfect homework', '📁', 1),
+      skill('Perfect class task', '🎒', 1),
+      skill('Great answer / question!', '🔍', 1),
+      skill('Extra task', '🎨', 1),
+      skill('Super Quizlet monitor!', '🧪', 2),
     ],
     negative: [
-      skill('Csúnya beszéd', '👎', -1),
-      skill('Fegyelmezetlenség', '🛸', -1),
-      skill('Gúnyolódás', '🦖', -1),
-      skill('Hiányos felszerelés', '🧩', -1),
-      skill('Késés', '⏰', -1),
-      skill('Nincs házi feladat', '🗑️', -2),
+      skill('Bad language', '👎', -1),
+      skill('Disruptive behaviour', '🛸', -1),
+      skill('Teasing others', '🦖', -1),
+      skill('Missing equipment', '🧩', -1),
+      skill('Late', '⏰', -1),
+      skill('No homework', '🗑️', -2),
     ],
   }
 }
@@ -48,7 +48,7 @@ export function emptyClass() {
     attendance: {},
     groups: [],
     avoid: [],
-    directions: ['Vedd elő a füzeted', 'Nyisd ki a könyvet az 50. oldalon', 'Dolgozz párban 10 percig'],
+    directions: ['Take out your notebook', 'Open your book at page 50', 'Work in pairs for 10 minutes'],
     today: {},
     tps: { think: 60, pair: 120, share: 120 },
   }
@@ -104,13 +104,13 @@ const startOfWeek = (d) => {
 }
 
 export const RANGES = [
-  { id: 'today', label: 'Ma' },
-  { id: 'yesterday', label: 'Tegnap' },
-  { id: 'week', label: 'Ez a hét' },
-  { id: 'lastweek', label: 'Múlt hét' },
-  { id: 'month', label: 'Ez a hónap' },
-  { id: 'lastmonth', label: 'Múlt hónap' },
-  { id: 'all', label: 'Mindig' },
+  { id: 'today', label: 'Today' },
+  { id: 'yesterday', label: 'Yesterday' },
+  { id: 'week', label: 'This week' },
+  { id: 'lastweek', label: 'Last week' },
+  { id: 'month', label: 'This month' },
+  { id: 'lastmonth', label: 'Last month' },
+  { id: 'all', label: 'All time' },
 ]
 
 export function rangeBounds(id, now = new Date()) {
@@ -143,9 +143,9 @@ export const EXTRA_TAGS = [
   { id: 'V', label: 'Vocabulary' },
 ]
 export const KINDS = [
-  { id: 'warmup', label: 'Bemelegítés', icon: '🔥' },
-  { id: 'task', label: 'Feladat', icon: '📝' },
-  { id: 'homework', label: 'Házi feladat', icon: '🏠' },
+  { id: 'warmup', label: 'Warm-up', icon: '🔥' },
+  { id: 'task', label: 'Task', icon: '📝' },
+  { id: 'homework', label: 'Homework', icon: '🏠' },
 ]
 
 // A régi, egyszerű napirendet (doc.today) is óratervként adja vissza
@@ -167,10 +167,10 @@ export function skillCoverage(plan) {
 
 // ── Jelenlét ──
 export const ATTENDANCE = {
-  present: { label: 'Jelen', next: 'absent' },
-  absent: { label: 'Hiányzik', next: 'late' },
-  late: { label: 'Késett', next: 'left' },
-  left: { label: 'Korábban távozott', next: 'present' },
+  present: { label: 'Present', next: 'absent' },
+  absent: { label: 'Absent', next: 'late' },
+  late: { label: 'Late', next: 'left' },
+  left: { label: 'Left early', next: 'present' },
 }
 export const isAbsent = (doc, id, day = dayKey()) => doc.attendance?.[day]?.[id] === 'absent'
 
@@ -219,4 +219,45 @@ export function download(name, text, type = 'text/csv;charset=utf-8') {
 export const fmtTime = (s) => {
   const m = Math.floor(s / 60)
   return `${m}:${String(Math.max(0, s % 60)).padStart(2, '0')}`
+}
+
+// ── Egyszeri átállás angolra: a korábbi magyar alapértelmezések cseréje ──
+// Csak a pontosan egyező, gyári magyar szövegeket cseréli (a saját átnevezéseket nem).
+const HU_EN = {
+  '5* dolgozat': 'Top mark (5) on a test',
+  'Aktív órai részvétel': 'Active participation',
+  'Csapatverseny 1. hely': 'Team challenge – 1st place',
+  'Csapatverseny 2. hely': 'Team challenge – 2nd place',
+  'Csapatverseny 3. hely': 'Team challenge – 3rd place',
+  'Elkészített házi feladat': 'Homework done',
+  'Hibátlan házi feladat': 'Perfect homework',
+  'Hibátlan órai feladat': 'Perfect class task',
+  'Jót mondtál/kérdeztél!': 'Great answer / question!',
+  'Szorgalmi feladat': 'Extra task',
+  'Szuper Quizlet-felelős voltál!': 'Super Quizlet monitor!',
+  'Csúnya beszéd': 'Bad language',
+  'Fegyelmezetlenség': 'Disruptive behaviour',
+  'Gúnyolódás': 'Teasing others',
+  'Hiányos felszerelés': 'Missing equipment',
+  'Késés': 'Late',
+  'Nincs házi feladat': 'No homework',
+  'Vedd elő a füzeted': 'Take out your notebook',
+  'Nyisd ki a könyvet az 50. oldalon': 'Open your book at page 50',
+  'Dolgozz párban 10 percig': 'Work in pairs for 10 minutes',
+}
+export function migrateToEnglish(doc) {
+  let changed = false
+  const tr = (s) => { if (typeof s === 'string' && HU_EN[s]) { changed = true; return HU_EN[s] } return s }
+  const grp = (s) => { const m = typeof s === 'string' && s.match(/^(\d+)\. csoport$/); if (m) { changed = true; return `Group ${m[1]}` } return s }
+  const next = {
+    ...doc,
+    skills: doc.skills && {
+      positive: (doc.skills.positive || []).map((k) => ({ ...k, name: tr(k.name) })),
+      negative: (doc.skills.negative || []).map((k) => ({ ...k, name: tr(k.name) })),
+    },
+    events: (doc.events || []).map((e) => ({ ...e, n: tr(e.n) })),
+    directions: (doc.directions || []).map(tr),
+    groups: (doc.groups || []).map((g) => ({ ...g, name: grp(g.name) })),
+  }
+  return changed ? next : doc
 }

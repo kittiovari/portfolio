@@ -43,7 +43,7 @@ export default function ClassBoard({ cls }) {
     return m
   }, [data])
 
-  if (!data) return error ? <p className="cr-hint">Most nem sikerült betölteni a pontokat. Próbáld újra később.</p> : <div className="cr-skeleton" />
+  if (!data) return error ? <p className="cr-hint">Couldn't load the points right now. Please try again later.</p> : <div className="cr-skeleton" />
 
   const students = sortStudents(data.students)
   const total = Object.values(points).reduce((a, b) => a + b, 0)
@@ -54,35 +54,35 @@ export default function ClassBoard({ cls }) {
         <PlanTimeline
           plan={data.plan}
           cls={cls}
-          heading={data.isToday === false && data.planDate ? `📅 Következő óra – ${dayLabel(data.planDate, { month: 'long', day: 'numeric', weekday: 'long' })}` : '📅 Mai óraterv'}
+          heading={data.isToday === false && data.planDate ? `📅 Next lesson – ${dayLabel(data.planDate, { month: 'long', day: 'numeric', weekday: 'long' })}` : '📅 Today’s lesson plan'}
         />
       )}
       {data.directions?.length > 0 && (
         <div className="cr-board__info">
           <div className="cr-board__card">
-            <h3>📋 Utasítások</h3>
+            <h3>📋 Directions</h3>
             <ol>{data.directions.map((it, i) => <li key={i}>{it}</li>)}</ol>
           </div>
         </div>
       )}
 
       <div className="cr-subbar">
-        <div className="cr-seg" role="tablist" aria-label="Nézet">
-          <button role="tab" aria-selected={view === 'students'} className={view === 'students' ? 'is-active' : ''} onClick={() => setView('students')}>Diákok</button>
-          <button role="tab" aria-selected={view === 'groups'} className={view === 'groups' ? 'is-active' : ''} onClick={() => setView('groups')}>Csoportok</button>
+        <div className="cr-seg" role="tablist" aria-label="View">
+          <button role="tab" aria-selected={view === 'students'} className={view === 'students' ? 'is-active' : ''} onClick={() => setView('students')}>Students</button>
+          <button role="tab" aria-selected={view === 'groups'} className={view === 'groups' ? 'is-active' : ''} onClick={() => setView('groups')}>Groups</button>
         </div>
       </div>
 
       <div className="cr-main">
         {!students.length ? (
-          <p className="cr-hint cr-hint--center">Hamarosan itt lesznek a pontjaitok.</p>
+          <p className="cr-hint cr-hint--center">Your points will appear here soon.</p>
         ) : view === 'students' ? (
           <div className="cr-grid">
-            <button className="cr-tile cr-tile--class" onClick={() => setOpen({ ids: students.map((s) => s.id), title: 'Egész osztály' })}>
+            <button className="cr-tile cr-tile--class" onClick={() => setOpen({ ids: students.map((s) => s.id), title: 'Whole class' })}>
               <span className="cr-tile__art"><ClassAvatar /></span>
               <span className="cr-badge">{total}</span>
               <span className="cr-tile__last">&nbsp;</span>
-              <span className="cr-tile__first">Osztály</span>
+              <span className="cr-tile__first">Class</span>
             </button>
             {students.map((s) => (
               <button key={s.id} className="cr-tile" onClick={() => setOpen({ ids: [s.id], title: fullName(s), student: s })}>
@@ -95,7 +95,7 @@ export default function ClassBoard({ cls }) {
           </div>
         ) : (
           <div className="cr-grid cr-grid--groups">
-            {!data.groups.length && <p className="cr-hint">Még nincsenek csoportok.</p>}
+            {!data.groups.length && <p className="cr-hint">No groups yet.</p>}
             {data.groups.map((g) => {
               const members = sortStudents(g.ids.map((id) => data.students.find((s) => s.id === id)).filter(Boolean))
               const sum = members.reduce((a, s) => a + (points[s.id] || 0), 0)
@@ -105,7 +105,7 @@ export default function ClassBoard({ cls }) {
                     <span className="cr-group__faces">{members.slice(0, 5).map((s) => <Avatar key={s.id} a={s.avatar} />)}</span>
                     <span className="cr-badge">{sum}</span>
                     <b>{g.name}</b>
-                    <small>{members.map((s) => s.first).join(', ') || 'üres'}</small>
+                    <small>{members.map((s) => s.first).join(', ') || 'empty'}</small>
                   </button>
                 </div>
               )
@@ -135,17 +135,17 @@ function PointsSheet({ data, target, points, onClose }) {
       <header className="cr-target__head">
         <span className="cr-target__avatar">{target.student ? <Avatar a={target.student.avatar} /> : <ClassAvatar />}</span>
         <h2>{target.title}</h2>
-        <span className="cr-chip"><b>{sum}</b> pont</span>
+        <span className="cr-chip"><b>{sum}</b> point{Math.abs(sum) === 1 ? '' : 's'}</span>
       </header>
       <div className="cr-target__content">
         <div className="cr-report">
           <div className="cr-report__bar">
-            <select value={range} onChange={(e) => setRange(e.target.value)} aria-label="Időszak">
+            <select value={range} onChange={(e) => setRange(e.target.value)} aria-label="Period">
               {RANGES.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
             </select>
           </div>
           {!events.length ? (
-            <div className="cr-empty"><span className="cr-empty__icon">🏆</span><b>Még nincs pont ebben az időszakban</b></div>
+            <div className="cr-empty"><span className="cr-empty__icon">🏆</span><b>No points in this period yet</b></div>
           ) : (
             <ul className="cr-report__list">
               {events.map((e) => {
@@ -155,7 +155,7 @@ function PointsSheet({ data, target, points, onClose }) {
                     <span className="cr-report__icon" aria-hidden="true">{e.i}</span>
                     <span className="cr-report__what">
                       <b>{e.n}</b>
-                      <small>{multi && `${names[e.s]} · `}{d.toLocaleDateString('hu-HU', { month: 'short', day: 'numeric', weekday: 'short' })}</small>
+                      <small>{multi && `${names[e.s]} · `}{d.toLocaleDateString('en-GB', { month: 'short', day: 'numeric', weekday: 'short' })}</small>
                     </span>
                     <span className="cr-report__val">+{e.v}</span>
                   </li>

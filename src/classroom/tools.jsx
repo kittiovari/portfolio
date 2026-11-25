@@ -5,19 +5,19 @@ import { Sheet, FullScreen, Icon, play } from './ui.jsx'
 import { dayKey, fmtTime, isAbsent, makeGroups, shortName, shuffle, sortStudents, uid } from './model.js'
 
 export const TOOLS = [
-  { id: 'session', label: 'Időzítő és zene', color: '#6A4BC4', icon: Icon.timer },
-  { id: 'random', label: 'Véletlen diák', color: '#3F7D4E', icon: Icon.shuffle },
-  { id: 'groups', label: 'Csoportkészítő', color: '#B4443B', icon: Icon.people },
-  { id: 'directions', label: 'Utasítások', color: '#2F6F73', icon: Icon.list },
-  { id: 'tps', label: 'Gondold – Párban – Oszd meg', color: '#8A4FA0', icon: Icon.bubbles },
-  { id: 'today', label: 'Óraterv', color: '#E0B33A', icon: Icon.sun, dark: true },
+  { id: 'session', label: 'Timer & music', color: '#6A4BC4', icon: Icon.timer },
+  { id: 'random', label: 'Random student', color: '#3F7D4E', icon: Icon.shuffle },
+  { id: 'groups', label: 'Group maker', color: '#B4443B', icon: Icon.people },
+  { id: 'directions', label: 'Directions', color: '#2F6F73', icon: Icon.list },
+  { id: 'tps', label: 'Think – Pair – Share', color: '#8A4FA0', icon: Icon.bubbles },
+  { id: 'today', label: 'Lesson plan', color: '#E0B33A', icon: Icon.sun, dark: true },
 ]
 const tool = (id) => TOOLS.find((t) => t.id === id)
 
 // ── Eszköztár ──
 export function Toolkit({ onPick, onClose }) {
   return (
-    <Sheet title="Eszköztár" onClose={onClose} wide>
+    <Sheet title="Toolkit" onClose={onClose} wide>
       <div className="cr-toolkit">
         {TOOLS.map((t) => (
           <button key={t.id} className="cr-tool" onClick={() => onPick(t.id)}>
@@ -96,11 +96,11 @@ export function RandomTool({ doc, onClose, onGive }) {
   useEffect(() => { roll() }, [])
 
   if (!pool.length) {
-    return <Sheet title={t.label} color={t.color} icon={<t.icon />} onClose={onClose}><p className="cr-hint">Még nincs (jelen lévő) diák az osztályban.</p></Sheet>
+    return <Sheet title={t.label} color={t.color} icon={<t.icon />} onClose={onClose}><p className="cr-hint">There are no (present) students in this class yet.</p></Sheet>
   }
   return (
     <FullScreen color={t.color} onClose={onClose}>
-      <p className="cr-full__kicker">A véletlen választás:</p>
+      <p className="cr-full__kicker">And the lucky one is:</p>
       <div className={`cr-pickcard ${rolling ? 'is-rolling' : ''}`}>
         {shown && (
           <>
@@ -110,9 +110,9 @@ export function RandomTool({ doc, onClose, onGive }) {
         )}
       </div>
       <div className="cr-controls cr-controls--pills">
-        <button className="cr-pillbtn" onClick={roll} disabled={rolling}><Icon.shuffle />Újra</button>
-        {shown && !rolling && <button className="cr-pillbtn" onClick={() => onGive(shown.id)}><Icon.plus />Pont adása</button>}
-        <label className="cr-toggle"><input type="checkbox" checked={noRepeat} onChange={(e) => setNoRepeat(e.target.checked)} />Ismétlés nélkül ({used.size}/{pool.length})</label>
+        <button className="cr-pillbtn" onClick={roll} disabled={rolling}><Icon.shuffle />Again</button>
+        {shown && !rolling && <button className="cr-pillbtn" onClick={() => onGive(shown.id)}><Icon.plus />Give points</button>}
+        <label className="cr-toggle"><input type="checkbox" checked={noRepeat} onChange={(e) => setNoRepeat(e.target.checked)} />No repeats ({used.size}/{pool.length})</label>
       </div>
     </FullScreen>
   )
@@ -133,8 +133,8 @@ export function GroupMakerTool({ doc, update, onClose, onBack }) {
     setView('result')
   }
   const saveAsGroups = () => {
-    if (doc.groups.length && !window.confirm('A meglévő csoportok helyére kerüljenek az újak?')) return
-    update((d) => ({ ...d, groups: groups.map((ids, i) => ({ id: uid(), name: `${i + 1}. csoport`, ids })) }))
+    if (doc.groups.length && !window.confirm('Replace the existing groups with the new ones?')) return
+    update((d) => ({ ...d, groups: groups.map((ids, i) => ({ id: uid(), name: `Group ${i + 1}`, ids })) }))
     onClose()
   }
 
@@ -144,7 +144,7 @@ export function GroupMakerTool({ doc, update, onClose, onBack }) {
         <div className="cr-groupres">
           {groups.map((g, i) => (
             <motion.div key={i} className="cr-groupres__card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
-              <h3>{i + 1}. csoport</h3>
+              <h3>Group {i + 1}</h3>
               {g.map((id) => byId[id] && (
                 <div key={id} className="cr-groupres__row"><Avatar a={byId[id].avatar} /><span>{shortName(byId[id])}</span></div>
               ))}
@@ -152,9 +152,9 @@ export function GroupMakerTool({ doc, update, onClose, onBack }) {
           ))}
         </div>
         <div className="cr-controls cr-controls--pills">
-          <button className="cr-pillbtn" onClick={() => make(size)}><Icon.shuffle />Újrakeverés</button>
-          <button className="cr-pillbtn" onClick={saveAsGroups}><Icon.check />Mentés csoportokként</button>
-          <button className="cr-pillbtn" onClick={() => setView('size')}><Icon.back />Létszám</button>
+          <button className="cr-pillbtn" onClick={() => make(size)}><Icon.shuffle />Reshuffle</button>
+          <button className="cr-pillbtn" onClick={saveAsGroups}><Icon.check />Save as groups</button>
+          <button className="cr-pillbtn" onClick={() => setView('size')}><Icon.back />Group size</button>
         </div>
       </FullScreen>
     )
@@ -164,12 +164,12 @@ export function GroupMakerTool({ doc, update, onClose, onBack }) {
 
   return (
     <Sheet title={t.label} color={t.color} icon={<t.icon />} onClose={onClose} onBack={onBack}>
-      <h3 className="cr-q">Hány fős csoportok legyenek?</h3>
+      <h3 className="cr-q">How many students per group?</h3>
       <div className="cr-presets">
         {[2, 3, 4, 5, 6].map((n) => <button key={n} className="cr-preset" onClick={() => make(n)} disabled={present.length < 2}>{n}</button>)}
       </div>
-      <p className="cr-hint">{present.length} jelen lévő diák{doc.avoid.length ? ` · ${doc.avoid.length} szétválasztott pár` : ''}</p>
-      <button className="cr-link cr-link--center" onClick={() => setView('avoid')}>Ne kerüljenek egy csoportba <Icon.next /></button>
+      <p className="cr-hint">{present.length} student{present.length === 1 ? '' : 's'} present{doc.avoid.length ? ` · ${doc.avoid.length} pair${doc.avoid.length === 1 ? '' : 's'} kept apart` : ''}</p>
+      <button className="cr-link cr-link--center" onClick={() => setView('avoid')}>Keep apart <Icon.next /></button>
     </Sheet>
   )
 }
@@ -185,8 +185,8 @@ function AvoidPairs({ doc, update, color, onBack, onClose }) {
     } else setSel(next)
   }
   return (
-    <Sheet title="Ne kerüljenek egy csoportba" color={color} icon={<Icon.people />} onClose={onClose} onBack={onBack}>
-      <p className="cr-hint">Válassz ki két diákot – a csoportkészítő igyekszik külön csoportba tenni őket.</p>
+    <Sheet title="Keep apart" color={color} icon={<Icon.people />} onClose={onClose} onBack={onBack}>
+      <p className="cr-hint">Pick two students – the group maker will try to put them in different groups.</p>
       <div className="cr-pickgrid">
         {sortStudents(doc.students).map((s) => (
           <button type="button" key={s.id} className={`cr-pick ${sel.includes(s.id) ? 'is-active' : ''}`} onClick={() => choose(s.id)}>
@@ -199,7 +199,7 @@ function AvoidPairs({ doc, update, color, onBack, onClose }) {
           {doc.avoid.map(([a, b], i) => (
             <li key={i}>
               <span>{byId[a] ? shortName(byId[a]) : '?'} ↔ {byId[b] ? shortName(byId[b]) : '?'}</span>
-              <button className="cr-iconbtn cr-iconbtn--sm" aria-label="Pár törlése" onClick={() => update((d) => ({ ...d, avoid: d.avoid.filter((_, j) => j !== i) }))}><Icon.close /></button>
+              <button className="cr-iconbtn cr-iconbtn--sm" aria-label="Remove pair" onClick={() => update((d) => ({ ...d, avoid: d.avoid.filter((_, j) => j !== i) }))}><Icon.close /></button>
             </li>
           ))}
         </ul>
@@ -228,9 +228,9 @@ export function DirectionsTool({ doc, update, onClose, onBack }) {
           ))}
         </ol>
         <div className="cr-controls">
-          <button className="cr-ctrl" onClick={() => setStep((s) => Math.max(0, s - 1))} aria-label="Előző"><Icon.back /></button>
-          <button className="cr-ctrl cr-ctrl--main" onClick={() => setStep((s) => Math.min(items.length, s + 1))} aria-label="Következő"><Icon.next /></button>
-          <button className="cr-ctrl" onClick={() => setShow(false)} aria-label="Szerkesztés"><Icon.pencil /></button>
+          <button className="cr-ctrl" onClick={() => setStep((s) => Math.max(0, s - 1))} aria-label="Previous"><Icon.back /></button>
+          <button className="cr-ctrl cr-ctrl--main" onClick={() => setStep((s) => Math.min(items.length, s + 1))} aria-label="Next"><Icon.next /></button>
+          <button className="cr-ctrl" onClick={() => setShow(false)} aria-label="Edit"><Icon.pencil /></button>
         </div>
       </FullScreen>
     )
@@ -241,18 +241,18 @@ export function DirectionsTool({ doc, update, onClose, onBack }) {
         {items.map((it, i) => (
           <li key={i}>
             <span>{i + 1}.</span>
-            <input value={it} onChange={(e) => setItems((l) => l.map((x, j) => (j === i ? e.target.value : x)))} aria-label={`${i + 1}. lépés`} />
-            <button className="cr-iconbtn cr-iconbtn--sm" aria-label="Törlés" onClick={() => setItems((l) => l.filter((_, j) => j !== i))}><Icon.close /></button>
+            <input value={it} onChange={(e) => setItems((l) => l.map((x, j) => (j === i ? e.target.value : x)))} aria-label={`Step ${i + 1}`} />
+            <button className="cr-iconbtn cr-iconbtn--sm" aria-label="Delete" onClick={() => setItems((l) => l.filter((_, j) => j !== i))}><Icon.close /></button>
           </li>
         ))}
       </ol>
       <form className="cr-addrow" onSubmit={(e) => { e.preventDefault(); if (draft.trim()) { setItems((l) => [...l, draft.trim()]); setDraft('') } }}>
-        <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Új lépés…" />
-        <button className="cr-btn" type="submit"><Icon.plus />Hozzáadás</button>
+        <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="New step…" />
+        <button className="cr-btn" type="submit"><Icon.plus />Add</button>
       </form>
       <div className="cr-form__actions">
         <span className="cr-spacer" />
-        <button className="cr-btn cr-btn--primary" disabled={!items.length} onClick={() => { setStep(0); setShow(true) }}><Icon.play />Kivetítés</button>
+        <button className="cr-btn cr-btn--primary" disabled={!items.length} onClick={() => { setStep(0); setShow(true) }}><Icon.play />Present</button>
       </div>
     </Sheet>
   )
@@ -260,9 +260,9 @@ export function DirectionsTool({ doc, update, onClose, onBack }) {
 
 // ── Gondold – Párban – Oszd meg ──
 const PHASES = [
-  { key: 'think', label: 'Gondold végig!', sub: 'Egyedül, csendben' },
-  { key: 'pair', label: 'Beszéld meg a pároddal!', sub: 'Párban' },
-  { key: 'share', label: 'Oszd meg az osztállyal!', sub: 'Közösen' },
+  { key: 'think', label: 'Think it over!', sub: 'Alone, in silence' },
+  { key: 'pair', label: 'Discuss with your partner!', sub: 'In pairs' },
+  { key: 'share', label: 'Share with the class!', sub: 'Together' },
 ]
 export function TpsTool({ doc, update, onClose, onBack }) {
   const t = tool('tps')
@@ -276,13 +276,13 @@ export function TpsTool({ doc, update, onClose, onBack }) {
         {PHASES.map((p, i) => (
           <label key={p.key} className="cr-field cr-field--inline">
             <span><b>{i + 1}.</b> {p.label}</span>
-            <input type="number" min="0.5" max="30" step="0.5" value={tps[p.key] / 60} onChange={(e) => setDur(p.key, Number(e.target.value) || 1)} /> perc
+            <input type="number" min="0.5" max="30" step="0.5" value={tps[p.key] / 60} onChange={(e) => setDur(p.key, Number(e.target.value) || 1)} /> min
           </label>
         ))}
       </div>
       <div className="cr-form__actions">
         <span className="cr-spacer" />
-        <button className="cr-btn cr-btn--primary" onClick={() => setRun(true)}><Icon.play />Indítás</button>
+        <button className="cr-btn cr-btn--primary" onClick={() => setRun(true)}><Icon.play />Start</button>
       </div>
     </Sheet>
   )
@@ -317,8 +317,8 @@ function TpsRun({ doc, color, onClose }) {
         </div>
       )}
       <div className="cr-controls">
-        <button className="cr-ctrl cr-ctrl--main" onClick={c.toggle} aria-label={c.running ? 'Szünet' : 'Folytatás'}>{c.running ? <Icon.pause /> : <Icon.play />}</button>
-        <button className="cr-ctrl" onClick={next} disabled={i === PHASES.length - 1} aria-label="Következő szakasz"><Icon.next /></button>
+        <button className="cr-ctrl cr-ctrl--main" onClick={c.toggle} aria-label={c.running ? 'Pause' : 'Resume'}>{c.running ? <Icon.pause /> : <Icon.play />}</button>
+        <button className="cr-ctrl" onClick={next} disabled={i === PHASES.length - 1} aria-label="Next phase"><Icon.next /></button>
       </div>
     </FullScreen>
   )

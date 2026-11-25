@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { emptyClass } from './model.js'
+import { emptyClass, migrateToEnglish } from './model.js'
 
 // Az osztály adatainak betöltése és automatikus mentése a szerverre.
 // Minden módosítás azonnal látszik (optimista frissítés); a mentés kis
@@ -13,6 +13,7 @@ export function useClassroom(cls) {
   const timer = useRef(null)
   const inflight = useRef(false)
   const dirty = useRef(false)
+  const saveRef = useRef(null)
 
   const load = useCallback(async () => {
     setStatus('loading')
@@ -21,10 +22,17 @@ export function useClassroom(cls) {
       if (res.status === 401) { setStatus('locked'); return }
       if (!res.ok) throw new Error(res.status)
       const data = await res.json()
-      const next = data.doc ? { ...emptyClass(), ...data.doc } : emptyClass()
+      const loaded = data.doc ? { ...emptyClass(), ...data.doc } : emptyClass()
+      // A korábbi magyar alapértelmezések angolra cserélése (egyszeri, utána elmentjük)
+      const next = migrateToEnglish(loaded)
       docRef.current = next
       setDoc(next)
       setStatus('ready')
+      if (next !== loaded && data.doc) {
+        dirty.current = true
+        clearTimeout(timer.current)
+        timer.current = setTimeout(() => saveRef.current?.(), 600)
+      }
     } catch {
       setStatus('error')
     }
@@ -77,6 +85,8 @@ export function useClassroom(cls) {
       }
     }
   }, [cls])
+
+  saveRef.current = save
 
   // update(fn): fn a régi dokumentumból újat ad vissza
   const update = useCallback((fn) => {

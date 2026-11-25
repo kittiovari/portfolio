@@ -18,12 +18,12 @@ export function TargetModal({ doc, target, points, onAward, update, onClose, ini
   const total = target.type === 'student'
     ? points[student.id] || 0
     : ids.reduce((sum, id) => sum + (points[id] || 0), 0)
-  const title = student ? fullName(student) : target.type === 'class' ? 'Egész osztály' : target.title
+  const title = student ? fullName(student) : target.type === 'class' ? 'Whole class' : target.title
 
   const tabs = [
-    { id: 'give', label: 'Pont adása', icon: <Icon.plus /> },
-    { id: 'report', label: 'Pontjelentés', icon: <Icon.list /> },
-    ...(student ? [{ id: 'custom', label: 'Testreszabás', icon: <Icon.pencil /> }] : []),
+    { id: 'give', label: 'Give points', icon: <Icon.plus /> },
+    { id: 'report', label: 'Report', icon: <Icon.list /> },
+    ...(student ? [{ id: 'custom', label: 'Customise', icon: <Icon.pencil /> }] : []),
   ]
 
   return (
@@ -31,11 +31,11 @@ export function TargetModal({ doc, target, points, onAward, update, onClose, ini
       <header className="cr-target__head">
         <span className="cr-target__avatar">{student ? <Avatar a={student.avatar} /> : <ClassAvatar />}</span>
         <h2>{title}</h2>
-        <span className={`cr-chip ${total < 0 ? 'cr-chip--neg' : ''}`}><b>{total}</b> pont</span>
-        {target.type === 'multi' && <span className="cr-chip cr-chip--muted">{ids.length} diák</span>}
+        <span className={`cr-chip ${total < 0 ? 'cr-chip--neg' : ''}`}><b>{total}</b> point{Math.abs(total) === 1 ? '' : 's'}</span>
+        {target.type === 'multi' && <span className="cr-chip cr-chip--muted">{ids.length} student{ids.length === 1 ? '' : 's'}</span>}
       </header>
       <div className="cr-target__layout">
-        <nav className="cr-target__nav" aria-label="Menü">
+        <nav className="cr-target__nav" aria-label="Menu">
           {tabs.map((t) => (
             <button key={t.id} className={`cr-navbtn ${tab === t.id ? 'is-active' : ''}`} onClick={() => setTab(t.id)}>
               {t.icon}{t.label}
@@ -55,16 +55,16 @@ export function TargetModal({ doc, target, points, onAward, update, onClose, ini
 // ── Pont adása: pozitív / fejlesztendő készségek, szerkeszthetők ──
 // ── Ikonválasztó: a csillagra (aktuális ikonra) kattintva nyíló rács ──
 const ICON_GROUPS = [
-  { label: 'Dicséret', icons: ['⭐', '🌟', '✨', '👑', '🏆', '🥇', '🥈', '🥉', '🏅', '🎖️', '💎', '🎉', '🎊', '🚀', '🔥', '💯', '👍', '👏', '🙌', '💪', '🤝', '❤️', '😊', '😎'] },
-  { label: 'Tanulás', icons: ['📚', '📖', '📝', '✏️', '🖊️', '📁', '📒', '🎒', '💡', '🧠', '🔍', '🧪', '🔬', '🧩', '🎯', '📈', '🗣️', '💬', '🎤', '🎧', '🌍', '🎓', '🏫', '🗺️'] },
-  { label: 'Közösség', icons: ['🤗', '🫶', '🙋', '👋', '🧹', '🌱', '🌈', '☀️', '🎨', '🎭', '🎵', '⚽', '🧘', '🐢', '🦉', '🐝', '🍀', '🎁'] },
-  { label: 'Fejlesztendő', icons: ['⚠️', '👎', '⏰', '🕐', '📵', '🔇', '🗑️', '❌', '🚫', '😴', '🙊', '🛸', '🦖', '🐌', '🌧️', '💤'] },
+  { label: 'Praise', icons: ['⭐', '🌟', '✨', '👑', '🏆', '🥇', '🥈', '🥉', '🏅', '🎖️', '💎', '🎉', '🎊', '🚀', '🔥', '💯', '👍', '👏', '🙌', '💪', '🤝', '❤️', '😊', '😎'] },
+  { label: 'Learning', icons: ['📚', '📖', '📝', '✏️', '🖊️', '📁', '📒', '🎒', '💡', '🧠', '🔍', '🧪', '🔬', '🧩', '🎯', '📈', '🗣️', '💬', '🎤', '🎧', '🌍', '🎓', '🏫', '🗺️'] },
+  { label: 'Community', icons: ['🤗', '🫶', '🙋', '👋', '🧹', '🌱', '🌈', '☀️', '🎨', '🎭', '🎵', '⚽', '🧘', '🐢', '🦉', '🐝', '🍀', '🎁'] },
+  { label: 'Needs work', icons: ['⚠️', '👎', '⏰', '🕐', '📵', '🔇', '🗑️', '❌', '🚫', '😴', '🙊', '🛸', '🦖', '🐌', '🌧️', '💤'] },
 ]
 
 // A rács a mezősor alatt nyílik ki (nem lebeg), így a panel görgetése sem vágja le
 function IconGrid({ value, onPick }) {
   return (
-    <div className="cr-iconpick__pop" role="group" aria-label="Ikonok">
+    <div className="cr-iconpick__pop" role="group" aria-label="Icons">
       {ICON_GROUPS.map((g) => (
         <div key={g.label} className="cr-iconpick__group">
           <span>{g.label}</span>
@@ -106,20 +106,20 @@ function GivePoints({ doc, update, onGive }) {
   if (form) {
     return (
       <form className="cr-form" onSubmit={saveSkill}>
-        <h3>{form.id ? 'Készség szerkesztése' : 'Új készség'}</h3>
+        <h3>{form.id ? 'Edit skill' : 'New skill'}</h3>
         <div className="cr-form__row">
           <div className="cr-field cr-field--icon">
-            <span>Ikon</span>
-            <button type="button" className="cr-iconpick__btn" onClick={() => setPicking((o) => !o)} aria-expanded={picking} aria-label="Ikon kiválasztása">
+            <span>Icon</span>
+            <button type="button" className="cr-iconpick__btn" onClick={() => setPicking((o) => !o)} aria-expanded={picking} aria-label="Choose icon">
               {form.icon || (kind === 'positive' ? '⭐' : '⚠️')}
             </button>
           </div>
           <label className="cr-field">
-            <span>Megnevezés</span>
+            <span>Name</span>
             <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} autoFocus maxLength={60} />
           </label>
           <label className="cr-field cr-field--num">
-            <span>Pont</span>
+            <span>Points</span>
             <select value={Math.abs(form.value)} onChange={(e) => setForm({ ...form, value: Number(e.target.value) })}>
               {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{kind === 'positive' ? `+${n}` : `−${n}`}</option>)}
             </select>
@@ -127,10 +127,10 @@ function GivePoints({ doc, update, onGive }) {
         </div>
         {picking && <IconGrid value={form.icon} onPick={(icon) => { setForm({ ...form, icon }); setPicking(false) }} />}
         <div className="cr-form__actions">
-          {form.id && <button type="button" className="cr-btn cr-btn--danger" onClick={removeSkill}><Icon.trash />Törlés</button>}
+          {form.id && <button type="button" className="cr-btn cr-btn--danger" onClick={removeSkill}><Icon.trash />Delete</button>}
           <span className="cr-spacer" />
-          <button type="button" className="cr-btn" onClick={() => setForm(null)}>Mégse</button>
-          <button type="submit" className="cr-btn cr-btn--primary">Mentés</button>
+          <button type="button" className="cr-btn" onClick={() => setForm(null)}>Cancel</button>
+          <button type="submit" className="cr-btn cr-btn--primary">Save</button>
         </div>
       </form>
     )
@@ -139,11 +139,11 @@ function GivePoints({ doc, update, onGive }) {
   return (
     <>
       <div className="cr-tabs">
-        <button className={kind === 'positive' ? 'is-active' : ''} onClick={() => setKind('positive')}>Pozitív</button>
-        <button className={kind === 'negative' ? 'is-active' : ''} onClick={() => setKind('negative')}>Fejlesztendő</button>
+        <button className={kind === 'positive' ? 'is-active' : ''} onClick={() => setKind('positive')}>Positive</button>
+        <button className={kind === 'negative' ? 'is-active' : ''} onClick={() => setKind('negative')}>Needs work</button>
         <span className="cr-spacer" />
         <button className={`cr-link ${editing ? 'is-on' : ''}`} onClick={() => setEditing((v) => !v)}>
-          <Icon.pencil />{editing ? 'Kész' : 'Szerkesztés'}
+          <Icon.pencil />{editing ? 'Done' : 'Edit'}
         </button>
       </div>
       <div className={`cr-skills ${editing ? 'is-editing' : ''}`}>
@@ -161,7 +161,7 @@ function GivePoints({ doc, update, onGive }) {
         ))}
         <button className="cr-skill cr-skill--add" onClick={() => setForm({ name: '', icon: '', value: kind === 'positive' ? 1 : -1 })}>
           <span className="cr-skill__plus"><Icon.plus /></span>
-          <span className="cr-skill__name">Új készség</span>
+          <span className="cr-skill__name">New skill</span>
         </button>
       </div>
     </>
@@ -191,20 +191,20 @@ function Report({ doc, ids, title, update }) {
   const skills = Object.values(bySkill).sort((a, b) => b.n - a.n)
 
   const exportCsv = () => {
-    const rows = [['Dátum', 'Idő', 'Diák', 'Készség', 'Pont']]
+    const rows = [['Date', 'Time', 'Student', 'Skill', 'Points']]
     for (const e of [...events].reverse()) {
       const d = new Date(e.t)
-      rows.push([dayKey(d), d.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }), names[e.s] || '(törölt diák)', e.n, e.v])
+      rows.push([dayKey(d), d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }), names[e.s] || '(deleted student)', e.n, e.v])
     }
     const label = RANGES.find((r) => r.id === range)?.label ?? ''
-    download(`pontok – ${title} – ${label}.csv`, toCsv(rows))
+    download(`points – ${title} – ${label}.csv`, toCsv(rows))
   }
   const removeEvent = (id) => update((d) => ({ ...d, events: d.events.filter((e) => e.id !== id) }))
 
   return (
     <div className="cr-report">
       <div className="cr-report__bar">
-        <select value={range} onChange={(e) => setRange(e.target.value)} aria-label="Időszak">
+        <select value={range} onChange={(e) => setRange(e.target.value)} aria-label="Period">
           {RANGES.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
         </select>
         <span className="cr-spacer" />
@@ -214,19 +214,19 @@ function Report({ doc, ids, title, update }) {
       {!events.length ? (
         <div className="cr-empty">
           <span className="cr-empty__icon">🏆</span>
-          <b>Nincs pont ebben az időszakban</b>
-          <p>Válassz másik időszakot.</p>
+          <b>No points in this period</b>
+          <p>Choose another period.</p>
         </div>
       ) : (
         <>
           <div className="cr-report__summary">
-            <div className="cr-meter" role="img" aria-label={`${pct}% pozitív`}>
+            <div className="cr-meter" role="img" aria-label={`${pct}% positive`}>
               <span style={{ width: `${pct}%` }} />
             </div>
             <div className="cr-report__nums">
-              <span><b className="is-pos">+{pos}</b> pozitív</span>
-              <span><b className="is-neg">−{neg}</b> fejlesztendő</span>
-              <span><b>{pct}%</b> pozitív arány</span>
+              <span><b className="is-pos">+{pos}</b> positive</span>
+              <span><b className="is-neg">−{neg}</b> needs work</span>
+              <span><b>{pct}%</b> positive</span>
             </div>
           </div>
           <div className="cr-report__skills">
@@ -242,10 +242,10 @@ function Report({ doc, ids, title, update }) {
                   <span className="cr-report__icon" aria-hidden="true">{e.i}</span>
                   <span className="cr-report__what">
                     <b>{e.n}</b>
-                    <small>{multi && `${names[e.s] || '(törölt diák)'} · `}{d.toLocaleDateString('hu-HU', { month: 'short', day: 'numeric', weekday: 'short' })} {d.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' })}</small>
+                    <small>{multi && `${names[e.s] || '(deleted student)'} · `}{d.toLocaleDateString('en-GB', { month: 'short', day: 'numeric', weekday: 'short' })} {d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</small>
                   </span>
                   <span className={`cr-report__val ${e.v < 0 ? 'is-neg' : ''}`}>{e.v > 0 ? `+${e.v}` : e.v}</span>
-                  <button className="cr-iconbtn cr-iconbtn--sm" onClick={() => removeEvent(e.id)} aria-label="Pont visszavonása" title="Visszavonás"><Icon.close /></button>
+                  <button className="cr-iconbtn cr-iconbtn--sm" onClick={() => removeEvent(e.id)} aria-label="Undo point" title="Undo"><Icon.close /></button>
                 </li>
               )
             })}
@@ -269,7 +269,7 @@ function Customize({ student, update, onClose }) {
     onClose()
   }
   const remove = () => {
-    if (!window.confirm(`Biztosan eltávolítod ${fullName(student)} diákot az osztályból? A pontjai is törlődnek.`)) return
+    if (!window.confirm(`Remove ${fullName(student)} from the class? Their points will be deleted too.`)) return
     update((d) => ({
       ...d,
       students: d.students.filter((s) => s.id !== student.id),
@@ -284,23 +284,23 @@ function Customize({ student, update, onClose }) {
     <form className="cr-form" onSubmit={save}>
       <AvatarEditor value={avatar} onChange={setAvatar} />
       <div className="cr-form__row">
-        <label className="cr-field"><span>Vezetéknév</span><input value={last} onChange={(e) => setLast(e.target.value)} maxLength={40} /></label>
-        <label className="cr-field"><span>Keresztnév</span><input value={first} onChange={(e) => setFirst(e.target.value)} maxLength={40} required /></label>
+        <label className="cr-field"><span>Surname</span><input value={last} onChange={(e) => setLast(e.target.value)} maxLength={40} /></label>
+        <label className="cr-field"><span>First name</span><input value={first} onChange={(e) => setFirst(e.target.value)} maxLength={40} required /></label>
       </div>
       <div className="cr-form__actions">
-        <button type="button" className="cr-btn cr-btn--danger" onClick={remove}><Icon.trash />Eltávolítás az osztályból</button>
+        <button type="button" className="cr-btn cr-btn--danger" onClick={remove}><Icon.trash />Remove from class</button>
         <span className="cr-spacer" />
-        <button type="submit" className="cr-btn cr-btn--primary">Mentés</button>
+        <button type="submit" className="cr-btn cr-btn--primary">Save</button>
       </div>
     </form>
   )
 }
 
 const FEATURES = [
-  { key: 'b', label: 'Test', list: AVATAR.bodies },
-  { key: 'e', label: 'Szem', list: AVATAR.eyes },
-  { key: 'm', label: 'Száj', list: AVATAR.mouths },
-  { key: 'x', label: 'Fej', list: AVATAR.extras },
+  { key: 'b', label: 'Body', list: AVATAR.bodies },
+  { key: 'e', label: 'Eyes', list: AVATAR.eyes },
+  { key: 'm', label: 'Mouth', list: AVATAR.mouths },
+  { key: 'x', label: 'Head', list: AVATAR.extras },
 ]
 
 export function AvatarEditor({ value, onChange }) {
@@ -309,13 +309,13 @@ export function AvatarEditor({ value, onChange }) {
     <div className="cr-avedit">
       <div className="cr-avedit__preview">
         <Avatar a={value} />
-        <button type="button" className="cr-btn cr-btn--sm" onClick={() => onChange(randomAvatar())}><Icon.shuffle />Véletlen</button>
+        <button type="button" className="cr-btn cr-btn--sm" onClick={() => onChange(randomAvatar())}><Icon.shuffle />Random</button>
       </div>
       <div className="cr-avedit__opts">
-        <div className="cr-avedit__row" role="radiogroup" aria-label="Szín">
-          <span>Szín</span>
+        <div className="cr-avedit__row" role="radiogroup" aria-label="Colour">
+          <span>Colour</span>
           {AVATAR.colors.map((c, i) => (
-            <button type="button" key={c} role="radio" aria-checked={value.c === i} aria-label={`${i + 1}. szín`}
+            <button type="button" key={c} role="radio" aria-checked={value.c === i} aria-label={`Colour ${i + 1}`}
               className={`cr-swatch ${value.c === i ? 'is-active' : ''}`} style={{ background: c }} onClick={() => set('c', i)} />
           ))}
         </div>
@@ -346,18 +346,18 @@ export function AddStudents({ update, onClose }) {
     onClose()
   }
   return (
-    <Sheet title="Diákok felvétele" onClose={onClose}>
+    <Sheet title="Add students" onClose={onClose}>
       <form className="cr-form" onSubmit={submit}>
         <label className="cr-field">
-          <span>Soronként egy név (Vezetéknév Keresztnév)</span>
+          <span>One name per line (Surname First name)</span>
           <textarea rows={8} value={text} onChange={(e) => setText(e.target.value)} placeholder={'Kovács Anna\nNagy Bence\nSzabó L. Dóra'} autoFocus />
         </label>
-        <p className="cr-hint">Adattakarékosság: elég a keresztnév és a vezetéknév kezdőbetűje is (pl. „K. Anna”). Az adatok titkosítva, csak a tanári jelszóval érhetők el.</p>
+        <p className="cr-hint">Data minimisation: a first name and surname initial is enough (e.g. “K. Anna”). Data is encrypted and only accessible with the teacher password.</p>
         <div className="cr-form__actions">
-          <span className="cr-muted">{parsed.length ? `${parsed.length} diák` : ''}</span>
+          <span className="cr-muted">{parsed.length ? `${parsed.length} student${parsed.length === 1 ? '' : 's'}` : ''}</span>
           <span className="cr-spacer" />
-          <button type="button" className="cr-btn" onClick={onClose}>Mégse</button>
-          <button type="submit" className="cr-btn cr-btn--primary" disabled={!parsed.length}>Felvétel</button>
+          <button type="button" className="cr-btn" onClick={onClose}>Cancel</button>
+          <button type="submit" className="cr-btn cr-btn--primary" disabled={!parsed.length}>Add</button>
         </div>
       </form>
     </Sheet>
@@ -366,12 +366,12 @@ export function AddStudents({ update, onClose }) {
 
 // ── Csoport szerkesztése ──
 export function GroupEditor({ doc, group, update, onClose }) {
-  const [name, setName] = useState(group?.name ?? `${doc.groups.length + 1}. csoport`)
+  const [name, setName] = useState(group?.name ?? `Group ${doc.groups.length + 1}`)
   const [ids, setIds] = useState(new Set(group?.ids ?? []))
   const toggle = (id) => setIds((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
   const save = (e) => {
     e.preventDefault()
-    const item = { id: group?.id ?? uid(), name: name.trim() || 'Csoport', ids: [...ids] }
+    const item = { id: group?.id ?? uid(), name: name.trim() || 'Group', ids: [...ids] }
     update((d) => ({ ...d, groups: group ? d.groups.map((g) => (g.id === group.id ? item : g)) : [...d.groups, item] }))
     onClose()
   }
@@ -380,9 +380,9 @@ export function GroupEditor({ doc, group, update, onClose }) {
     onClose()
   }
   return (
-    <Sheet title={group ? 'Csoport szerkesztése' : 'Új csoport'} onClose={onClose}>
+    <Sheet title={group ? 'Edit group' : 'New group'} onClose={onClose}>
       <form className="cr-form" onSubmit={save}>
-        <label className="cr-field"><span>Csoport neve</span><input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} autoFocus /></label>
+        <label className="cr-field"><span>Group name</span><input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} autoFocus /></label>
         <div className="cr-pickgrid">
           {sortStudents(doc.students).map((s) => (
             <button type="button" key={s.id} className={`cr-pick ${ids.has(s.id) ? 'is-active' : ''}`} onClick={() => toggle(s.id)} aria-pressed={ids.has(s.id)}>
@@ -391,10 +391,10 @@ export function GroupEditor({ doc, group, update, onClose }) {
           ))}
         </div>
         <div className="cr-form__actions">
-          {group && <button type="button" className="cr-btn cr-btn--danger" onClick={remove}><Icon.trash />Törlés</button>}
+          {group && <button type="button" className="cr-btn cr-btn--danger" onClick={remove}><Icon.trash />Delete</button>}
           <span className="cr-spacer" />
-          <button type="button" className="cr-btn" onClick={onClose}>Mégse</button>
-          <button type="submit" className="cr-btn cr-btn--primary">Mentés</button>
+          <button type="button" className="cr-btn" onClick={onClose}>Cancel</button>
+          <button type="submit" className="cr-btn cr-btn--primary">Save</button>
         </div>
       </form>
     </Sheet>

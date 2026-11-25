@@ -16,7 +16,7 @@ export const LANGUAGE_PROFILES = [
   { area: 'language-9b', id: '9b', label: 'NYEK9B' },
   { area: 'language-9d', id: '9d', label: 'NYEK9D' },
   // Tanári belépés ugyanitt (külön tanári jelszóval) → Osztályterem
-  { area: 'teacher', id: 'tanar', label: 'Tanári' },
+  { area: 'teacher', id: 'tanar', label: 'Teacher' },
 ]
 export const isLanguageArea = (area) => area === 'language' || area.startsWith('language-')
 export const unlockedLanguageAreas = () => LANGUAGE_PROFILES.filter((p) => p.area.startsWith('language-') && isUnlocked(p.area)).map((p) => p.area)

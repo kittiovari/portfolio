@@ -16,13 +16,13 @@ import '../components/PasswordModal.css'
 import '../classroom/Classroom.css'
 
 const STATUS = {
-  loading: 'Betöltés…',
-  ready: 'Mentve',
-  saved: 'Mentve',
-  saving: 'Mentés…',
-  error: 'Mentési hiba – újrapróbálom',
-  conflict: 'Másik eszközön módosult – frissítettem',
-  locked: 'Lejárt a belépés',
+  loading: 'Loading…',
+  ready: 'Saved',
+  saved: 'Saved',
+  saving: 'Saving…',
+  error: 'Save failed – retry',
+  conflict: 'Changed on another device – updated',
+  locked: 'Session expired',
 }
 
 export function ClassroomIndex() {
@@ -107,8 +107,8 @@ export default function Classroom() {
   const header = (
     <header className="cr-top">
       <div className="cr-top__left">
-        <Link to="/" className="cr-back" aria-label="Vissza a Kittipediára"><Icon.back /></Link>
-        <div className="cr-classes" role="tablist" aria-label="Osztály">
+        <Link to="/" className="cr-back" aria-label="Back to Kittipedia"><Icon.back /></Link>
+        <div className="cr-classes" role="tablist" aria-label="Class">
           {CLASSES.map((c) => {
             const Art = profileArt[c.area]
             return (
@@ -126,7 +126,7 @@ export default function Classroom() {
         <span className={`cr-status is-${status}`} role="status">
           {status === 'error' ? <button className="cr-link" onClick={retry}>{STATUS.error}</button> : STATUS[status]}
         </span>
-        <button className="cr-iconbtn" onClick={() => { setMuted(!muted); setMutedState(!muted) }} aria-label={muted ? 'Hang be' : 'Hang ki'} title={muted ? 'Hang be' : 'Hang ki'}>
+        <button className="cr-iconbtn" onClick={() => { setMuted(!muted); setMutedState(!muted) }} aria-label={muted ? 'Sound on' : 'Sound off'} title={muted ? 'Sound on' : 'Sound off'}>
           {muted ? <Icon.mute /> : <Icon.sound />}
         </button>
       </div>
@@ -139,8 +139,8 @@ export default function Classroom() {
         {header}
         <main className="cr-main" aria-busy={status === 'loading'}>
           {status === 'locked'
-            ? <p className="cr-hint">Lejárt a belépés. <a href={`/osztalyterem/${cls}`}>Frissítsd az oldalt</a>, és add meg újra a jelszót.</p>
-            : status === 'error' ? <p className="cr-hint">Nem sikerült betölteni az adatokat. <button className="cr-link" onClick={() => window.location.reload()}>Újrapróbálom</button></p>
+            ? <p className="cr-hint">Your session has expired. <a href={`/osztalyterem/${cls}`}>Reload the page</a> and enter the password again.</p>
+            : status === 'error' ? <p className="cr-hint">Couldn't load the data. <button className="cr-link" onClick={() => window.location.reload()}>Try again</button></p>
             : <div className="cr-skeleton" />}
         </main>
       </div>
@@ -158,7 +158,7 @@ export default function Classroom() {
         className={`cr-tile ${a === 'absent' ? 'is-absent' : ''} ${sel ? 'is-selected' : ''} ${toast?.student?.id === s.id ? 'is-awarded' : ''}`}
         onClick={() => onStudent(s)}
         aria-pressed={mode === 'select' ? sel : undefined}
-        aria-label={`${s.first} ${s.last}, ${p} pont${a && a !== 'present' ? `, ${ATTENDANCE[a].label}` : ''}`}
+        aria-label={`${s.first} ${s.last}, ${p} point${Math.abs(p) === 1 ? '' : 's'}${a && a !== 'present' ? `, ${ATTENDANCE[a].label}` : ''}`}
       >
         <span className="cr-tile__art"><Avatar a={s.avatar} /></span>
         {mode === 'attendance' ? (
@@ -187,18 +187,18 @@ export default function Classroom() {
       {header}
 
       <div className="cr-subbar">
-        <div className="cr-seg" role="tablist" aria-label="Nézet">
-          <button role="tab" aria-selected={view === 'students'} className={view === 'students' ? 'is-active' : ''} onClick={() => setView('students')}>Diákok</button>
-          <button role="tab" aria-selected={view === 'groups'} className={view === 'groups' ? 'is-active' : ''} onClick={() => setView('groups')}>Csoportok</button>
+        <div className="cr-seg" role="tablist" aria-label="View">
+          <button role="tab" aria-selected={view === 'students'} className={view === 'students' ? 'is-active' : ''} onClick={() => setView('students')}>Students</button>
+          <button role="tab" aria-selected={view === 'groups'} className={view === 'groups' ? 'is-active' : ''} onClick={() => setView('groups')}>Groups</button>
         </div>
         {mode === 'normal' && (
           <button className="cr-planchip" onClick={() => setModal({ kind: 'tool', id: 'today' })}>
             <span aria-hidden="true">📅</span>
-            {getPlan(doc, today).items.length ? `Mai óraterv · ${getPlan(doc, today).items.length} feladat` : 'Óraterv'}
+            {getPlan(doc, today).items.length ? `Today's plan · ${getPlan(doc, today).items.length} task${getPlan(doc, today).items.length === 1 ? '' : 's'}` : 'Lesson plan'}
           </button>
         )}
-        {mode === 'attendance' && <p className="cr-modehint">Jelenlét – kattints egy diákra: jelen → hiányzik → késett → korábban távozott</p>}
-        {mode === 'select' && <p className="cr-modehint">Jelöld ki, kiknek adsz pontot ({selected.size})</p>}
+        {mode === 'attendance' && <p className="cr-modehint">Attendance – tap a student: present → absent → late → left early</p>}
+        {mode === 'select' && <p className="cr-modehint">Select who gets points ({selected.size})</p>}
       </div>
 
       <main className="cr-main">
@@ -213,13 +213,13 @@ export default function Classroom() {
             >
               <span className="cr-tile__art"><ClassAvatar /></span>
               {mode === 'normal' && <span className={`cr-badge ${classTotal < 0 ? 'is-neg' : ''}`}>{classTotal}</span>}
-              <span className="cr-tile__first">{mode === 'select' ? (selected.size === presentIds.length && presentIds.length ? 'Senki' : 'Mindenki') : 'Osztály'}</span>
+              <span className="cr-tile__first">{mode === 'select' ? (selected.size === presentIds.length && presentIds.length ? 'Nobody' : 'Everyone') : 'Class'}</span>
             </button>
             {sortStudents(doc.students).map(studentTile)}
             {mode === 'normal' && (
               <button className="cr-tile cr-tile--add" onClick={() => setModal({ kind: 'add' })}>
                 <span className="cr-tile__plus"><Icon.plus /></span>
-                <span className="cr-tile__first">Diákok felvétele</span>
+                <span className="cr-tile__first">Add students</span>
               </button>
             )}
           </div>
@@ -237,53 +237,53 @@ export default function Classroom() {
                     </span>
                     <span className={`cr-badge ${total < 0 ? 'is-neg' : ''}`}>{total}</span>
                     <b>{g.name}</b>
-                    <small>{members.map((s) => s.first).join(', ') || 'üres'}</small>
+                    <small>{members.map((s) => s.first).join(', ') || 'empty'}</small>
                   </button>
-                  <button className="cr-iconbtn cr-group__edit" aria-label="Csoport szerkesztése" onClick={() => setModal({ kind: 'group', group: g })}><Icon.pencil /></button>
+                  <button className="cr-iconbtn cr-group__edit" aria-label="Edit group" onClick={() => setModal({ kind: 'group', group: g })}><Icon.pencil /></button>
                 </div>
               )
             })}
             <button className="cr-tile cr-tile--add cr-group--add" onClick={() => setModal({ kind: 'group', group: null })}>
               <span className="cr-tile__plus"><Icon.plus /></span>
-              <span className="cr-tile__first">Új csoport</span>
-              <small className="cr-muted">vagy: Eszköztár → Csoportkészítő</small>
+              <span className="cr-tile__first">New group</span>
+              <small className="cr-muted">or: Toolkit → Group maker</small>
             </button>
           </div>
         )}
         {!doc.students.length && view === 'students' && (
-          <p className="cr-hint cr-hint--center">Kezdd a diákok felvételével – több nevet is bemásolhatsz egyszerre.</p>
+          <p className="cr-hint cr-hint--center">Start by adding students – you can paste several names at once.</p>
         )}
       </main>
 
       {/* Alsó eszközsor */}
-      <nav className="cr-dock" aria-label="Eszközök">
+      <nav className="cr-dock" aria-label="Tools">
         {mode === 'normal' && (
           <>
-            <button className="cr-dockbtn" onClick={() => setModal({ kind: 'toolkit' })}><Icon.grid />Eszköztár</button>
-            <button className="cr-dockbtn" onClick={startAttendance} disabled={!doc.students.length}><Icon.clock />Jelenlét</button>
-            <button className="cr-dockbtn" onClick={() => { setSelected(new Set()); setMode('select') }} disabled={!doc.students.length}><Icon.checkbox />Többes kijelölés</button>
-            <button className="cr-dockbtn" onClick={() => setModal({ kind: 'tool', id: 'random' })} disabled={!doc.students.length}><Icon.shuffle />Véletlen</button>
-            <button className="cr-dockbtn" onClick={() => setModal({ kind: 'tool', id: 'session' })}><Icon.timer />Időzítő és zene</button>
+            <button className="cr-dockbtn" onClick={() => setModal({ kind: 'toolkit' })}><Icon.grid />Toolkit</button>
+            <button className="cr-dockbtn" onClick={startAttendance} disabled={!doc.students.length}><Icon.clock />Attendance</button>
+            <button className="cr-dockbtn" onClick={() => { setSelected(new Set()); setMode('select') }} disabled={!doc.students.length}><Icon.checkbox />Select multiple</button>
+            <button className="cr-dockbtn" onClick={() => setModal({ kind: 'tool', id: 'random' })} disabled={!doc.students.length}><Icon.shuffle />Random</button>
+            <button className="cr-dockbtn" onClick={() => setModal({ kind: 'tool', id: 'session' })}><Icon.timer />Timer & music</button>
           </>
         )}
         {mode === 'attendance' && (
           <>
-            <button className="cr-dockbtn cr-dockbtn--flat" onClick={() => setDraftAtt(Object.fromEntries(doc.students.map((s) => [s.id, 'present'])))}><span className="cr-att cr-att--present cr-att--inline"><AttIcon /></span>Mindenki jelen</button>
-            <button className="cr-dockbtn cr-dockbtn--flat" onClick={() => setDraftAtt(Object.fromEntries(doc.students.map((s) => [s.id, 'absent'])))}><span className="cr-att cr-att--absent cr-att--inline"><AttIcon /></span>Mindenki hiányzik</button>
+            <button className="cr-dockbtn cr-dockbtn--flat" onClick={() => setDraftAtt(Object.fromEntries(doc.students.map((s) => [s.id, 'present'])))}><span className="cr-att cr-att--present cr-att--inline"><AttIcon /></span>All present</button>
+            <button className="cr-dockbtn cr-dockbtn--flat" onClick={() => setDraftAtt(Object.fromEntries(doc.students.map((s) => [s.id, 'absent'])))}><span className="cr-att cr-att--absent cr-att--inline"><AttIcon /></span>All absent</button>
             <span className="cr-spacer" />
-            <button className="cr-dockbtn cr-dockbtn--flat" onClick={() => setMode('normal')}>Mégse</button>
-            <button className="cr-dockbtn cr-dockbtn--primary" onClick={saveAttendance}><Icon.check />Jelenlét mentése</button>
+            <button className="cr-dockbtn cr-dockbtn--flat" onClick={() => setMode('normal')}>Cancel</button>
+            <button className="cr-dockbtn cr-dockbtn--primary" onClick={saveAttendance}><Icon.check />Save attendance</button>
           </>
         )}
         {mode === 'select' && (
           <>
-            <button className="cr-dockbtn cr-dockbtn--flat" onClick={() => setSelected(new Set(presentIds))}>Mindenki</button>
-            <button className="cr-dockbtn cr-dockbtn--flat" onClick={() => setSelected(new Set())}>Senki</button>
+            <button className="cr-dockbtn cr-dockbtn--flat" onClick={() => setSelected(new Set(presentIds))}>Everyone</button>
+            <button className="cr-dockbtn cr-dockbtn--flat" onClick={() => setSelected(new Set())}>Nobody</button>
             <span className="cr-spacer" />
-            <button className="cr-dockbtn cr-dockbtn--flat" onClick={() => { setMode('normal'); setSelected(new Set()) }}>Mégse</button>
+            <button className="cr-dockbtn cr-dockbtn--flat" onClick={() => { setMode('normal'); setSelected(new Set()) }}>Cancel</button>
             <button className="cr-dockbtn cr-dockbtn--primary" disabled={!selected.size}
-              onClick={() => setModal({ kind: 'target', target: { type: 'multi', ids: [...selected], title: `${selected.size} kijelölt diák` } })}>
-              <Icon.plus />Pont adása ({selected.size})
+              onClick={() => setModal({ kind: 'target', target: { type: 'multi', ids: [...selected], title: `${selected.size} selected student${selected.size === 1 ? '' : 's'}` } })}>
+              <Icon.plus />Give points ({selected.size})
             </button>
           </>
         )}
@@ -326,7 +326,7 @@ export default function Classroom() {
             <span className="cr-toast__avatar">{toast.student ? <Avatar a={toast.student.avatar} /> : <ClassAvatar />}</span>
             <span className="cr-toast__text">
               <b>{toast.label}</b>
-              <span>{toast.skill.value > 0 ? `+${toast.skill.value}` : toast.skill.value} · {toast.skill.name}{toast.count > 1 ? ` · ${toast.count} diák` : ''}</span>
+              <span>{toast.skill.value > 0 ? `+${toast.skill.value}` : toast.skill.value} · {toast.skill.name}{toast.count > 1 ? ` · ${toast.count} students` : ''}</span>
             </span>
             <motion.span className="cr-toast__icon" initial={{ rotate: -20, scale: 0.4 }} animate={{ rotate: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 12, delay: 0.1 }}>
               {toast.skill.icon}

@@ -52,7 +52,7 @@ function Landing({ gateArea = null, onUnlock }) {
 
   // A Nyelvoktatás csempe mögött csoportonként külön terület van (language-9b, …)
   const tileKey = (key) => (isLanguageArea(key) ? 'language' : key)
-  const titleOf = (key) => l.areas.find((a) => a.key === tileKey(key))?.title ?? (key === 'teacher' ? 'Osztályterem' : '')
+  const titleOf = (key) => l.areas.find((a) => a.key === tileKey(key))?.title ?? (key === 'teacher' ? 'Classroom' : '')
   const tileOpen = (key) => (key === 'language' ? unlockedLanguageAreas().length > 0 : isUnlocked(key))
 
   const openArea = (e, key) => {

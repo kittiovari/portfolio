@@ -49,19 +49,19 @@ export function Sheet({ title, color, icon, onClose, onBack, wide, children, cla
       >
         {color ? (
           <header className="cr-sheet__hero" style={{ '--tool': color }}>
-            {onBack && <button className="cr-iconbtn cr-sheet__back" onClick={onBack} aria-label="Vissza"><Icon.back /></button>}
+            {onBack && <button className="cr-iconbtn cr-sheet__back" onClick={onBack} aria-label="Back"><Icon.back /></button>}
             {icon && <span className="cr-sheet__heroicon">{icon}</span>}
             <h2>{title}</h2>
           </header>
         ) : (
           title && (
             <header className="cr-sheet__head">
-              {onBack && <button className="cr-iconbtn" onClick={onBack} aria-label="Vissza"><Icon.back /></button>}
+              {onBack && <button className="cr-iconbtn" onClick={onBack} aria-label="Back"><Icon.back /></button>}
               <h2>{title}</h2>
             </header>
           )
         )}
-        <button className="cr-iconbtn cr-sheet__close" onClick={onClose} aria-label="Bezárás"><Icon.close /></button>
+        <button className="cr-iconbtn cr-sheet__close" onClick={onClose} aria-label="Close"><Icon.close /></button>
         <div className="cr-sheet__body">{children}</div>
       </motion.div>
     </motion.div>,
@@ -82,7 +82,7 @@ export function FullScreen({ color, onClose, children, className = '' }) {
       role="dialog"
       aria-modal="true"
     >
-      <button className="cr-iconbtn cr-full__close" onClick={onClose} aria-label="Bezárás"><Icon.close /></button>
+      <button className="cr-iconbtn cr-full__close" onClick={onClose} aria-label="Close"><Icon.close /></button>
       {children}
     </motion.div>,
     document.body,

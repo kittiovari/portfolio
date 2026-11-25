@@ -34,9 +34,9 @@ function ClassPage({ id }) {
           </div>
           <div className="class-header__right">
             {/* Tanári belépés: az Osztályterembe (külön tanári jelszó) */}
-            <Link to={`/osztalyterem/${id}`} className="class-teacher-link" title="Tanári nézet (Osztályterem)">
+            <Link to={`/osztalyterem/${id}`} className="class-teacher-link" title="Teacher view (Classroom)">
               {TeacherArt && <span className="class-teacher-link__icon pw-profile__circle--teacher" aria-hidden="true"><TeacherArt /></span>}
-              Tanári nézet
+              Teacher view
             </Link>
             <div className="hero-controls">
               <button className={`hc-lang ${language === 'hu' ? 'hc-lang--active' : ''}`} onClick={() => setLanguage('hu')}>HU</button>
