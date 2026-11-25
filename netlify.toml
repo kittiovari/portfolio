@@ -2,6 +2,10 @@
   command = "npm run build"
   publish = "dist"
 
+# Node-verzió rögzítése (build + függvények): a @netlify/blobs 11 legalább 22.12-t igényel
+[build.environment]
+  NODE_VERSION = "22"
+
 # Szerveroldali függvények (jelszóellenőrzés, védett tartalom kiadása).
 # A titkosított védett tartalom (protected/) csak a függvényekbe kerül be,
 # a nyilvános dist/ mappába nem.
