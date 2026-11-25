@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import Avatar from './Avatar.jsx'
 import { Icon } from './ui.jsx'
+import { Art, SkillArt, eventArtName } from './art.jsx'
 import { TRACKED, THRESHOLDS, skillByKey, pickName, fullName, lessonLabel, sortStudents } from './model.js'
 
 // ── Időszakok ──
@@ -89,7 +90,7 @@ function Donut({ slices }) {
       <ul className="cr-donut__legend">
         {slices.map((s, i) => (
           <li key={s.id} onMouseEnter={() => setHover(s.id)} onMouseLeave={() => setHover(null)}>
-            <i style={{ background: SERIES[i] }} /><span>{s.icon} {s.name}</span><b>{s.n}×</b><small className={s.v < 0 ? 'is-neg' : 'is-pos'}>{s.v > 0 ? `+${s.v}` : s.v}</small>
+            <i style={{ background: SERIES[i] }} /><span><Art name={s.art} className="cr-art cr-art--xs" /> {s.name}</span><b>{s.n}×</b><small className={s.v < 0 ? 'is-neg' : 'is-pos'}>{s.v > 0 ? `+${s.v}` : s.v}</small>
           </li>
         ))}
       </ul>
@@ -97,17 +98,17 @@ function Donut({ slices }) {
   )
 }
 
-function slicesOf(events) {
+function slicesOf(doc, events) {
   const by = {}
   for (const e of events) {
     const id = `${e.i}${e.n}`
-    by[id] = by[id] || { id, icon: e.i, name: e.n, n: 0, v: 0 }
+    by[id] = by[id] || { id, art: eventArtName(doc, e), name: e.n, n: 0, v: 0 }
     by[id].n += 1; by[id].v += e.v
   }
   const list = Object.values(by).sort((a, b) => b.n - a.n)
   if (list.length <= 8) return list
   const rest = list.slice(7)
-  return [...list.slice(0, 7), { id: 'other', icon: '·', name: `Other (${rest.length})`, n: rest.reduce((s, x) => s + x.n, 0), v: rest.reduce((s, x) => s + x.v, 0) }]
+  return [...list.slice(0, 7), { id: 'other', art: 'star', name: `Other (${rest.length})`, n: rest.reduce((s, x) => s + x.n, 0), v: rest.reduce((s, x) => s + x.v, 0) }]
 }
 
 function Totals({ events }) {
@@ -147,7 +148,7 @@ function TrackedStats({ doc, events, multi }) {
       <h4>Tracked behaviour</h4>
       {rows.map(({ key, sk, ev }) => (
         <div key={key} className={`cr-tracked__row ${ev.length ? '' : 'is-zero'}`}>
-          <span className="cr-tracked__icon" aria-hidden="true">{sk.icon}</span>
+          <span className="cr-tracked__icon"><SkillArt skill={sk} className="cr-art cr-art--sm" /></span>
           <span className="cr-tracked__name">{sk.name}</span>
           <b className={sk.value < 0 ? 'is-neg' : 'is-pos'}>{ev.length}×</b>
           <span className="cr-tracked__when">
@@ -180,7 +181,7 @@ function LessonView({ doc, update, ids, multi }) {
       <ul className="cr-report__list">
         {events.map((e) => (
           <li key={e.id}>
-            <span className="cr-report__icon" aria-hidden="true">{e.i}</span>
+            <span className="cr-report__icon"><Art name={eventArtName(doc, e)} className="cr-art" /></span>
             <span className="cr-report__what">
               <b>{e.n}</b>
               <small>{multi && `${names[e.s] || '(deleted student)'} · `}{e.sn || ''}</small>
@@ -206,7 +207,7 @@ function PeriodView({ doc, ids, view, multi }) {
       {!events.length ? <Empty text="No points in this period." /> : (
         <>
           <Totals events={events} />
-          <Donut slices={slicesOf(events)} />
+          <Donut slices={slicesOf(doc, events)} />
           <TrackedStats doc={doc} events={events} multi={multi} />
         </>
       )}
@@ -223,7 +224,7 @@ function PeriodNav({ label, onPrev, onNext, nextDisabled }) {
     </div>
   )
 }
-const Empty = ({ text }) => <div className="cr-empty"><span className="cr-empty__icon">🏆</span><b>{text}</b></div>
+const Empty = ({ text }) => <div className="cr-empty"><span className="cr-empty__icon"><Art name="trophy" className="cr-art cr-art--xl" /></span><b>{text}</b></div>
 
 // ── E-Kréta: 10 körös számlálók nullázással ──
 function Dots({ n }) {
@@ -259,7 +260,7 @@ export function Alerts({ doc, update, ids, all = false }) {
         return (
           <div key={sid + key} className={`cr-alert ${lv ? `is-l${THRESHOLDS.indexOf(lv) + 1}` : ''}`}>
             {!all && <Avatar a={s.avatar} />}
-            <span className="cr-alert__who">{!all && <b>{pickName(s, doc.students)}</b>}<small>{sk.icon} {sk.name}</small></span>
+            <span className="cr-alert__who">{!all && <b>{pickName(s, doc.students)}</b>}<small><SkillArt skill={sk} className="cr-art cr-art--xs" /> {sk.name}</small></span>
             <Dots n={n} />
             {lv > 0 && <span className="cr-alert__lv">{lv}{lv === 10 ? '+' : ''}</span>}
             {update && <button className="cr-btn cr-btn--sm" onClick={() => reset(sid, key, sk.name)} disabled={!n} title="Restart count">Reset</button>}

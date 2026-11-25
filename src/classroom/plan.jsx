@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Reorder, useDragControls } from 'framer-motion'
 import { Sheet, Icon } from './ui.jsx'
+import { Art, SkillArt, fileArt } from './art.jsx'
 import { KretaSheet } from './kreta.jsx'
 import {
   LESSON_MIN, ORG_FORMS, TAGS, WEEKDAYS, addMinutes, dayKey, getPlan, lessonLabel, lessonTimeline, newItem, nextLessonKey,
@@ -89,20 +90,19 @@ export function Resource({ r, cls, onRemove }) {
   if (r.type === 'file' && mime.startsWith('image/')) {
     body = <a href={url} target="_blank" rel="noopener noreferrer" className="cr-res__img"><img src={url} alt={r.name} loading="lazy" /></a>
   } else if (r.type === 'file' && mime.startsWith('audio/')) {
-    body = <div className="cr-res__audio"><span>🎧 {r.name}</span><audio controls preload="none" src={url} /></div>
+    body = <div className="cr-res__audio"><span><Art name="headphones" className="cr-art cr-art--sm" />{r.name}</span><audio controls preload="none" src={url} /></div>
   } else if (r.type === 'file' && mime.startsWith('video/')) {
     body = <video className="cr-res__video" controls preload="none" src={url} />
   } else if (r.type === 'file') {
-    const icon = mime.includes('pdf') ? '📕' : /word|opendocument\.text/.test(mime) ? '📄' : /presentation|powerpoint/.test(mime) ? '📊' : /sheet|excel/.test(mime) ? '📈' : '📎'
     body = (
       <a href={url} target="_blank" rel="noopener noreferrer" className="cr-res__chip">
-        <span aria-hidden="true">{icon}</span><span className="cr-res__name">{r.name}</span>{r.size ? <small>{fmtSize(r.size)}</small> : null}
+        <Art name={fileArt(mime)} className="cr-art cr-art--sm" /><span className="cr-res__name">{r.name}</span>{r.size ? <small>{fmtSize(r.size)}</small> : null}
       </a>
     )
   } else {
     body = (
       <a href={url} target="_blank" rel="noopener noreferrer" className="cr-res__chip cr-res__chip--link">
-        <span aria-hidden="true">🔗</span><span className="cr-res__name">{r.name || hostOf(url)}</span><small>{hostOf(url)}</small>
+        <Art name="link" className="cr-art cr-art--sm" /><span className="cr-res__name">{r.name || hostOf(url)}</span><small>{hostOf(url)}</small>
       </a>
     )
   }
@@ -244,7 +244,7 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings, 
       </div>
       {(time || holiday) && (
         <div className="cr-plan__daybar">
-          {holiday && <span className="cr-plan__holiday">🌴 {holiday.name || 'Break'} – no school</span>}
+          {holiday && <span className="cr-plan__holiday"><Art name="holiday" className="cr-art cr-art--sm" /> {holiday.name || 'Break'} – no school</span>}
           {time && (
             <button className={`cr-plan__short ${short ? 'is-on' : ''}`} aria-pressed={short}
               onClick={() => update((d) => ({ ...d, shortDays: short ? (d.shortDays || []).filter((x) => x !== date) : [...new Set([...(d.shortDays || []), date])] }))}>
@@ -400,7 +400,7 @@ function PlanRow({ item, step, start, cls, doc, review, maxMinutes = 45, open, o
           {locked ? (
             struck
               ? <span className="cr-prow__locked">Homework review</span>
-              : <span className="cr-prow__locked" title={`From ${lessonLabel(review.key)}`}>🔒 {reviewAim}</span>
+              : <span className="cr-prow__locked" title={`From ${lessonLabel(review.key)}`}><Art name="lock" className="cr-art cr-art--xs" /> {reviewAim}</span>
           ) : compactOnly || role === 'reflection' ? (
             <span className="cr-prow__locked">{ROLE_LABEL[role]}</span>
           ) : (
@@ -409,7 +409,7 @@ function PlanRow({ item, step, start, cls, doc, review, maxMinutes = 45, open, o
         </span>
         <span className="cr-prow__org" title={org?.label || ''}>{org && !compactOnly ? <><OrgIcon id={org.id} /><small>{org.label}</small></> : null}</span>
         <span className="cr-prow__end">
-          {item.resources?.length > 0 && <span className="cr-prow__count" title="Resources">📎{item.resources.length}</span>}
+          {item.resources?.length > 0 && <span className="cr-prow__count" title="Resources"><Art name="clip" className="cr-art cr-art--xs" />{item.resources.length}</span>}
           {!compactOnly && (
             <button className="cr-iconbtn cr-iconbtn--sm cr-prow__toggle" onClick={onToggle} aria-expanded={open} aria-label={open ? 'Collapse' : 'Edit details'}>
               <Icon.next />
@@ -420,12 +420,12 @@ function PlanRow({ item, step, start, cls, doc, review, maxMinutes = 45, open, o
 
       {open && locked && (
         <div className="cr-prow__details">
-          <p className="cr-hint">🔒 Copied from the previous lesson's <b>Future homework</b>{review ? ` (${lessonLabel(review.key, { weekday: 'long', day: 'numeric', month: 'long' })})` : ''}. Edit it there.</p>
+          <p className="cr-hint"><Art name="lock" className="cr-art cr-art--xs" /> Copied from the previous lesson's <b>Future homework</b>{review ? ` (${lessonLabel(review.key, { weekday: 'long', day: 'numeric', month: 'long' })})` : ''}. Edit it there.</p>
           {review?.items.map((h) => (
             <div key={h.id} className="cr-review">
               <b>{h.aim || 'Homework'}</b>
               {h.activity && <p><Linkify text={h.activity} /></p>}
-              {h.equipment && <small>🎒 {h.equipment}</small>}
+              {h.equipment && <small><Art name="bag" className="cr-art cr-art--xs" /> {h.equipment}</small>}
               {h.resources?.length > 0 && <div className="cr-pcard__res">{h.resources.map((r) => <Resource key={r.id} r={r} cls={cls} />)}</div>}
             </div>
           ))}
@@ -460,8 +460,8 @@ function PlanRow({ item, step, start, cls, doc, review, maxMinutes = 45, open, o
               </form>
             ) : (
               <div className="cr-compose__bar">
-                <button className="cr-compose__btn" onClick={() => setLinkForm({ url: '', name: '' })} title="Add a link">🔗 Link</button>
-                <button className="cr-compose__btn" onClick={() => fileRef.current?.click()} title="Attach a file, image or audio – or drop / paste it here">📎 File</button>
+                <button className="cr-compose__btn" onClick={() => setLinkForm({ url: '', name: '' })} title="Add a link"><Art name="link" className="cr-art cr-art--sm" />Link</button>
+                <button className="cr-compose__btn" onClick={() => fileRef.current?.click()} title="Attach a file, image or audio – or drop / paste it here"><Art name="clip" className="cr-art cr-art--sm" />File</button>
                 <input ref={fileRef} type="file" multiple hidden
                   accept="image/*,audio/*,video/mp4,video/webm,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.odt,.txt,.zip"
                   onChange={(e) => { const f = [...e.target.files]; e.target.value = ''; if (f.length) onFiles(f) }} />
@@ -539,7 +539,7 @@ function RuleChips({ doc, item }) {
   if (!list.length) return item.role ? null : <p className="cr-ruleline cr-ruleline--hint">Choose the organisation form first</p>
   return (
     <p className="cr-ruleline">
-      {list.map((k) => <span key={k.id} className={`cr-rulechip ${k.value < 0 ? 'is-neg' : ''}`}>{k.icon} {k.name} <b>{k.value > 0 ? `+${k.value}` : k.value}</b></span>)}
+      {list.map((k) => <span key={k.id} className={`cr-rulechip ${k.value < 0 ? 'is-neg' : ''}`}><SkillArt skill={k} className="cr-art cr-art--xs" /> {k.name} <b>{k.value > 0 ? `+${k.value}` : k.value}</b></span>)}
     </p>
   )
 }
@@ -673,7 +673,7 @@ export function PlanTimeline({ plan, cls, heading, startTime }) {
   return (
     <div className="cr-timeline">
       <div className="cr-timeline__head">
-        <h3>{heading}</h3>
+        <h3><CalendarArt className="cr-art cr-art--lg" />{heading}</h3>
         {plan.title && <p>{plan.title}</p>}
       </div>
       <ol className="cr-timeline__track">
@@ -692,7 +692,7 @@ export function PlanTimeline({ plan, cls, heading, startTime }) {
               {(org || it.equipment) && (
                 <p className="cr-tcard__meta">
                   {org && <span className="cr-tcard__org"><OrgIcon id={org.id} />{org.label}</span>}
-                  {it.equipment && <span>🎒 {it.equipment}</span>}
+                  {it.equipment && <span><Art name="bag" className="cr-art cr-art--xs" /> {it.equipment}</span>}
                 </p>
               )}
             </li>
@@ -741,6 +741,9 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
   const initial = current || planned.find((k) => !nowKey || k >= nowKey) || planned[planned.length - 1] || nowKey
   const [key, setKey] = useState(initial)
   const [kreta, setKreta] = useState(false)
+  const [undo, setUndo] = useState(null) // { key, itemId, title, to } – az imént áttolt feladat
+  const undoTimer = useRef(null)
+  const showUndo = (u) => { clearTimeout(undoTimer.current); setUndo(u); undoTimer.current = setTimeout(() => setUndo(null), 10000) }
   const track = useRef(null)
 
   const plan = key ? withSkeleton(getPlan(doc, key)) : { title: '', items: [] }
@@ -775,6 +778,12 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
         {isPlanned && <button className="cr-btn cr-btn--sm" onClick={() => setKreta(true)} title="Copy for E-Kréta, download files"><Icon.download />E-Kréta</button>}
       </div>
       {kreta && key && <KretaSheet doc={doc} cls={cls} lessonKey={key} onClose={() => setKreta(false)} />}
+      {undo && (
+        <div className="cr-undo" role="status">
+          <span>Moved to {lessonLabel(undo.to, undefined, doc)}: <b>{undo.title}</b></span>
+          <button className="cr-btn cr-btn--sm cr-btn--primary" onClick={() => { update((d) => undoMove(d, undo.key, undo.itemId)); setUndo(null) }}>Undo</button>
+        </div>
+      )}
       {plan.title && <p className="cr-lboard__title">{plan.title}</p>}
 
       {isPlanned ? (
@@ -794,15 +803,15 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
               const sel = active?.key === key && active?.itemId === it.id
               return (
                 <li key={it.id} data-step={it.id} className={`cr-tcard cr-lcard ${sel ? 'is-selected' : ''} ${it.moved ? 'is-moved' : ''}`} style={{ '--tg': tags[0]?.color || '#C9B8C6' }}>
-                  <button className="cr-lcard__btn" onClick={() => onSelect(sel ? null : { key, itemId: it.id, title, role: it.role || null })} aria-pressed={sel}>
+                  <button className="cr-lcard__btn" onClick={() => { if (it.role !== 'homework') onSelect(sel ? null : { key, itemId: it.id, title, role: it.role || null }) }} aria-pressed={sel}>
                     <span className="cr-tcard__kind">{i + 1} · {it.minutes} min{start ? ` · ${start}` : ''}</span>
                     {tags.length > 0 && <span className="cr-tcard__skills">{tags.map((t) => <span key={t.id} className="cr-tag" style={{ '--tg': t.color }}>{t.label}</span>)}</span>}
                     <b className="cr-tcard__title">{title}</b>
                     {it.from && <small className="cr-lcard__from">↪ from {lessonLabel(it.from, undefined, doc)}</small>}
-                    <span className={`cr-lcard__pts ${evs.length ? 'has' : ''}`}>
+                    {it.role !== 'homework' && <span className={`cr-lcard__pts ${evs.length ? 'has' : ''}`}>
                       {it.role === 'attendance' ? attSummary(doc, splitKey(key).date)
                         : evs.length ? `${sum > 0 ? '+' : ''}${sum} pts · ${kids} student${kids === 1 ? '' : 's'}` : sel ? 'Give points above ↑' : 'No points yet'}
-                    </span>
+                    </span>}
                   </button>
                   {/* részletek: leírás és feltöltött tartalmak (olvasható, lejátszható, megnyitható) */}
                   {(() => {
@@ -815,7 +824,7 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
                       <div className="cr-lcard__detail">
                         {text && <p className="cr-tcard__note"><Linkify text={text} /></p>}
                         {res.length > 0 && <div className="cr-tcard__res">{res.map((r) => <Resource key={r.id} r={r} cls={cls} />)}</div>}
-                        {eq && <p className="cr-tcard__meta"><span>🎒 {eq}</span></p>}
+                        {eq && <p className="cr-tcard__meta"><span><Art name="bag" className="cr-art cr-art--xs" /> {eq}</span></p>}
                       </div>
                     )
                   })()}
@@ -823,7 +832,7 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
                   {it.moved ? (
                     <p className="cr-lcard__moved">→ Moved to {lessonLabel(it.moved, undefined, doc)} <button className="cr-link" onClick={() => { if (sel) onSelect(null); update((d) => undoMove(d, key, it.id)) }}>Undo</button></p>
                   ) : !it.role && nextKeyAfter(doc, key) && (
-                    <button className="cr-link cr-lcard__next" title="No time left? Move this task to the next lesson" onClick={() => { if (sel) onSelect(null); update((d) => moveToNext(d, key, it.id)) }}>
+                    <button className="cr-link cr-lcard__next" title="No time left? Move this task to the next lesson" onClick={() => { if (sel) onSelect(null); update((d) => moveToNext(d, key, it.id)); showUndo({ key, itemId: it.id, title, to: nextKeyAfter(doc, key) }) }}>
                       → Next lesson
                     </button>
                   )}

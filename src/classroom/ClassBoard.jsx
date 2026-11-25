@@ -3,7 +3,8 @@ import { AnimatePresence } from 'framer-motion'
 import Avatar, { ClassAvatar } from './Avatar.jsx'
 import { Sheet, Icon } from './ui.jsx'
 import { sortStudents, fullName, pickName, lessonLabel } from './model.js'
-import { PlanTimeline } from './plan.jsx'
+import { PlanTimeline, Resource, Linkify } from './plan.jsx'
+import { Art } from './art.jsx'
 import { ReportPanel } from './report.jsx'
 import './Classroom.css'
 
@@ -85,6 +86,15 @@ export default function ClassBoard({ cls }) {
   const lessons = data.lessons || []
   const key = lessonKey || data.planKey || lessons[lessons.length - 1]?.key
   const lesson = lessons.find((l) => l.key === key)
+  // a legutóbbi (ma vagy korábban kiadott) házi és a határideje (a következő óra)
+  const today = new Date().toISOString().slice(0, 10)
+  const isHw = (it) => it.role === 'homework' || (!it.role && it.tags?.includes('homework'))
+  const homework = (() => {
+    const given = [...lessons].reverse().find((l) => l.date <= today && l.items.some((it) => isHw(it) && (it.aim || it.activity || it.resources?.length)))
+    if (!given) return null
+    const due = lessons.find((l) => l.key > given.key)?.key || null
+    return { items: given.items.filter((it) => isHw(it) && (it.aim || it.activity || it.resources?.length)), due }
+  })()
   const signOut = () => { ssSet(codeKey(cls), null); setMe(null) }
 
   return (
@@ -100,16 +110,22 @@ export default function ClassBoard({ cls }) {
           <PlanTimeline
             plan={lesson}
             cls={cls}
-            heading={`📅 ${lessonLabel(lesson.key, { weekday: 'long', day: 'numeric', month: 'long' }, publicDoc)}`}
+            heading={`${lessonLabel(lesson.key, { weekday: 'long', day: 'numeric', month: 'long' }, publicDoc)}`}
             startTime={lesson.time}
           />
         </div>
       )}
-      {data.directions?.length > 0 && (
+      {homework && (
         <div className="cr-board__info">
-          <div className="cr-board__card">
-            <h3>📋 Directions</h3>
-            <ol>{data.directions.map((it, i) => <li key={i}>{it}</li>)}</ol>
+          <div className="cr-board__card cr-hwcard">
+            <h3><Art name="homework" className="cr-art cr-art--lg" />Next homework{homework.due ? <small> · due {lessonLabel(homework.due, { weekday: 'long', day: 'numeric', month: 'long' }, publicDoc)}</small> : null}</h3>
+            {homework.items.map((h) => (
+              <div key={h.id} className="cr-hwcard__item">
+                {h.aim && <b>{h.aim}</b>}
+                {h.activity && <p><Linkify text={h.activity} /></p>}
+                {h.resources?.length > 0 && <div className="cr-tcard__res">{h.resources.map((r) => <Resource key={r.id} r={r} cls={cls} />)}</div>}
+              </div>
+            ))}
           </div>
         </div>
       )}

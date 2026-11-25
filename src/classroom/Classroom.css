@@ -1368,3 +1368,27 @@ span.cr-sk { cursor: default; }
 .cr-lcard__moved { margin: 0.4rem 0 0; font-size: 0.82rem; color: var(--muted); }
 .cr-lcard__next { align-self: flex-start; font-size: 0.8rem; margin-top: 0.3rem; }
 .cr-lcard__from { display: block; font-size: 0.75rem; color: #A67C12; margin-top: 0.15rem; }
+
+/* Saját illusztrációk */
+.cr-art { width: 1.5em; height: 1.5em; flex-shrink: 0; vertical-align: -0.35em; display: inline-block; }
+.cr-art--xs { width: 1.15em; height: 1.15em; vertical-align: -0.22em; }
+.cr-art--sm { width: 1.35em; height: 1.35em; vertical-align: -0.3em; margin-right: 0.15em; }
+.cr-art--md { width: 1.8em; height: 1.8em; }
+.cr-art--lg { width: 2.2em; height: 2.2em; }
+.cr-art--xl { width: 3.2em; height: 3.2em; }
+.cr-art--toast { width: 64px; height: 64px; }
+.cr-iconpick__grid button { display: grid; place-items: center; }
+.cr-report__icon .cr-art { width: 1.7em; height: 1.7em; }
+/* Diákoldal: kiemelt következő házi */
+.cr-hwcard { border: 2px solid #6E9CCB; background: #F4F8FC; }
+.cr-hwcard h3 { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.cr-hwcard h3 small { font-family: var(--font-body, inherit); font-weight: 600; font-size: 0.85rem; color: var(--muted); }
+.cr-hwcard__item + .cr-hwcard__item { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px solid rgba(36, 20, 34, 0.08); }
+.cr-hwcard__item p { margin: 0.25rem 0 0; white-space: pre-wrap; }
+/* Áttolás visszavonása */
+.cr-undo { position: fixed; left: 50%; bottom: 92px; translate: -50% 0; z-index: 40; display: flex; align-items: center; gap: 0.8rem; max-width: calc(100vw - 24px); padding: 0.6rem 0.7rem 0.6rem 1rem; border-radius: 16px; background: #241422; color: #fff; box-shadow: 0 16px 36px -16px rgba(36, 20, 34, 0.6); font-size: 0.9rem; }
+.cr-undo .cr-btn--primary { background: #E0B33A; color: #241422 !important; }
+/* vékony, diszkrét vízszintes görgetősáv az idővonalon */
+.cr-timeline__track { scrollbar-width: thin; scrollbar-color: rgba(36, 20, 34, 0.25) transparent; }
+.cr-timeline__track::-webkit-scrollbar { height: 6px; background: transparent; }
+.cr-timeline__track::-webkit-scrollbar-thumb { background: rgba(36, 20, 34, 0.25); border-radius: 999px; }

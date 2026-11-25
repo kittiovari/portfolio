@@ -11,6 +11,7 @@ import {
 import { PlanEditor, ClassSettings, LessonBoard } from '../classroom/plan.jsx'
 import { SessionSetup, SessionPlayer } from '../classroom/session.jsx'
 import { useClassroom } from '../classroom/useClassroom.js'
+import { SkillArt } from '../classroom/art.jsx'
 import SeasonScene from '../classroom/SeasonScene.jsx'
 import Deskmates from '../classroom/Deskmates.jsx'
 import { ATTENDANCE, CLASSES, dayKey, fullName, pickName, getPlan, stepSkills, withSkeleton, skillByKey, lessonLabel, nextLessonKey, pointsBy, sortStudents, uid } from '../classroom/model.js'
@@ -433,7 +434,7 @@ export default function Classroom() {
               <span>{toast.skill.value > 0 ? `+${toast.skill.value}` : toast.skill.value} · {toast.skill.name}{toast.count > 1 && !/student/.test(toast.label) ? ` · ${toast.count} students` : ''}{toast.step ? ` · ${toast.step}` : ''}</span>
             </span>
             <motion.span className="cr-toast__icon" initial={{ rotate: -20, scale: 0.4 }} animate={{ rotate: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 12, delay: 0.1 }}>
-              {toast.skill.icon}
+              <SkillArt skill={toast.skill} className="cr-art cr-art--toast" />
               <i className={toast.skill.value < 0 ? 'is-neg' : ''}>{Math.abs(toast.skill.value)}</i>
             </motion.span>
           </motion.div>

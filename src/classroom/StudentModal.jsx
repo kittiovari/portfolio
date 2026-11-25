@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import Avatar, { ClassAvatar } from './Avatar.jsx'
 import { Sheet, Icon } from './ui.jsx'
+import { Art, SkillArt, ART_CHOICES } from './art.jsx'
 import { ReportPanel } from './report.jsx'
 import {
   AVATAR, RANGES, sortStudents, pickName, POINT_RULES, RULE_LABELS, newCode, ensureCodes, rangeBounds, inRange, fullName, uid, parseName, randomAvatar, toCsv, download, dayKey,
@@ -58,10 +59,8 @@ export function TargetModal({ doc, target, points, onAward, update, onClose, ini
 // ── Pont adása: pozitív / fejlesztendő készségek, szerkeszthetők ──
 // ── Ikonválasztó: a csillagra (aktuális ikonra) kattintva nyíló rács ──
 const ICON_GROUPS = [
-  { label: 'Praise', icons: ['⭐', '🌟', '✨', '👑', '🏆', '🥇', '🥈', '🥉', '🏅', '🎖️', '💎', '🎉', '🎊', '🚀', '🔥', '💯', '👍', '👏', '🙌', '💪', '🤝', '❤️', '😊', '😎'] },
-  { label: 'Learning', icons: ['📚', '📖', '📝', '✏️', '🖊️', '📁', '📒', '🎒', '💡', '🧠', '🔍', '🧪', '🔬', '🧩', '🎯', '📈', '🗣️', '💬', '🎤', '🎧', '🌍', '🎓', '🏫', '🗺️'] },
-  { label: 'Community', icons: ['🤗', '🫶', '🙋', '👋', '🧹', '🌱', '🌈', '☀️', '🎨', '🎭', '🎵', '⚽', '🧘', '🐢', '🦉', '🐝', '🍀', '🎁'] },
-  { label: 'Needs work', icons: ['⚠️', '👎', '⏰', '🕐', '📵', '🔇', '🗑️', '❌', '🚫', '😴', '🙊', '🛸', '🦖', '🐌', '🌧️', '💤'] },
+  { label: 'Praise', icons: ART_CHOICES.filter((x) => !['disruptive', 'passivity', 'missing_eq', 'late', 'no_hw', 'warning'].includes(x)) },
+  { label: 'Needs work', icons: ['disruptive', 'passivity', 'missing_eq', 'late', 'no_hw', 'warning'] },
 ]
 
 // A rács a mezősor alatt nyílik ki (nem lebeg), így a panel görgetése sem vágja le
@@ -73,7 +72,7 @@ function IconGrid({ value, onPick }) {
           <span>{g.label}</span>
           <div className="cr-iconpick__grid">
             {g.icons.map((ic) => (
-              <button type="button" key={ic} className={ic === value ? 'is-active' : ''} onClick={() => onPick(ic)}>{ic}</button>
+              <button type="button" key={ic} className={`art:${ic}` === value ? 'is-active' : ''} onClick={() => onPick(`art:${ic}`)} aria-label={ic}><Art name={ic} className="cr-art cr-art--md" /></button>
             ))}
           </div>
         </div>
@@ -119,7 +118,7 @@ function GivePoints({ doc, update, onGive, editable = false, rulesOnly = false }
     e.preventDefault()
     if (!form.name.trim()) return
     const value = kind === 'positive' ? Math.abs(Number(form.value) || 1) : -Math.abs(Number(form.value) || 1)
-    const item = { id: form.id || uid(), name: form.name.trim(), icon: form.icon.trim() || (kind === 'positive' ? '⭐' : '⚠️'), value }
+    const item = { id: form.id || uid(), name: form.name.trim(), icon: form.icon.trim() || (kind === 'positive' ? 'art:star' : 'art:warning'), value }
     update((d) => ({
       ...d,
       skills: { ...d.skills, [kind]: form.id ? d.skills[kind].map((s) => (s.id === form.id ? item : s)) : [...d.skills[kind], item] },
@@ -140,7 +139,7 @@ function GivePoints({ doc, update, onGive, editable = false, rulesOnly = false }
           <div className="cr-field cr-field--icon">
             <span>Icon</span>
             <button type="button" className="cr-iconpick__btn" onClick={() => setPicking((o) => !o)} aria-expanded={picking} aria-label="Choose icon">
-              {form.icon || (kind === 'positive' ? '⭐' : '⚠️')}
+              <SkillArt skill={{ icon: form.icon, value: kind === 'positive' ? 1 : -1 }} className="cr-art cr-art--lg" />
             </button>
           </div>
           <label className="cr-field">
@@ -185,7 +184,7 @@ function GivePoints({ doc, update, onGive, editable = false, rulesOnly = false }
             onClick={() => (editing ? setForm({ ...s }) : onGive(s))}
           >
             <span className={`cr-skill__val ${s.value < 0 ? 'is-neg' : ''}`}>{s.value > 0 ? `+${s.value}` : s.value}</span>
-            <span className="cr-skill__icon" aria-hidden="true">{s.icon}</span>
+            <span className="cr-skill__icon"><SkillArt skill={s} className="cr-art cr-art--lg" /></span>
             <span className="cr-skill__name">{s.name}</span>
             {editing && <span className="cr-skill__edit"><Icon.pencil /></span>}
           </button>
@@ -394,8 +393,8 @@ export function HomeworkWizard({ doc, presentIds, preselect = [], onSave, onClos
                 <Avatar a={s.avatar} />
                 <b>{pickName(s, doc.students)}</b>
                 <div className="cr-attrow__seg">
-                  <button className={bonus[s.id]?.perfect ? 'is-on is-bonus' : ''} onClick={() => flip(s.id, 'perfect')} aria-pressed={Boolean(bonus[s.id]?.perfect)}>📁 Perfect</button>
-                  <button className={bonus[s.id]?.extra ? 'is-on is-bonus' : ''} onClick={() => flip(s.id, 'extra')} aria-pressed={Boolean(bonus[s.id]?.extra)}>🌟 Extra</button>
+                  <button className={bonus[s.id]?.perfect ? 'is-on is-bonus' : ''} onClick={() => flip(s.id, 'perfect')} aria-pressed={Boolean(bonus[s.id]?.perfect)}><Art name="perfect_hw" className="cr-art cr-art--xs" /> Perfect</button>
+                  <button className={bonus[s.id]?.extra ? 'is-on is-bonus' : ''} onClick={() => flip(s.id, 'extra')} aria-pressed={Boolean(bonus[s.id]?.extra)}><Art name="extra_hw" className="cr-art cr-art--xs" /> Extra</button>
                 </div>
               </div>
             ))}
@@ -575,7 +574,7 @@ export function PointsWizard({ doc, skills, stepTitle, presentIds, preselect = [
             {[...pos, ...neg].map((k) => (
               <button key={k.id} className="cr-skill" onClick={() => setSkill(k)}>
                 <span className={`cr-skill__val ${k.value < 0 ? 'is-neg' : ''}`}>{k.value > 0 ? `+${k.value}` : k.value}</span>
-                <span className="cr-skill__icon" aria-hidden="true">{k.icon}</span>
+                <span className="cr-skill__icon"><SkillArt skill={k} className="cr-art cr-art--lg" /></span>
                 <span className="cr-skill__name">{k.name}</span>
               </button>
             ))}
@@ -584,7 +583,7 @@ export function PointsWizard({ doc, skills, stepTitle, presentIds, preselect = [
         </>
       ) : (
         <>
-          <p className="cr-hwwiz__q"><span aria-hidden="true">{skill.icon}</span> {skill.name} <b className={skill.value < 0 ? 'is-neg' : 'is-pos'}>{skill.value > 0 ? `+${skill.value}` : skill.value}</b> – who?</p>
+          <p className="cr-hwwiz__q"><SkillArt skill={skill} className="cr-art cr-art--md" /> {skill.name} <b className={skill.value < 0 ? 'is-neg' : 'is-pos'}>{skill.value > 0 ? `+${skill.value}` : skill.value}</b> – who?</p>
           <div className="cr-hwwiz__quick">
             <button className="cr-btn cr-btn--sm" onClick={() => setWho(new Set(present.map((s) => s.id)))}>Everyone</button>
             <button className="cr-btn cr-btn--sm" onClick={() => setWho(new Set())}>Nobody</button>
@@ -646,7 +645,7 @@ export function PointRules({ doc, update }) {
           <h3>{RULE_LABELS[ctx]}</h3>
           {keys.map(byKey).filter(Boolean).map((k) => (
             <div key={k.id} className="cr-rules__row">
-              <span className="cr-rules__icon" aria-hidden="true">{k.icon}</span>
+              <span className="cr-rules__icon"><SkillArt skill={k} className="cr-art cr-art--sm" /></span>
               <input className="cr-rules__name" value={k.name} onChange={(e) => setSkill(k.id, { name: e.target.value })} aria-label="Name" />
               <input className={`cr-rules__val ${k.value < 0 ? 'is-neg' : ''}`} type="number" min={k.value < 0 ? -10 : 1} max={k.value < 0 ? -1 : 10} value={k.value}
                 onChange={(e) => { const v = Math.round(Number(e.target.value) || 0); if (v) setSkill(k.id, { value: k.value < 0 ? -Math.abs(v) : Math.abs(v) }) }} aria-label="Points" />
