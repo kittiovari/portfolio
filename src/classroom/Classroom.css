@@ -1062,3 +1062,7 @@ span.cr-sk { cursor: default; }
 
 .cr-lpick__month { display: block; padding: 0.6rem 0.8rem 0.2rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 .cr-lpick__list { max-height: 380px; }
+
+.cr-lcard { display: flex; flex-direction: column; }
+.cr-lcard__btn { flex: 1; }
+.cr-lcard__action { margin: 0 1rem 1rem; align-self: flex-start; }

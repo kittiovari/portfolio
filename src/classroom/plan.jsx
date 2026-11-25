@@ -736,16 +736,6 @@ export function LessonBoard({ doc, cls, active, onSelect, onEdit, onCheckHomewor
 
       {isPlanned ? (
         <>
-          {active?.role === 'hwreview' && (
-            <p className="cr-lboard__hint is-on">
-              <button className="cr-btn cr-btn--primary cr-btn--sm" onClick={onCheckHomework}>✓ Check homework</button>
-            </p>
-          )}
-          {active?.role === 'attendance' && (
-            <p className="cr-lboard__hint is-on">
-              <button className="cr-btn cr-btn--primary cr-btn--sm" onClick={() => onTakeAttendance(splitKey(key).date)}>✓ Take attendance</button>
-            </p>
-          )}
           <ol className="cr-timeline__track cr-lboard__track" ref={track}>
             {items.map((it, i) => {
               const start = addMinutes(lessonStart(doc, key), acc)
@@ -771,6 +761,16 @@ export function LessonBoard({ doc, cls, active, onSelect, onEdit, onCheckHomewor
                         : evs.length ? `${sum > 0 ? '+' : ''}${sum} pts · ${kids} student${kids === 1 ? '' : 's'}` : sel ? 'Give points above ↑' : 'No points yet'}
                     </span>
                   </button>
+                  {/* a jelenlét és a házi-ellenőrzés gombja magán a kártyán */}
+                  {(it.role === 'attendance' || it.role === 'hwreview') && (
+                    <button className="cr-btn cr-btn--primary cr-btn--sm cr-lcard__action" onClick={() => {
+                      onSelect({ key, itemId: it.id, title, role: it.role })
+                      if (it.role === 'attendance') onTakeAttendance(splitKey(key).date)
+                      else onCheckHomework()
+                    }}>
+                      ✓ {it.role === 'attendance' ? 'Take attendance' : 'Check homework'}
+                    </button>
+                  )}
                 </li>
               )
             })}
