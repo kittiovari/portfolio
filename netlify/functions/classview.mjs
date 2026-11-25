@@ -56,8 +56,7 @@ export default async (req, context) => {
     const resolve = (it) => (it.auto === 'hwreview' ? {
       ...it,
       aim: prevHw.length ? `Homework review: ${prevHw.map((h) => h.aim).filter(Boolean).join(' · ')}` : 'Homework review',
-      activity: prevHw.map((h) => h.activity).filter(Boolean).join('
-'),
+      activity: prevHw.map((h) => h.activity).filter(Boolean).join('\n'),
       equipment: prevHw.map((h) => h.equipment).filter(Boolean).join(', '),
       resources: prevHw.flatMap((h) => h.resources || []),
     } : it)
