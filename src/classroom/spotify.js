@@ -4,7 +4,7 @@
 // (localStorage) élnek; a „Kapcsolat bontása” törli őket.
 
 // A Spotify fejlesztői app azonosítója (developer.spotify.com → Dashboard → app → Client ID)
-export const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID || ''
+export const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID || 'ffb48e0519824978ae01b97a39767e91'
 
 const SCOPES = [
   'streaming', // lejátszás a böngészőben (Web Playback SDK)
