@@ -31,7 +31,6 @@ async function fetchMe(cls, code) {
 export default function ClassBoard({ cls }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState(false)
-  const [view, setView] = useState('students')
   const [open, setOpen] = useState(null) // { ids, title, student?, isClass? }
   const [lessonKey, setLessonKey] = useState(null)
   const [me, setMe] = useState(null)
@@ -133,11 +132,6 @@ export default function ClassBoard({ cls }) {
       )}
 
       <div className="cr-subbar">
-        <div className="cr-seg" role="tablist" aria-label="View">
-          {['students', 'pairs', 'groups'].map((v) => (
-            <button key={v} role="tab" aria-selected={view === v} className={view === v ? 'is-active' : ''} onClick={() => setView(v)}>{v[0].toUpperCase() + v.slice(1)}</button>
-          ))}
-        </div>
         {meStudent ? (
           <span className="cr-mebar">
             <button className="cr-btn cr-btn--sm cr-btn--primary" onClick={() => setOpen({ ids: [meStudent.id], title: fullName(meStudent), student: meStudent })}>My report</button>
@@ -151,7 +145,7 @@ export default function ClassBoard({ cls }) {
       <div className="cr-main">
         {!students.length ? (
           <p className="cr-hint cr-hint--center">Your points will appear here soon.</p>
-        ) : view === 'students' ? (
+        ) : (
           <div className="cr-grid">
             <button className="cr-tile cr-tile--class" onClick={() => setOpen({ ids: students.map((s) => s.id), title: 'Class', isClass: true })}>
               <span className="cr-tile__art"><ClassAvatar /></span>
@@ -167,41 +161,6 @@ export default function ClassBoard({ cls }) {
                 <span className="cr-tile__first">{s.first}</span>
               </button>
             ))}
-          </div>
-        ) : view === 'pairs' ? (
-          <div className="cr-grid cr-grid--groups">
-            {!data.deskmates?.length && <p className="cr-hint">No desk pairs yet.</p>}
-            {(data.deskmates || []).map((ids, i) => {
-              const members = ids.map((id) => data.students.find((s) => s.id === id)).filter(Boolean)
-              return (
-                <div key={i} className="cr-group">
-                  <button className="cr-group__main" onClick={() => setOpen({ ids, title: `Desk ${i + 1}` })}>
-                    <span className="cr-group__faces">{members.map((s) => <Avatar key={s.id} a={s.avatar} />)}</span>
-                    <span className="cr-badge">{members.reduce((a, s) => a + (points[s.id] || 0), 0)}</span>
-                    <b>Desk {i + 1}</b>
-                    <small>{members.map((s) => pickName(s, data.students)).join(', ')}</small>
-                  </button>
-                </div>
-              )
-            })}
-          </div>
-        ) : (
-          <div className="cr-grid cr-grid--groups">
-            {!data.groups.length && <p className="cr-hint">No groups yet.</p>}
-            {data.groups.map((g) => {
-              const members = sortStudents(g.ids.map((id) => data.students.find((s) => s.id === id)).filter(Boolean))
-              const sum = members.reduce((a, s) => a + (points[s.id] || 0), 0)
-              return (
-                <div key={g.id} className="cr-group">
-                  <button className="cr-group__main" onClick={() => members.length && setOpen({ ids: members.map((s) => s.id), title: g.name })}>
-                    <span className="cr-group__faces">{members.slice(0, 5).map((s) => <Avatar key={s.id} a={s.avatar} />)}</span>
-                    <span className="cr-badge">{sum}</span>
-                    <b>{g.name}</b>
-                    <small>{members.map((s) => pickName(s, data.students)).join(', ') || 'empty'}</small>
-                  </button>
-                </div>
-              )
-            })}
           </div>
         )}
       </div>
