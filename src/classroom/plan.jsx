@@ -592,7 +592,7 @@ export function PlanTimeline({ plan, cls, heading, startTime }) {
 // ── Tanári osztálynézet: az óra idővonala, feladathoz kötött pontozással ──
 // Választható órák: a már megtartott (betervezett) órák, az éppen aktuális óra,
 // és a következő, már előkészített órák.
-export function LessonBoard({ doc, cls, active, onSelect, onEdit }) {
+export function LessonBoard({ doc, cls, active, onSelect, onEdit, onCheckHomework }) {
   const today = dayKey()
   const nowKey = nextLessonKey(doc)
   const planned = plannedKeys(doc)
@@ -634,7 +634,9 @@ export function LessonBoard({ doc, cls, active, onSelect, onEdit }) {
         <>
           <p className={`cr-lboard__hint ${active ? 'is-on' : ''}`}>
             {active
-              ? <>Points now count for <b>{active.title}</b> <button className="cr-link" onClick={() => onSelect(null)}>Stop</button></>
+              ? active.role === 'hwreview'
+                ? <><button className="cr-btn cr-btn--primary cr-btn--sm" onClick={onCheckHomework}>✓ Check homework</button> <span>for <b>{active.title}</b></span> <button className="cr-link" onClick={() => onSelect(null)}>Stop</button></>
+                : <>Points now count for <b>{active.title}</b> <button className="cr-link" onClick={() => onSelect(null)}>Stop</button></>
               : 'Tap a task to log the points you give during it.'}
           </p>
           <ol className="cr-timeline__track cr-lboard__track" ref={track}>

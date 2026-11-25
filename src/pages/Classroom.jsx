@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { profileArt } from '../components/AreaIllustrations.jsx'
 import Avatar, { ClassAvatar } from '../classroom/Avatar.jsx'
 import { Icon, play, isMuted, setMuted } from '../classroom/ui.jsx'
-import { TargetModal, AddStudents, GroupEditor } from '../classroom/StudentModal.jsx'
+import { TargetModal, AddStudents, GroupEditor, HomeworkWizard } from '../classroom/StudentModal.jsx'
 import {
   Toolkit, RandomTool, GroupMakerTool, DirectionsTool, TpsTool,
 } from '../classroom/tools.jsx'
@@ -87,6 +87,8 @@ export default function Classroom() {
       setDraftAtt((a) => ({ ...a, [s.id]: ATTENDANCE[a[s.id] || 'present'].next }))
     } else if (mode === 'select') {
       setSelected((set) => { const n = new Set(set); n.has(s.id) ? n.delete(s.id) : n.add(s.id); return n })
+    } else if (activeStep?.role === 'hwreview') {
+      setModal({ kind: 'homework', preselect: [s.id] })
     } else {
       setModal({ kind: 'target', target: { type: 'student', id: s.id } })
     }
@@ -209,7 +211,7 @@ export default function Classroom() {
               className={`cr-tile cr-tile--class ${mode !== 'normal' ? 'is-dim' : ''}`}
               onClick={() => mode === 'select'
                 ? setSelected(selected.size === presentIds.length ? new Set() : new Set(presentIds))
-                : mode === 'normal' && setModal({ kind: 'target', target: { type: 'class' } })}
+                : mode === 'normal' && setModal(activeStep?.role === 'hwreview' ? { kind: 'homework', preselect: [] } : { kind: 'target', target: { type: 'class' } })}
               disabled={mode === 'attendance'}
             >
               <span className="cr-tile__art"><ClassAvatar /></span>
@@ -256,6 +258,7 @@ export default function Classroom() {
         )}
         {mode !== 'attendance' && (
           <LessonBoard key={cls} doc={doc} cls={cls} active={activeStep} onSelect={setActiveStep}
+            onCheckHomework={() => setModal({ kind: 'homework', preselect: [] })}
             onEdit={(k) => setModal({ kind: 'tool', id: 'today', key: k })} />
         )}
       </main>
@@ -287,7 +290,9 @@ export default function Classroom() {
             <span className="cr-spacer" />
             <button className="cr-dockbtn cr-dockbtn--flat" onClick={() => { setMode('normal'); setSelected(new Set()) }}>Cancel</button>
             <button className="cr-dockbtn cr-dockbtn--primary" disabled={!selected.size}
-              onClick={() => setModal({ kind: 'target', target: { type: 'multi', ids: [...selected], title: `${selected.size} selected student${selected.size === 1 ? '' : 's'}` } })}>
+              onClick={() => (activeStep?.role === 'hwreview'
+                ? (setModal({ kind: 'homework', preselect: [...selected] }), setMode('normal'), setSelected(new Set()))
+                : setModal({ kind: 'target', target: { type: 'multi', ids: [...selected], title: `${selected.size} selected student${selected.size === 1 ? '' : 's'}` } }))}>
               <Icon.plus />Give points ({selected.size})
             </button>
           </>
@@ -298,8 +303,17 @@ export default function Classroom() {
       <AnimatePresence>
         {modal?.kind === 'target' && (
           <TargetModal key="target" doc={doc} target={modal.target} points={points} update={update} onClose={closeModal}
-            homeworkMode={activeStep?.role === 'hwreview'}
             onAward={(ids, sk, label) => award(modal.target.type === 'class' ? presentIds : ids, sk, label)} />
+        )}
+        {modal?.kind === 'homework' && (
+          <HomeworkWizard key="homework" doc={doc} presentIds={presentIds} preselect={modal.preselect || []} onClose={closeModal}
+            onSave={(doneIds, missingIds, doneSkill, missSkill) => {
+              const ds = doneSkill || { id: 'hw-done', name: 'Homework done', icon: '👍', value: 2 }
+              const ms = missSkill || { id: 'hw-missing', name: 'No homework', icon: '🗑️', value: -2 }
+              if (doneIds.length) award(doneIds, ds, `${doneIds.length} student${doneIds.length === 1 ? '' : 's'}`)
+              if (missingIds.length) setTimeout(() => award(missingIds, ms, `${missingIds.length} student${missingIds.length === 1 ? '' : 's'}`), doneIds.length ? 900 : 0)
+              closeModal()
+            }} />
         )}
         {modal?.kind === 'add' && <AddStudents key="add" update={update} onClose={closeModal} />}
         {modal?.kind === 'group' && <GroupEditor key="group" doc={doc} group={modal.group} update={update} onClose={closeModal} />}

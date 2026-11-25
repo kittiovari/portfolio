@@ -427,3 +427,78 @@ export function GroupEditor({ doc, group, update, onClose }) {
     </Sheet>
   )
 }
+
+// ── Házi feladat ellenőrzése (Homework review) – két lépésben ──
+// 1. Kik csinálták meg? (mindenki / bizonyos diákok)  2. A többiek nem – kivéve, akit felmentesz.
+export function HomeworkWizard({ doc, presentIds, preselect = [], onSave, onClose }) {
+  const present = sortStudents(doc.students.filter((s) => presentIds.includes(s.id)))
+  const [step, setStep] = useState(1)
+  const [done, setDone] = useState(() => new Set(preselect))
+  const [excused, setExcused] = useState(() => new Set())
+  const rest = present.filter((s) => !done.has(s.id))
+  const missing = rest.filter((s) => !excused.has(s.id))
+  const toggle = (_set, setter, id) => setter((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
+  const doneSkill = findSkill(doc.skills?.positive, /homework done|elkészített házi/i) || { id: 'hw-done', name: 'Homework done', icon: '👍', value: 2 }
+  const missSkill = findSkill(doc.skills?.negative, /no homework|nincs házi/i) || { id: 'hw-missing', name: 'No homework', icon: '🗑️', value: -2 }
+
+  return (
+    <Sheet title="Check homework" onClose={onClose} className="cr-hwwiz">
+      <ol className="cr-hwwiz__steps">
+        <li className={step === 1 ? 'is-current' : 'is-done'}>1. Who did it?</li>
+        <li className={step === 2 ? 'is-current' : ''}>2. Who didn't?</li>
+      </ol>
+
+      {step === 1 ? (
+        <>
+          <p className="cr-hwwiz__q">Who did their homework?</p>
+          <div className="cr-hwwiz__quick">
+            <button className="cr-btn cr-btn--sm" onClick={() => setDone(new Set(present.map((s) => s.id)))}>Everyone</button>
+            <button className="cr-btn cr-btn--sm" onClick={() => setDone(new Set())}>Nobody</button>
+            <span className="cr-muted">{done.size} / {present.length} selected</span>
+          </div>
+          <div className="cr-pickgrid">
+            {present.map((s) => (
+              <button type="button" key={s.id} className={`cr-pick ${done.has(s.id) ? 'is-active is-yes' : ''}`} onClick={() => toggle(done, setDone, s.id)} aria-pressed={done.has(s.id)}>
+                <Avatar a={s.avatar} /><span>{s.first}</span>
+                {done.has(s.id) && <i className="cr-pick__mark is-yes">✓</i>}
+              </button>
+            ))}
+          </div>
+          <div className="cr-form__actions">
+            <span className="cr-spacer" />
+            <button className="cr-btn" onClick={onClose}>Cancel</button>
+            <button className="cr-btn cr-btn--primary" onClick={() => (rest.length ? setStep(2) : onSave([...done], []))}>
+              {rest.length ? 'Next' : 'Save'}
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="cr-hwwiz__q">So these students didn't do it?</p>
+          <p className="cr-hint">Tap a student to excuse them (ill, absent last time, any reason) – they get no points.</p>
+          <div className="cr-pickgrid">
+            {rest.map((s) => {
+              const ex = excused.has(s.id)
+              return (
+                <button type="button" key={s.id} className={`cr-pick ${ex ? 'is-excused' : 'is-active is-no'}`} onClick={() => toggle(excused, setExcused, s.id)} aria-pressed={!ex}>
+                  <Avatar a={s.avatar} /><span>{s.first}</span>
+                  <i className={`cr-pick__mark ${ex ? 'is-ex' : 'is-no'}`}>{ex ? 'excused' : '✗'}</i>
+                </button>
+              )
+            })}
+          </div>
+          <p className="cr-hwwiz__sum">
+            <span className="is-yes">✓ {done.size} done</span>
+            <span className="is-no">✗ {missing.length} no homework</span>
+            {excused.size > 0 && <span>{excused.size} excused</span>}
+          </p>
+          <div className="cr-form__actions">
+            <button className="cr-btn" onClick={() => setStep(1)}>Back</button>
+            <span className="cr-spacer" />
+            <button className="cr-btn cr-btn--primary" onClick={() => onSave([...done], missing.map((s) => s.id), doneSkill, missSkill)}>Save</button>
+          </div>
+        </>
+      )}
+    </Sheet>
+  )
+}
