@@ -106,7 +106,9 @@ function PasswordModal({ area, title, profiles = null, initialProfile = null, on
   }
 
   const prompt = profiles
-    ? (selectedProfile ? t.gate.promptFor.replace('{name}', selectedProfile.label) : t.gate.choose)
+    ? (selectedProfile
+      ? (selectedProfile.area === 'teacher' ? t.gate.promptTeacher : t.gate.promptFor.replace('{name}', selectedProfile.label))
+      : t.gate.choose)
     : t.gate.prompt
 
   return createPortal(

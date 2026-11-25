@@ -378,3 +378,14 @@
   background: linear-gradient(165deg, #F7E3DF 0%, #EBC9C2 100%);
 }
 .class-title__badge svg { width: 84%; height: auto; stroke-width: 3; }
+
+/* Osztályoldal: tanári belépés gomb a fejlécben */
+.class-header__right { display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap; justify-content: flex-end; }
+.class-teacher-link {
+  display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.9rem 0.3rem 0.3rem;
+  border-radius: 999px; border: 1px solid rgba(36, 20, 34, 0.12); background: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem; font-weight: 600; color: #241422; transition: background 0.2s, box-shadow 0.2s;
+}
+.class-teacher-link:hover { background: #fff; box-shadow: 0 6px 16px -10px rgba(36, 20, 34, 0.4); }
+.class-teacher-link__icon { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; overflow: hidden; }
+.class-teacher-link__icon svg { width: 90%; height: auto; stroke-width: 3; }

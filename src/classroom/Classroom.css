@@ -649,3 +649,15 @@
 .cr-iconpick__grid button:hover { background: #F6F2EE; transform: scale(1.12); }
 .cr-iconpick__grid button.is-active { border-color: var(--ink); background: #fff; }
 .cr-iconpick__grid button:hover { background: #fff; }
+
+/* ── Osztályoldal (diákok): csak olvasható tabló ── */
+.cr-board { min-height: 0; padding: 0 0 2rem; background: none; }
+.cr-board .cr-subbar { padding-top: 1.6rem; }
+.cr-board .cr-main { padding-left: 0; padding-right: 0; }
+.cr-board__info { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-top: 1.2rem; }
+.cr-board__card { padding: 1.2rem 1.4rem; border-radius: 22px; background: var(--card); border: 1px solid var(--line); }
+.cr-board__card h3 { font-family: var(--font-heading); font-size: 1.1rem; margin-bottom: 0.6rem; }
+.cr-board__card ul, .cr-board__card ol { padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.3rem; }
+.cr-board__card--today { background: #FBF4DC; }
+.cr-board__card li.is-done { text-decoration: line-through; opacity: 0.5; }
+.cr-readonly .cr-target__content { max-height: calc(100vh - 160px); }

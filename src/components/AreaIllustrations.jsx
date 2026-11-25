@@ -399,9 +399,38 @@ function SalsaDancerArt(props) {
   )
 }
 
+// Tanári profil: szemüveges babszem-figura, pálcával a táblára mutat
+function TeacherArt(props) {
+  return (
+    <svg {...profileCommon} {...props}>
+      <g strokeWidth="2.2">
+        {/* tábla */}
+        <rect x="8" y="24" width="46" height="34" rx="3" />
+        <path d="M15 34h20M15 42h28M15 50h14" opacity=".55" />
+        <path d="M20 58l-4 10M42 58l4 10" opacity=".7" />
+        {/* figura */}
+        <path d={bean(80, 104, 44, 64)} />
+        <circle cx="72" cy="60" r="5" />
+        <circle cx="88" cy="60" r="5" />
+        <path d="M77 60h6" />
+        <circle cx="72" cy="60.5" r="1.4" {...dot} />
+        <circle cx="88" cy="60.5" r="1.4" {...dot} />
+        <path d="M74 72q6 5 12 0" />
+        {/* mutatópálca – hoverre/kijelölve „magyaráz” */}
+        <g className="a-raise">
+          <path d="M60 84C54 80 52 75 51 70" />
+          <path d="M51 70L36 50" strokeWidth="2.6" />
+        </g>
+        <path d="M100 82c4 4 4 9 1 13" />
+      </g>
+    </svg>
+  )
+}
+
 export const profileArt = {
   'language-9b': SpaghettiArt,
   'language-9d': SalsaDancerArt,
+  teacher: TeacherArt,
 }
 
 export const areaArt = {
