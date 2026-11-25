@@ -877,3 +877,30 @@ span.cr-sk { cursor: default; }
 .cr-prows + .cr-prows { margin-top: 0.35rem; }
 .cr-prows--middle:empty { display: none; }
 .cr-pcards__add { margin: 0.6rem 0; }
+
+/* Óraválasztó (egyedi) */
+.cr-lpick { position: relative; width: 100%; max-width: 440px; }
+.cr-lpick__btn {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  padding: 0.55rem 1rem; border: none; border-radius: 14px; background: rgba(36, 20, 34, 0.05);
+  font-family: var(--font-heading); font-weight: 600; font-size: 1.08rem; color: var(--ink); cursor: pointer; transition: background 0.15s;
+}
+.cr-lpick__btn:hover, .cr-lpick__btn[aria-expanded='true'] { background: rgba(36, 20, 34, 0.09); }
+.cr-lpick__btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: 0.6; transition: transform 0.15s; }
+.cr-lpick__btn[aria-expanded='true'] svg { transform: rotate(180deg); }
+.cr-lpick__badge { padding: 0.05rem 0.45rem; border-radius: 999px; background: #E0B33A; color: #241422; font-family: var(--font-body); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.cr-lpick__list {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 20; list-style: none; margin: 0; padding: 0.35rem;
+  max-height: 320px; overflow-y: auto; border-radius: 16px; background: #fff; border: 1px solid var(--line);
+  box-shadow: 0 20px 44px -18px rgba(36, 20, 34, 0.45); animation: cr-details-in 0.12s ease-out;
+}
+.cr-lpick__list button { width: 100%; display: flex; align-items: center; gap: 0.5rem; padding: 0.55rem 0.8rem; border: none; border-radius: 10px; background: transparent; text-align: left; font-size: 0.95rem; color: var(--ink); cursor: pointer; }
+.cr-lpick__list button span { flex: 1; }
+.cr-lpick__list button:hover { background: #FAF6F1; }
+.cr-lpick__list button.is-active { background: #FBF4DC; font-weight: 600; }
+.cr-lpick__done { color: #3F7D4E; font-weight: 700; }
+
+/* Áthúzott Homework review (nem volt házi) */
+.cr-prow.is-struck { opacity: 0.55; }
+.cr-prow.is-struck .cr-prow__locked { text-decoration: line-through; font-weight: 500; color: var(--muted); }
+.cr-prow.is-struck .cr-prow__line { cursor: default; }
