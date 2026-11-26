@@ -1735,3 +1735,9 @@ svg.cr-art.cr-art--toast { width: 64px; height: 64px; }
 .cr-priveditor__art > span button.is-active { border-color: #241422; }
 .cr-djnote { display: flex; align-items: center; gap: 0.4rem; margin: 0 0 0.5rem; font-size: 0.9rem; }
 .cr-djnote svg { width: 16px; height: 16px; }
+@media (max-width: 560px) {
+  .cr-passport__cover { flex-wrap: wrap; row-gap: 0.4rem; }
+  .cr-passport__page { grid-template-columns: repeat(2, minmax(0, 1fr)); padding-left: 0.7rem; padding-right: 0.7rem; }
+  .cr-stamp { width: 92px; }
+  .cr-seg--mine button { padding: 0.45rem 0.8rem; font-size: 0.88rem; }
+}
