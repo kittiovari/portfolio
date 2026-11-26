@@ -107,6 +107,8 @@ export default function ClassBoard({ cls }) {
       setEditing(null)
     } catch { setSaveMsg('Could not save – please try again (or type your code again).') }
   }
+  // a kiválasztott órához kiírt szorgalmi feladat
+  const extra = lesson ? lesson.items.filter((it) => it.role === 'extra' && (it.aim || it.activity || it.resources?.length)) : []
   const signOut = () => { ssSet(codeKey(cls), null); setMe(null) }
 
   return (
@@ -125,6 +127,20 @@ export default function ClassBoard({ cls }) {
           <div className="cr-board__card cr-hwcard">
             <h3><Art name="homework" className="cr-art cr-art--lg" />Next homework{homework.due ? <small>due {lessonLabel(homework.due, { weekday: 'long', day: 'numeric', month: 'long' }, publicDoc)}</small> : null}</h3>
             {homework.items.map((h) => (
+              <div key={h.id} className="cr-hwcard__item">
+                {h.aim && <b>{h.aim}</b>}
+                {h.activity && <p><Linkify text={h.activity} /></p>}
+                {h.resources?.length > 0 && <div className="cr-tcard__res">{h.resources.map((r) => <Resource key={r.id} r={r} cls={cls} />)}</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {extra.length > 0 && (
+        <div className="cr-board__info cr-board__info--hw">
+          <div className="cr-board__card cr-hwcard cr-extracard">
+            <h3><Art name="extra_hw" className="cr-art cr-art--lg" />Extra task <small>optional</small></h3>
+            {extra.map((h) => (
               <div key={h.id} className="cr-hwcard__item">
                 {h.aim && <b>{h.aim}</b>}
                 {h.activity && <p><Linkify text={h.activity} /></p>}

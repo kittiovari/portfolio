@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { Sheet, Icon } from './ui.jsx'
-import { getPlan, withSkeleton, previousHomework, splitKey, lessonStart, periodOfKey, TRACKED, THRESHOLDS, skillByKey, fullName, sortStudents } from './model.js'
-import { trackedCount } from './report.jsx'
+import { getPlan, withSkeleton, previousHomework, splitKey, lessonStart, periodOfKey } from './model.js'
 
 export const fileUrl = (cls, id) => `/api/classfile/${cls}/${id}`
 const has = (it) => Boolean((it.aim || '').trim() || (it.activity || '').trim() || it.resources?.length)
-const PREFIX = { warmer: 'Ráhangolódás', hwreview: 'Házi feladat ellenőrzése', homework: 'Házi feladat' }
+const PREFIX = { warmer: 'Ráhangolódás', hwreview: 'Házi feladat ellenőrzése', homework: 'Házi feladat', extra: 'Szorgalmi feladat' }
 
 // Az E-Kréta naplóba másolható óraleírás lépései (jelenlét és Self-reflection nélkül)
 export function kretaSteps(doc, key) {
@@ -17,12 +16,8 @@ export function kretaSteps(doc, key) {
     if (it.moved) { moved.push((it.aim || '').trim() || 'Feladat'); continue }
     if (it.role === 'attendance' || it.role === 'reflection') continue
     if (it.role === 'hwreview') {
-      if (!prev) continue
-      out.push({
-        id: it.id, title: `${PREFIX.hwreview}: ${prev.items.map((h) => h.aim).filter(Boolean).join(' · ') || '–'}`,
-        text: prev.items.map((h) => h.activity).filter(Boolean).join('\n'),
-        resources: prev.items.flatMap((h) => h.resources || []),
-      })
+      // csak megemlítjük – a feladat a korábbi E-Kréta-bejegyzésben már szerepel
+      if (prev) out.push({ id: it.id, title: PREFIX.hwreview, text: '', resources: [] })
       continue
     }
     if (!has(it)) continue
@@ -30,19 +25,6 @@ export function kretaSteps(doc, key) {
     out.push({ id: it.id, title: PREFIX[it.role] ? `${PREFIX[it.role]}${t ? `: ${t}` : ''}` : t || 'Feladat', text: (it.activity || '').trim(), resources: it.resources || [] })
   }
   return { title: (plan.title || '').trim(), steps: out, moved }
-}
-
-// A kiemelt (3/5/10+) számok – összhangban az osztályriporttal
-function highlights(doc) {
-  const rows = []
-  for (const s of sortStudents(doc.students)) {
-    for (const key of TRACKED) {
-      const n = trackedCount(doc, s.id, key)
-      const sk = skillByKey(doc, key)
-      if (sk && n >= THRESHOLDS[0]) rows.push(`${fullName(s)} – ${sk.name}: ${n}×`)
-    }
-  }
-  return rows
 }
 
 export function kretaText(doc, key) {
@@ -63,10 +45,6 @@ export function kretaText(doc, key) {
     }
   })
   if (moved.length) lines.push('', `A következő órára maradt: ${moved.join('; ')}`)
-  const hl = highlights(doc)
-  lines.push('', 'Beváltott pontok / kiemelések:')
-  if (hl.length) hl.forEach((x) => lines.push(`   ${x}`))
-  else lines.push('   –')
   return lines.join('\n')
 }
 

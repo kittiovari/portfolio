@@ -1510,3 +1510,25 @@ svg.cr-art.cr-art--toast { width: 64px; height: 64px; }
 .cr-name small { font-size: 0.68rem; font-weight: 500; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .cr-name b { font-weight: 700; font-size: 0.86rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .cr-plan__danger { display: flex; justify-content: center; margin: 1.2rem 0 0.4rem; padding-top: 0.8rem; border-top: 1px dashed var(--line); }
+
+/* Idővonal: újra vízszintes, oldalra görgethető, léptetőnyilakkal; nincs üres eleje */
+.cr-timeline__track, .cr-lboard__track {
+  display: flex; flex-wrap: nowrap; overflow-x: auto; overflow-y: visible; gap: 1rem;
+  padding: 1.8rem 0.4rem 0.8rem; scroll-snap-type: x proximity; scroll-padding: 0 0.4rem;
+}
+.cr-timeline__track .cr-tcard, .cr-lboard__track .cr-tcard { flex: 0 0 min(280px, 80vw); scroll-snap-align: start; }
+.cr-trackwrap { position: relative; }
+.cr-trackarrow { position: absolute; top: 50%; z-index: 3; width: 40px; height: 40px; margin-top: -8px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: #fff; color: var(--ink); cursor: pointer; box-shadow: 0 6px 16px -8px rgba(36, 20, 34, 0.45); transition: opacity 0.15s; }
+.cr-trackarrow svg { width: 18px; height: 18px; }
+.cr-trackarrow.is-prev { left: -6px; }
+.cr-trackarrow.is-next { right: -6px; }
+.cr-trackarrow.is-off { opacity: 0; pointer-events: none; }
+@media (max-width: 560px) { .cr-trackarrow { width: 34px; height: 34px; } }
+/* Szorgalmi feladat (diákoldal) */
+.cr-extracard { border-color: #8A6BBE; background: linear-gradient(180deg, #F2ECFA 0, #FAF8FD 100%); box-shadow: 0 14px 30px -22px rgba(138, 107, 190, 0.9); }
+.cr-extracard h3 small { background: #8A6BBE; }
+/* Class settings: fülek a Students/Pairs/Groups stílusában */
+.cr-settings__tabs { display: flex; flex-wrap: nowrap; overflow-x: auto; max-width: 100%; margin: 0 0 1rem; scrollbar-width: none; }
+.cr-settings__tabs::-webkit-scrollbar { display: none; }
+.cr-settings__tabs button { white-space: nowrap; }
+.cr-settings .cr-settings__tabs + * .cr-settings__h:first-child, .cr-settings__tabs ~ .cr-settings__h:first-of-type { margin-top: 0; }

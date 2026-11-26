@@ -170,11 +170,12 @@ export const TAGS = [
   { id: 'pronunciation', label: 'Pronunciation practice', color: '#A0568F' },
   { id: 'vocabulary', label: 'Vocabulary practice', color: '#8F5A9E' },
   { id: 'homework', label: 'Next homework', color: '#3F6E9A' },
+  { id: 'extra', label: 'Extra task', color: '#8A6BBE' },
   { id: 'reflection', label: 'Self-reflection & Overall evaluation', color: '#6B5A69' },
 ]
 export const tagOf = (id) => TAGS.find((t) => t.id === id)
 // A saját (középső) feladatoknál választható címkék – a fix lépések címkéi nélkül
-export const TASK_TAGS = TAGS.filter((t) => !['attendance', 'warmer', 'hwreview', 'homework', 'reflection'].includes(t.id))
+export const TASK_TAGS = TAGS.filter((t) => !['attendance', 'warmer', 'hwreview', 'homework', 'extra', 'reflection'].includes(t.id))
 
 const z2 = (n) => String(n).padStart(2, '0')
 export const lessonKey = (date, time) => (time ? `${date}@${time}` : date)
@@ -194,6 +195,8 @@ export const FIXED = {
   warmer: { minutes: 5, aim: '', org: 'frontal', tags: ['warmer'] },
   hwreview: { minutes: 5, aim: '', org: 'frontal', tags: ['hwreview'], auto: 'hwreview' },
   homework: { minutes: 3, aim: '', org: 'frontal', tags: ['homework'] },
+  // szorgalmi feladat: opcionális, nem vesz el időt az órából, nem pontozható
+  extra: { minutes: 0, aim: '', org: 'individual', tags: ['extra'] },
   reflection: { minutes: 2, aim: 'Self-reflection & Overall evaluation', org: 'individual', tags: ['reflection'] },
 }
 const fixedItem = (role) => ({ id: `fixed-${role}`, role, activity: '', equipment: '', resources: [], done: false, ...FIXED[role] })
@@ -218,7 +221,8 @@ export function withSkeleton(plan) {
   // a korábbi „Self-reflection” cím frissítése
   const reflection = reflection0.aim === 'Self-reflection' ? { ...reflection0, aim: 'Self-reflection & Overall evaluation' } : reflection0
   const homework = take('homework', null)
-  return { ...plan, items: [attendance, warmer, { ...hwreview, auto: 'hwreview' }, ...items, homework, reflection] }
+  const extra = take('extra', null)
+  return { ...plan, items: [attendance, warmer, { ...hwreview, auto: 'hwreview' }, ...items, homework, extra, reflection] }
 }
 export const isFixed = (it) => Boolean(it.role)
 
@@ -293,7 +297,7 @@ export const skillByKey = (doc, key) => [...(doc.skills?.positive || []), ...(do
 
 // Az adott lépésnél adható pontok (a munkaforma szerint; Future homeworknél nincs)
 export function stepSkills(doc, item) {
-  if (!item || item.role === 'homework' || item.role === 'attendance' || item.role === 'hwreview') return []
+  if (!item || item.role === 'homework' || item.role === 'extra' || item.role === 'attendance' || item.role === 'hwreview') return []
   const rule = item.role === 'reflection' ? 'reflection' : item.org
   return (POINT_RULES[rule] || []).map((k) => skillByKey(doc, k)).filter(Boolean)
 }

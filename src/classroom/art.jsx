@@ -342,7 +342,7 @@ export function eventArtName(doc, e) {
   return artName(sk || { key: e.auto === 'late' ? 'late' : null, icon: e.i, value: e.v })
 }
 // Egy óralépés illusztrációja: a fix lépés szerepe, különben az első címke
-const STEP_ART = { attendance: 'attendance', warmer: 'warmup', hwreview: 'hw_done', homework: 'homework', reflection: 'reflection', reading: 'reading', listening: 'listening', speaking: 'speaking', writing: 'writing', grammar: 'grammar', vocabulary: 'vocabulary', pronunciation: 'pronunciation' }
+const STEP_ART = { attendance: 'attendance', warmer: 'warmup', hwreview: 'hw_done', homework: 'homework', extra: 'extra_hw', reflection: 'reflection', reading: 'reading', listening: 'listening', speaking: 'speaking', writing: 'writing', grammar: 'grammar', vocabulary: 'vocabulary', pronunciation: 'pronunciation' }
 export function stepArt(it) {
   if (it.role && STEP_ART[it.role]) return STEP_ART[it.role]
   if (it.auto === 'hwreview') return 'hw_done'
