@@ -4,7 +4,16 @@
 // Csak a tanári (teacher) munkamenet-sütivel érhető el.
 import zlib from 'node:zlib'
 import { hasSession, json, sameOrigin } from '../lib/security.mjs'
-import { isClass, loadClass, saveClass, loadAvatars, saveAvatars, mergeAvatars, sameAvatar } from '../lib/classroomStore.mjs'
+import { isClass, loadClass, saveClass, loadAvatars, saveAvatars, mergeAvatars, sameAvatar, loadAllWork } from '../lib/classroomStore.mjs'
+import { allWorkEvents, stripWorkEvents } from '../lib/studentWork.mjs'
+
+// a diákok beadásaiból képzett pont-események ráfésülése (a tárolt dokumentumban nincsenek benne)
+async function withWork(cls, doc) {
+  if (!doc) return doc
+  const work = await loadAllWork(cls, (doc.students || []).map((s) => s.id)).catch(() => ({}))
+  const extra = allWorkEvents(doc, work)
+  return extra.length ? { ...doc, events: [...stripWorkEvents(doc.events), ...extra] } : doc
+}
 
 // A kliens tömörítve (gzip) küldi a dokumentumot: így évekig elfér a teljes
 // eseménynapló. Tömörítve max. 5 MB, kibontva max. 40 MB.
@@ -27,7 +36,7 @@ export default async (req, context) => {
 
   try {
     if (req.method === 'GET') {
-      return gz(req, 200, { doc: mergeAvatars(await loadClass(cls), await loadAvatars(cls)) })
+      return gz(req, 200, { doc: await withWork(cls, mergeAvatars(await loadClass(cls), await loadAvatars(cls))) })
     }
     if (req.method !== 'PUT') return json(405, { error: 'method' }, { Allow: 'GET, PUT' })
     if (!sameOrigin(req)) return json(403, { error: 'origin' })
@@ -54,7 +63,7 @@ export default async (req, context) => {
     const current = await loadClass(cls)
     const currentRev = current?.rev ?? 0
     const avatars = await loadAvatars(cls)
-    if ((doc.rev ?? 0) !== currentRev) return gz(req, 409, { error: 'conflict', doc: mergeAvatars(current, avatars) })
+    if ((doc.rev ?? 0) !== currentRev) return gz(req, 409, { error: 'conflict', doc: await withWork(cls, mergeAvatars(current, avatars)) })
 
     // diák által választott avatar: ha a beküldött érték a diák választása (vagy az előtte
     // lévő / a tárolt alap), az övé marad; ha a tanár mást állított be, a tanáré nyer
@@ -69,7 +78,8 @@ export default async (req, context) => {
     })
     for (const id of Object.keys(avatars)) if (!doc.students.some((s) => s.id === id)) { delete avatars[id]; avChanged = true }
     if (avChanged) await saveAvatars(cls, avatars)
-    const next = { ...doc, students, rev: currentRev + 1, savedAt: Date.now() }
+    // a beadásokból képzett események nem kerülnek a dokumentumba (olvasáskor fésüljük rá)
+    const next = { ...doc, students, events: stripWorkEvents(doc.events), rev: currentRev + 1, savedAt: Date.now() }
     await saveClass(cls, next)
     return json(200, { rev: next.rev })
   } catch (err) {

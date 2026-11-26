@@ -230,3 +230,50 @@ export function cleanAvatar(a) {
   return out
 }
 export const sameAvatar = (x, y) => JSON.stringify(cleanAvatar(x) || {}) === JSON.stringify(cleanAvatar(y) || {})
+
+// ── A diákok saját munkái (személyes kóddal írva): szorgalmi beadások, kiváltság-kérések ──
+// Diákonként külön titkosított blob ({ subs: { [taskId]: beadás }, reqs: [kérés] }), így két
+// diák egyszerre beküldött munkája nem írja felül egymást, és a tanár mentése sem írja felül őket.
+const workKey = (cls, sid) => `work-${cls}-${sid}`
+export const STUDENT_ID = /^[A-Za-z0-9_-]{1,40}$/
+export async function loadWork(cls, sid) {
+  const raw = await readRaw(workKey(cls, sid)).catch(() => null)
+  const w = raw ? JSON.parse(open(raw).toString('utf8')) : null
+  return { subs: w?.subs || {}, reqs: w?.reqs || [] }
+}
+export async function saveWork(cls, sid, w) {
+  await writeRaw(workKey(cls, sid), seal(Buffer.from(JSON.stringify({ subs: w.subs || {}, reqs: w.reqs || [] }), 'utf8')))
+}
+async function listKeys(prefix) {
+  if (isNetlify()) {
+    const store = await getStoreSafe()
+    return (await store.list({ prefix })).blobs.map((b) => b.key)
+  }
+  try { return (await fs.readdir(DEV_DIR)).filter((f) => f.startsWith(prefix)).map((f) => f.replace(/\.enc$/, '')) } catch { return [] }
+}
+export async function loadAllWork(cls, ids) {
+  const out = {}
+  for (const sid of ids) {
+    if (!STUDENT_ID.test(sid)) continue
+    const w = await loadWork(cls, sid)
+    if (Object.keys(w.subs).length || w.reqs.length) out[sid] = w
+  }
+  return out
+}
+export async function deleteAllWork(cls) {
+  for (const k of await listKeys(`work-${cls}-`)) await deleteRaw(k)
+}
+
+// beadott fotók (JPEG, titkosítva): photo-<cls>-<id>
+export const PHOTO_ID = /^p[A-Za-z0-9_-]{16,30}$/
+export async function savePhoto(cls, id, data) { await writeRaw(`photo-${cls}-${id}`, seal(data)) }
+export async function loadPhoto(cls, id) {
+  const raw = await readRaw(`photo-${cls}-${id}`).catch(() => null)
+  return raw ? open(raw) : null
+}
+export async function deletePhoto(cls, id) { await deleteRaw(`photo-${cls}-${id}`) }
+export async function deleteAllPhotos(cls) {
+  let n = 0
+  for (const k of await listKeys(`photo-${cls}-`)) { await deleteRaw(k); n++ }
+  return n
+}

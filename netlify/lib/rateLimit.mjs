@@ -85,6 +85,18 @@ export async function registerFailure(ip, area) {
   return { remaining: Math.max(0, MAX_ATTEMPTS - rec.count), lockedSeconds: rec.lockedUntil ? LOCK_MINUTES * 60 : 0 }
 }
 
+// Általános írási korlát (pl. diákbeadások): ablakonként legfeljebb `max` kérés.
+// true = mehet, false = túl sok kérés
+export async function allowHit(id, area, max = 40, windowSeconds = 600) {
+  const key = keyFor(id, `hit|${area}`)
+  const now = Date.now()
+  let rec = await read(key)
+  if (!rec || now - rec.first > windowSeconds * 1000) rec = { count: 0, first: now }
+  rec.count += 1
+  await write(key, rec)
+  return rec.count <= max
+}
+
 export async function registerSuccess(ip, area) {
   await remove(keyFor(ip, area))
 }

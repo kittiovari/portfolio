@@ -7,6 +7,7 @@ import { PlanTimeline, Resource, Linkify } from './plan.jsx'
 import { Art } from './art.jsx'
 import { ReportPanel } from './report.jsx'
 import SeasonScene from './SeasonScene.jsx'
+import { ExtraTaskSheet, taskIdOf, isPastDue } from './extratask.jsx'
 import './Classroom.css'
 
 /*
@@ -37,6 +38,8 @@ export default function ClassBoard({ cls }) {
   const [editing, setEditing] = useState(null) // a saját avatar szerkesztés alatt
   const [saveMsg, setSaveMsg] = useState('')
   const [asking, setAsking] = useState(null) // annak a diáknak az adatai, akinek a kódját kérjük
+  const [task, setTask] = useState(null) // a megnyitott szorgalmi feladat { item, taskId }
+  const [who, setWho] = useState(null) // „Ki vagy?” – a beadás előtt a saját avatar kiválasztása
 
   useEffect(() => {
     let alive = true
@@ -108,7 +111,13 @@ export default function ClassBoard({ cls }) {
     } catch { setSaveMsg('Could not save – please try again (or type your code again).') }
   }
   // a kiválasztott órához kiírt szorgalmi feladat
-  const extra = lesson ? lesson.items.filter((it) => it.role === 'extra' && (it.aim || it.activity || it.resources?.length)) : []
+  const extra = lesson ? lesson.items.filter((it) => it.role === 'extra' && (it.aim || it.activity || it.resources?.length || it.task)) : []
+  // szorgalmi beadás: ha még nincs megnyitva a saját riport, előbb a saját avatar + kód
+  const openTask = (h) => {
+    const t = { item: h, taskId: taskIdOf(lesson.key, h.id) }
+    if (me) setTask(t)
+    else setWho(t)
+  }
   const signOut = () => { ssSet(codeKey(cls), null); setMe(null) }
 
   return (
@@ -145,6 +154,21 @@ export default function ClassBoard({ cls }) {
                 {h.aim && <b>{h.aim}</b>}
                 {h.activity && <p><Linkify text={h.activity} /></p>}
                 {h.resources?.length > 0 && <div className="cr-tcard__res">{h.resources.map((r) => <Resource key={r.id} r={r} cls={cls} />)}</div>}
+                {h.task && (() => {
+                  const mine = me?.subs?.[taskIdOf(lesson.key, h.id)]
+                  const late = isPastDue(h.task.due)
+                  return (
+                    <div className="cr-extracard__go">
+                      {h.task.due && <small className={late ? 'is-late' : ''}>{late ? 'Closed' : 'Deadline'}: {new Date(`${h.task.due}T12:00`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</small>}
+                      {mine && <small className="is-done"><Icon.check /> Handed in{mine.checked ? ' · checked' : ''}</small>}
+                      {(!late || mine) && (
+                        <button className="cr-btn cr-btn--primary cr-btn--sm" onClick={() => openTask(h)}>
+                          {mine ? 'Open my answers' : 'Answer & hand in'}
+                        </button>
+                      )}
+                    </div>
+                  )
+                })()}
               </div>
             ))}
           </div>
@@ -218,7 +242,32 @@ export default function ClassBoard({ cls }) {
             </Sheet>
           )
         })()}
-        {asking && <CodeSheet key={`code-${asking.id}`} cls={cls} student={asking} onClose={() => setAsking(null)} onOk={(d, code) => { ssSet(codeKey(cls), code); setMe(d); const s = asking; setAsking(null); setOpen({ ids: [s.id], title: fullName(s), student: s }) }} />}
+        {asking && <CodeSheet key={`code-${asking.id}`} cls={cls} student={asking} onClose={() => { setAsking(null); setWho(null) }} onOk={(d, code) => {
+          ssSet(codeKey(cls), code); setMe(d); const s = asking; setAsking(null)
+          // ha a szorgalmi beadás miatt kértük a kódot, a feladat nyílik meg
+          if (who) { setTask(who); setWho(null) } else setOpen({ ids: [s.id], title: fullName(s), student: s })
+        }} />}
+        {who && !asking && (
+          <Sheet key="who" title="Who are you?" onClose={() => setWho(null)}>
+            <p className="cr-muted">Tap your own avatar, then type your personal code.</p>
+            <div className="cr-grid cr-grid--pick">
+              {students.map((s) => (
+                <button key={s.id} className="cr-tile" onClick={() => setAsking(s)}>
+                  <span className="cr-tile__art"><Avatar a={s.avatar} /></span>
+                  <span className="cr-tile__first">{s.first}</span>
+                </button>
+              ))}
+            </div>
+          </Sheet>
+        )}
+        {task && me && (
+          <ExtraTaskSheet key={`task-${task.taskId}`} cls={cls} code={ssGet(codeKey(cls))} me={me} item={task.item} taskId={task.taskId} sub={me.subs?.[task.taskId]}
+            onClose={() => setTask(null)}
+            onSaved={(sub, events) => setMe((m) => ({
+              ...m, subs: { ...(m.subs || {}), [task.taskId]: sub },
+              ...(events ? { events: [...m.events.filter((e) => e.src !== 'x' || e.redeem), ...events.filter((e) => !e.redeem)] } : {}),
+            }))} />
+        )}
       </>
     </div>
     </AvatarThemeContext.Provider>

@@ -5,6 +5,7 @@ import { Art, SkillArt, fileArt, stepArt } from './art.jsx'
 import { KretaSheet } from './kreta.jsx'
 import { AvatarThemePicker } from './Avatar.jsx'
 import { YearPanel, FilesPanel, AccessPanel } from './upkeep.jsx'
+import { ExtraTaskSetup, taskIdOf } from './extratask.jsx'
 import {
   ORG_FORMS, WEEKDAYS, addMinutes, dayKey, getPlan, lessonLabel, lessonTimeline, newItem, nextLessonKey, splitKey, tagOf, uid, previousHomework, withSkeleton, TASK_TAGS, plannedKeys, stepSkills, BELLS, isShortDay, lessonStart, lessonLength, breakOn, moveToNext, undoMove, nextKeyAfter,
 } from './model.js'
@@ -479,6 +480,7 @@ function PlanRow({ item, step, start, cls, doc, review, maxMinutes = 45, open, o
               </div>
             )}
           </div>
+          {role === 'extra' && <ExtraTaskSetup item={item} onChange={onChange} />}
           {role !== 'homework' && role !== 'extra' && (
             <label className="cr-pfield">
               <input value={item.equipment || ''} placeholder="Equipment: coursebook, worksheet, speakers…" onChange={(e) => onChange({ equipment: e.target.value })} aria-label="Equipment" />
@@ -811,7 +813,7 @@ function attSummary(doc, date) {
 // ── Tanári osztálynézet: az óra idővonala, feladathoz kötött pontozással ──
 // Választható órák: a már megtartott (betervezett) órák, az éppen aktuális óra,
 // és a következő, már előkészített órák.
-export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onCheckHomework, onTakeAttendance, onMakeGroups, onGivePoints }) {
+export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onCheckHomework, onTakeAttendance, onMakeGroups, onGivePoints, work = null, onReviewExtra }) {
   const today = dayKey()
   const nowKey = nextLessonKey(doc)
   const planned = plannedKeys(doc)
@@ -828,7 +830,7 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
   const plan = key ? withSkeleton(getPlan(doc, key)) : { title: '', items: [] }
   const isPlanned = key && planned.includes(key)
   const prevHw = key ? previousHomework(doc, key) : null
-  const filled = (it) => Boolean((it.aim || '').trim() || (it.activity || '').trim() || it.resources?.length)
+  const filled = (it) => Boolean((it.aim || '').trim() || (it.activity || '').trim() || it.resources?.length || it.xt?.items?.length)
   const items = plan.items.filter((it) => !(it.role === 'hwreview' && !prevHw) && !(it.role === 'extra' && !filled(it)))
   const nav = useTrackNav(track)
   const { time } = key ? splitKey(key) : {}
@@ -953,6 +955,17 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
                       onGivePoints(step)
                     }}>✓ Give points</button>
                   )}
+                  {/* szorgalmi feladat: a beadások javítása */}
+                  {it.role === 'extra' && !it.moved && (() => {
+                    const id = taskIdOf(key, it.id)
+                    const subs = Object.values(work || {}).map((w) => w.subs?.[id]).filter(Boolean)
+                    const open = subs.filter((s) => !s.checked).length
+                    return (
+                      <button className="cr-btn cr-btn--sm cr-lcard__action cr-lcard__action--light" onClick={() => onReviewExtra?.(id)}>
+                        <Art name="extra_hw" className="cr-art cr-art--xs" />Handed in: {subs.length}{open ? ` · ${open} to check` : ''}
+                      </button>
+                    )
+                  })()}
                   {/* a jelenlét és a házi-ellenőrzés gombja magán a kártyán */}
                   {(it.role === 'attendance' || it.role === 'hwreview') && (
                     <button className="cr-btn cr-btn--primary cr-btn--sm cr-lcard__action" onClick={() => {

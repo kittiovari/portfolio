@@ -15,6 +15,8 @@ import { useArchives, useClassList, AddClassSheet } from '../classroom/upkeep.js
 import { classArt } from '../components/AreaIllustrations.jsx'
 import SeasonScene from '../classroom/SeasonScene.jsx'
 import Deskmates from '../classroom/Deskmates.jsx'
+import { useStudentWork, ExtraReview, pendingCount } from '../classroom/extratask.jsx'
+import { Art } from '../classroom/art.jsx'
 import { ATTENDANCE, dayKey, fullName, pickName, getPlan, stepSkills, withSkeleton, skillByKey, pointsBy, sortStudents, uid } from '../classroom/model.js'
 import '../components/PasswordModal.css'
 import '../classroom/Classroom.css'
@@ -46,6 +48,15 @@ export default function Classroom() {
   const { doc, status, update, retry, reload } = useClassroom(meta ? cls : '9b')
   // az archivált tanévek eseményei is a riportokba kerülnek (tanéveken átívelő kép)
   const archives = useArchives(meta ? cls : '9b', doc?.previousYears || [])
+  // a diákok saját munkái (szorgalmi beadások, kiváltság-kérések) – csak tanári sütivel
+  const studentWork = useStudentWork(meta ? cls : '9b', Boolean(doc))
+  // a friss beadás-pontok ráfésülése a betöltött dokumentumra (csak ha változott)
+  useEffect(() => {
+    if (!doc || !studentWork.events) return
+    const sig = (list) => list.map((e) => `${e.id}:${e.v}:${e.t}`).sort().join('|')
+    if (sig(doc.events.filter((e) => e.src === 'x')) === sig(studentWork.events)) return
+    update((d) => ({ ...d, events: [...d.events.filter((e) => e.src !== 'x'), ...studentWork.events] }))
+  }, [studentWork.events]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const [view, setView] = useState('students') // students | groups
   const [mode, setMode] = useState('normal') // normal | attendance | select
@@ -159,6 +170,12 @@ export default function Classroom() {
         </div>
       </div>
       <div className="cr-top__right">
+        {doc && (
+          <button className="cr-iconbtn cr-inboxbtn" onClick={() => { studentWork.reload(); setModal({ kind: 'extra', task: null }) }} aria-label="Extra tasks handed in" title="Extra tasks handed in">
+            <Art name="extra_hw" className="cr-art cr-art--sm" />
+            {pendingCount(studentWork.work) > 0 && <i className="cr-inboxbtn__n">{pendingCount(studentWork.work)}</i>}
+          </button>
+        )}
         <span className={`cr-status is-${status}`} role="status">
           {status === 'error' ? <button className="cr-link" onClick={retry}>{STATUS.error}</button> : STATUS[status]}
         </span>
@@ -235,6 +252,7 @@ export default function Classroom() {
             onCheckHomework={() => setModal({ kind: 'homework', preselect: [] })}
             onTakeAttendance={(date, key, itemId) => setModal({ kind: 'attendance', date, key, itemId })}
             onGivePoints={(step) => givePoints([], step)}
+            work={studentWork.work} onReviewExtra={(task) => { studentWork.reload(); setModal({ kind: 'extra', task }) }}
             onEdit={(k) => setModal({ kind: 'tool', id: 'today', key: k })} />
         )}
       </div>
@@ -409,6 +427,9 @@ export default function Classroom() {
               if (xh && extraIds.length) setTimeout(() => award(extraIds, xh, `${extraIds.length} student${extraIds.length === 1 ? '' : 's'}`), 2700)
               closeModal()
             }} />
+        )}
+        {modal?.kind === 'extra' && studentWork.work && (
+          <ExtraReview key="extra" doc={doc} cls={cls} work={studentWork.work} post={studentWork.post} initialTask={modal.task} onClose={closeModal} />
         )}
         {modal?.kind === 'add' && <AddStudents key="add" update={update} onClose={closeModal} />}
         {modal?.kind === 'group' && <GroupEditor key="group" doc={doc} group={modal.group} update={update} onClose={closeModal} />}

@@ -6,7 +6,8 @@
 //        (ugyanazokkal az azonosítókkal és kódokkal) és a pontszabályokkal indul.
 import zlib from 'node:zlib'
 import { hasSession, json, sameOrigin } from '../lib/security.mjs'
-import { isClass, loadClass, saveClass, loadArchive, saveArchive, listArchiveYears } from '../lib/classroomStore.mjs'
+import { isClass, loadClass, saveClass, loadArchive, saveArchive, listArchiveYears, loadAllWork, deleteAllWork, deleteAllPhotos } from '../lib/classroomStore.mjs'
+import { allWorkEvents, stripWorkEvents } from '../lib/studentWork.mjs'
 
 const gz = (req, body) => (/\bgzip\b/.test(req.headers.get('accept-encoding') || '')
   ? new Response(zlib.gzipSync(JSON.stringify(body)), { status: 200, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Content-Encoding': 'gzip', 'Cache-Control': 'no-store' } })
@@ -31,7 +32,12 @@ export default async (req, context) => {
     const cur = await loadClass(cls)
     if (!cur) return json(400, { error: 'empty' })
     if (await loadArchive(cls, y)) return json(409, { error: 'exists' })
-    await saveArchive(cls, y, { ...cur, archivedAt: Date.now(), schoolYear: y })
+    // a diákok beadásaiból képzett pontok bekerülnek az archívumba (megmaradnak),
+    // a beadott fotók és a beadások szövege viszont törlődik (adattakarékosság)
+    const work = await loadAllWork(cls, (cur.students || []).map((s) => s.id))
+    await saveArchive(cls, y, { ...cur, events: [...stripWorkEvents(cur.events), ...allWorkEvents(cur, work).map(({ src, ...e }) => e)], archivedAt: Date.now(), schoolYear: y }) // eslint-disable-line no-unused-vars
+    await deleteAllPhotos(cls)
+    await deleteAllWork(cls)
     const next = {
       ...cur,
       name: typeof body.name === 'string' && body.name.trim() ? body.name.trim().slice(0, 40) : cur.name,

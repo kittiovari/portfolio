@@ -6,6 +6,7 @@
 // érhető el (/api/studentview/:cls).
 import { hasSession, json } from '../lib/security.mjs'
 import { isClass, loadClass, withSchool, loadAvatars, mergeAvatars } from '../lib/classroomStore.mjs'
+import { cleanXt } from '../lib/studentWork.mjs'
 
 const dayKey = (d = new Date()) => {
   const z = (n) => String(n).padStart(2, '0')
@@ -24,6 +25,11 @@ const hasContent = (it) => Boolean((it.aim || '').trim() || (it.activity || '').
 const cleanRes = (r) => (r.type === 'file'
   ? { id: r.id, type: 'file', fileId: r.fileId, name: r.name, mime: r.mime, size: r.size }
   : { id: r.id, type: 'link', url: r.url, name: r.name })
+
+const taskMeta = (xt) => {
+  const x = cleanXt(xt)
+  return { kinds: x.items.map((i) => (i.open ? 'o' : 'c')), px: x.px, py: x.py, due: x.due }
+}
 
 // rövidített napon a rövidített csengetési rend szerinti kezdés
 const NORMAL = ['07:05', '07:50', '08:45', '09:40', '10:35', '11:40', '12:45', '13:35', '14:25', '15:15']
@@ -86,6 +92,8 @@ export default async (req, context) => {
         items: (p.items || []).map(normItem).filter(keep).map(resolve).map((it) => ({
           id: it.id, role: it.role || undefined, minutes: Number(it.minutes) || 0, aim: it.aim || '', activity: it.activity || '', org: it.org || '', equipment: it.equipment || '',
           tags: it.tags || [], done: Boolean(it.done), resources: (it.resources || []).map(cleanRes),
+          // szorgalmi feladat: csak a kérdések száma és típusa – a megoldókulcs SOSEM megy ki
+          ...(it.role === 'extra' && it.xt ? { task: taskMeta(it.xt) } : {}),
         })),
       }
     }
