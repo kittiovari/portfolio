@@ -37,7 +37,7 @@
       script-src 'self' https://open.spotify.com https://sdk.scdn.co;
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       font-src 'self' https://fonts.gstatic.com;
-      img-src 'self' data: https://fulbevalo.vercel.app https://gombarat.hu https://i.ytimg.com https://i.scdn.co;
+      img-src 'self' data: blob: https://fulbevalo.vercel.app https://gombarat.hu https://i.ytimg.com https://i.scdn.co;
       frame-src 'self' https://www.youtube-nocookie.com https://open.spotify.com https://sdk.scdn.co;
       connect-src 'self' https://api.spotify.com https://accounts.spotify.com;
       object-src 'none';
