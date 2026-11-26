@@ -4,6 +4,7 @@ import { Sheet, Icon } from './ui.jsx'
 import { Art, SkillArt, ART_CHOICES } from './art.jsx'
 import { ReportPanel } from './report.jsx'
 import { LevelCard, LockMark } from './progress.jsx'
+import { Passport } from './passport.jsx'
 import { LEVELS, lockLevel } from './levels.js'
 import {
   AVATAR, sortStudents, pickName, POINT_RULES, RULE_LABELS, newCode, ensureCodes, fullName, uid, parseName, randomAvatar, dayKey,
@@ -13,7 +14,7 @@ import {
   Diák / egész osztály / kijelölt diákok paneljei.
   target: { type: 'student', id } | { type: 'class' } | { type: 'multi', ids, title }
 */
-export function TargetModal({ doc, target, points, onAward, update, onClose, initialTab = 'give', homeworkMode = false, absentIds = [] }) {
+export function TargetModal({ doc, target, points, onAward, update, onClose, initialTab = 'give', homeworkMode = false, absentIds = [], classLabel = '' }) {
   const student = target.type === 'student' ? doc.students.find((s) => s.id === target.id) : null
   const [tab, setTab] = useState(initialTab === 'give' ? 'report' : initialTab)
   if (target.type === 'student' && !student) return null
@@ -27,7 +28,7 @@ export function TargetModal({ doc, target, points, onAward, update, onClose, ini
   const tabs = [
     { id: 'report', label: 'Report', icon: <Icon.list /> },
     ...(target.type === 'class' ? [{ id: 'rules', label: 'Point rules', icon: <Icon.pencil /> }, { id: 'members', label: 'Students', icon: <Icon.people /> }] : []),
-    ...(student ? [{ id: 'progress', label: 'Level', icon: <Icon.sun /> }, { id: 'custom', label: 'Customise', icon: <Icon.pencil /> }] : []),
+    ...(student ? [{ id: 'progress', label: 'Level & passport', icon: <Icon.sun /> }, { id: 'custom', label: 'Customise', icon: <Icon.pencil /> }] : []),
   ]
 
   return (
@@ -51,7 +52,12 @@ export function TargetModal({ doc, target, points, onAward, update, onClose, ini
           {tab === 'rules' && <PointRules doc={doc} update={update} />}
           {tab === 'members' && <ClassMembers doc={doc} update={update} />}
           {tab === 'report' && <ReportPanel doc={doc} update={update} ids={ids} isClass={target.type === 'class'} studentId={student?.id || null} />}
-          {tab === 'progress' && student && <LevelCard events={doc.events.filter((e) => e.s === student.id)} />}
+          {tab === 'progress' && student && (
+            <>
+              <LevelCard events={doc.events.filter((e) => e.s === student.id)} />
+              <Passport events={doc.events.filter((e) => e.s === student.id)} name={fullName(student)} classLabel={classLabel} />
+            </>
+          )}
           {tab === 'custom' && student && <Customize student={student} update={update} onClose={onClose} />}
         </div>
       </div>

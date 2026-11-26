@@ -5,7 +5,7 @@
 // személyes kód, nullázások. A saját, teljes riport csak a személyes kóddal
 // érhető el (/api/studentview/:cls).
 import { hasSession, json } from '../lib/security.mjs'
-import { isClass, loadClass, withSchool, loadAvatars, mergeAvatars } from '../lib/classroomStore.mjs'
+import { isClass, loadClass, withSchool, loadAvatars, mergeAvatars, loadRegistry } from '../lib/classroomStore.mjs'
 import { cleanXt } from '../lib/studentWork.mjs'
 
 const dayKey = (d = new Date()) => {
@@ -108,6 +108,7 @@ export default async (req, context) => {
       planKey: next?.key || null, planDate: next?.date || null, planTime: next?.time || null, isToday: next?.date === today,
       directions: doc.directions || [],
       avatarTheme: doc.avatarTheme || 'monsters',
+      label: (await loadRegistry()).find((c) => c.id === cls)?.label || cls.toUpperCase(),
     }, { Vary: 'Cookie' })
   } catch (err) {
     console.error('classview failed', cls, err?.message)

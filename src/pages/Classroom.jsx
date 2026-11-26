@@ -382,7 +382,7 @@ export default function Classroom() {
       {/* Modálok és eszközök */}
       <AnimatePresence>
         {modal?.kind === 'target' && (
-          <TargetModal key="target" doc={archives.events.length ? { ...doc, events: [...archives.events, ...doc.events] } : doc} target={modal.target} points={points} update={update} onClose={closeModal}
+          <TargetModal key="target" classLabel={meta.label} doc={archives.events.length ? { ...doc, events: [...archives.events, ...doc.events] } : doc} target={modal.target} points={points} update={update} onClose={closeModal}
             absentIds={doc.students.filter((s) => absent(s.id)).map((s) => s.id)}
             onAward={(ids, sk, label) => award(modal.target.type === 'class' ? presentIds : ids, sk, label)} />
         )}
