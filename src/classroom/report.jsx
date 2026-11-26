@@ -111,14 +111,17 @@ function slicesOf(doc, events) {
   return [...list.slice(0, 7), { id: 'other', art: 'star', name: `Other (${rest.length})`, n: rest.reduce((s, x) => s + x.n, 0), v: rest.reduce((s, x) => s + x.v, 0) }]
 }
 
+// a kiváltság-beváltás (redeem) nem „fejlesztendő” – külön, „spent”-ként látszik
 function Totals({ events }) {
   const pos = events.filter((e) => e.v > 0).reduce((s, e) => s + e.v, 0)
-  const neg = events.filter((e) => e.v < 0).reduce((s, e) => s - e.v, 0)
+  const neg = events.filter((e) => e.v < 0 && !e.redeem).reduce((s, e) => s - e.v, 0)
+  const spent = events.filter((e) => e.v < 0 && e.redeem).reduce((s, e) => s - e.v, 0)
   return (
     <div className="cr-stats">
       <div className="cr-stat cr-stat--pos"><b>+{pos}</b><span>positive</span></div>
       <div className="cr-stat cr-stat--neg"><b>−{neg}</b><span>needs work</span></div>
-      <div className="cr-stat"><b>{pos - neg}</b><span>net points</span></div>
+      {spent > 0 && <div className="cr-stat"><b>−{spent}</b><span>spent on privileges</span></div>}
+      <div className="cr-stat"><b>{pos - neg - spent}</b><span>net points</span></div>
     </div>
   )
 }
@@ -169,13 +172,13 @@ export function metrics(doc, ids, from, to) {
   const n = Math.max(1, ids.length)
   const count = (key) => ev.filter((e) => keyOfEvent(doc, e) === key).length
   const pos = ev.filter((e) => e.v > 0).reduce((a, e) => a + e.v, 0)
-  const neg = ev.filter((e) => e.v < 0).reduce((a, e) => a - e.v, 0)
+  const neg = ev.filter((e) => e.v < 0 && !e.redeem).reduce((a, e) => a - e.v, 0)
   const hwDone = count('hw_done'), noHw = count('no_hw')
   return {
     events: ev.length,
     net: (pos - neg) / n,
     pos: pos / n,
-    negCount: ev.filter((e) => e.v < 0).length / n,
+    negCount: ev.filter((e) => e.v < 0 && !e.redeem).length / n,
     active: count('active') / n,
     late: count('late') / n,
     extra: (count('extra_hw') + count('perfect_hw')) / n,
@@ -495,7 +498,7 @@ function Overview({ doc, update, publicView }) {
   const rows = sortStudents(doc.students).map((s) => {
     const mine = ev.filter((e) => e.s === s.id)
     const pos = mine.filter((e) => e.v > 0).reduce((a, e) => a + e.v, 0)
-    const neg = mine.filter((e) => e.v < 0).reduce((a, e) => a - e.v, 0)
+    const neg = mine.filter((e) => e.v < 0 && !e.redeem).reduce((a, e) => a - e.v, 0)
     return { s, pos, neg, net: pos - neg }
   }).sort((a, b) => b.net - a.net)
   const max = Math.max(1, ...rows.map((r) => Math.max(r.pos, r.neg)))

@@ -7,6 +7,7 @@ import { json, sameOrigin } from '../lib/security.mjs'
 import { isClass, loadArchive, loadAvatars, saveAvatars, cleanAvatar, loadWork } from '../lib/classroomStore.mjs'
 import { authStudent, workEvents, publicSub } from '../lib/studentWork.mjs'
 import { levelIndex, positiveTotal, avatarAllowed } from '../../src/classroom/levels.js'
+import { balanceOf } from '../lib/privileges.mjs'
 
 export default async (req, context) => {
   if (req.method !== 'POST') return json(405, { error: 'method' }, { Allow: 'POST' })
@@ -45,7 +46,7 @@ export default async (req, context) => {
     const attendance = Object.entries(doc.attendance || {})
       .filter(([, m]) => m?.[s.id]).map(([date, m]) => ({ date, status: m[s.id] }))
     const subs = Object.fromEntries(Object.entries(work.subs).map(([k, v]) => [k, publicSub(v)]))
-    return json(200, { id: s.id, avatar: avatars[s.id]?.a || s.avatar, events, resets: doc.resets?.[s.id] || {}, attendance, subs, reqs: work.reqs }, { 'Cache-Control': 'no-store' })
+    return json(200, { id: s.id, avatar: avatars[s.id]?.a || s.avatar, events, resets: doc.resets?.[s.id] || {}, attendance, subs, reqs: work.reqs, balance: balanceOf(doc, s.id, work) }, { 'Cache-Control': 'no-store' })
   } catch (err) {
     console.error('studentview failed', cls, err?.message)
     return json(500, { error: 'store' })

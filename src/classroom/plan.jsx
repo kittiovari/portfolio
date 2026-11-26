@@ -6,6 +6,7 @@ import { KretaSheet } from './kreta.jsx'
 import { AvatarThemePicker } from './Avatar.jsx'
 import { YearPanel, FilesPanel, AccessPanel } from './upkeep.jsx'
 import { ExtraTaskSetup, taskIdOf } from './extratask.jsx'
+import { PrivilegeEditor } from './privmenu.jsx'
 import {
   ORG_FORMS, WEEKDAYS, addMinutes, dayKey, getPlan, lessonLabel, lessonTimeline, newItem, nextLessonKey, splitKey, tagOf, uid, previousHomework, withSkeleton, TASK_TAGS, plannedKeys, stepSkills, BELLS, isShortDay, lessonStart, lessonLength, breakOn, moveToNext, undoMove, nextKeyAfter,
 } from './model.js'
@@ -574,7 +575,7 @@ function OrgPicker({ item, onChange }) {
 const SCHOOL_DAYS = WEEKDAYS.filter((w) => w.id <= 5)
 const SETTINGS_TABS = [
   { id: 'timetable', label: 'Timetable' }, { id: 'calendar', label: 'Calendar' }, { id: 'units', label: 'Units' },
-  { id: 'avatars', label: 'Avatars' }, { id: 'access', label: 'Access' }, { id: 'data', label: 'Data' },
+  { id: 'avatars', label: 'Avatars' }, { id: 'privileges', label: 'Privileges' }, { id: 'access', label: 'Access' }, { id: 'data', label: 'Data' },
 ]
 export function ClassSettings({ doc, update, onClose, className = '', cls, onReload, meta, onClassesChanged }) {
   const [tab, setTab] = useState('timetable')
@@ -696,6 +697,7 @@ export function ClassSettings({ doc, update, onClose, className = '', cls, onRel
       <AvatarThemePicker value={doc.avatarTheme || 'monsters'} onChange={(t) => update((d) => ({ ...d, avatarTheme: t }))} />
 
       </>)}
+      {tab === 'privileges' && <PrivilegeEditor doc={doc} update={update} />}
       {tab === 'access' && (<>
       <AccessPanel cls={cls} meta={meta} onChanged={onClassesChanged} />
       </>)}

@@ -14,6 +14,7 @@ import crypto from 'node:crypto'
 import { hasSession, json, sameOrigin } from '../lib/security.mjs'
 import { isClass, loadClass, loadWork, saveWork, loadAllWork, savePhoto, loadPhoto, deletePhoto, PHOTO_ID, STUDENT_ID } from '../lib/classroomStore.mjs'
 import { allowHit } from '../lib/rateLimit.mjs'
+import { privilegesOf, balanceOf } from '../lib/privileges.mjs'
 import { authStudent, findTask, checkAnswers, pastDue, allWorkEvents, workEvents, publicSub, TASK_ID } from '../lib/studentWork.mjs'
 
 const MAX_BODY = 2.6 * 1024 * 1024 // egy fotó base64-ben + tartalék
@@ -146,6 +147,24 @@ export default async (req, context) => {
       }
     }
 
+    // ── kiváltság-kérés ──
+    if (action === 'request') {
+      const p = privilegesOf(doc).find((x) => x.id === body.pid)
+      if (!p) return json(404, { error: 'privilege' })
+      if (w.reqs.filter((r) => r.status === 'pending').length >= 3) return json(409, { error: 'too-many' })
+      if (balanceOf(doc, s.id, w) < p.cost) return json(409, { error: 'points' })
+      const choice = p.dj && ['relax', 'active'].includes(body.choice) ? body.choice : undefined
+      w.reqs = [...w.reqs.slice(-40), { id: crypto.randomBytes(8).toString('base64url'), pid: p.id, name: p.name, cost: p.cost, at: Date.now(), status: 'pending', ...(choice ? { choice } : {}) }]
+      await saveWork(cls, s.id, w)
+      return json(200, { ok: true, reqs: w.reqs, balance: balanceOf(doc, s.id, w) })
+    }
+    if (action === 'cancel') {
+      const r = w.reqs.find((x) => x.id === body.req && x.status === 'pending')
+      if (!r) return json(404, { error: 'request' })
+      w.reqs = w.reqs.filter((x) => x !== r)
+      await saveWork(cls, s.id, w)
+      return json(200, { ok: true, reqs: w.reqs, balance: balanceOf(doc, s.id, w) })
+    }
     return json(400, { error: 'action' })
   } catch (err) {
     console.error('studentwork failed', cls, err?.message)

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
 import { Sheet, Icon, play } from './ui.jsx'
 import { useCountdown } from './tools.jsx'
-import { fmtTime } from './model.js'
+import { fmtTime, dayKey } from './model.js'
 import { api, connect, disconnect, finishLogin, getToken, isConfigured, isConnected, loadSdk } from './spotify.js'
 
 /*
@@ -67,12 +67,15 @@ export function ChannelArt({ id, className = 'cr-chart' }) {
 
 // ── Beállító panel: időzítő (alapból be) és zene (alapból ki) kapcsolóval ──
 export function SessionSetup({ doc, onStart, onClose, onBack }) {
+  // DJ-kiváltság: ha ma valaki beváltotta, az ő választása az alapértelmezett zene
+  const dj = [...(doc.events || [])].filter((e) => e.redeem && e.dj && dayKey(new Date(e.t)) === dayKey()).sort((a, b) => b.t - a.t)[0]
+  const djName = dj ? doc.students?.find((s) => s.id === dj.s)?.first : null
   const [timerOn, setTimerOn] = useState(true)
   const [secs, setSecs] = useState(300)
   const [customOpen, setCustomOpen] = useState(false)
   const [custom, setCustom] = useState({ m: 3, s: 0 })
-  const [musicOn, setMusicOn] = useState(false)
-  const [music, setMusic] = useState('relax')
+  const [musicOn, setMusicOn] = useState(Boolean(dj))
+  const [music, setMusic] = useState(dj?.dj === 'active' ? 'active' : 'relax')
 
   const seconds = timerOn ? (customOpen ? custom.m * 60 + custom.s : secs) : null
   const canStart = Boolean((timerOn && seconds > 0) || musicOn)
@@ -109,6 +112,7 @@ export function SessionSetup({ doc, onStart, onClose, onBack }) {
         </label>
         {musicOn && (
           <>
+            {dj && <p className="cr-djnote"><Icon.music /><span>DJ today: <b>{djName || 'a student'}</b> picked <b>{dj.dj === 'active' ? 'Active' : 'Relax'}</b></span></p>}
             <div className="cr-chans">
               {MUSIC_CHANNELS.map((c) => (
                 <button key={c.id} className={`cr-chan ${music === c.id ? 'is-active' : ''}`} onClick={() => setMusic(c.id)} style={{ '--ch': c.color }}>

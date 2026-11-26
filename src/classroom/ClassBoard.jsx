@@ -10,6 +10,7 @@ import SeasonScene from './SeasonScene.jsx'
 import { ExtraTaskSheet, taskIdOf, isPastDue } from './extratask.jsx'
 import { LevelCard } from './progress.jsx'
 import { Passport } from './passport.jsx'
+import { PrivilegeShop } from './privmenu.jsx'
 import { levelIndex, positiveTotal } from './levels.js'
 import './Classroom.css'
 
@@ -43,7 +44,7 @@ export default function ClassBoard({ cls }) {
   const [asking, setAsking] = useState(null) // annak a diáknak az adatai, akinek a kódját kérjük
   const [task, setTask] = useState(null) // a megnyitott szorgalmi feladat { item, taskId }
   const [who, setWho] = useState(null) // „Ki vagy?” – a beadás előtt a saját avatar kiválasztása
-  const [meTab, setMeTab] = useState('report') // a saját lap fülei: report | passport
+  const [meTab, setMeTab] = useState('report') // a saját lap fülei: report | passport | privileges
 
   useEffect(() => {
     let alive = true
@@ -244,12 +245,14 @@ export default function ClassBoard({ cls }) {
                 ) : (
                   <>
                     <div className="cr-seg cr-seg--mine" role="tablist" aria-label="My page">
-                      {[['report', 'My report'], ['passport', 'My passport']].map(([id, label]) => (
+                      {[['report', 'My report'], ['passport', 'My passport'], ['privileges', 'Privileges']].map(([id, label]) => (
                         <button key={id} role="tab" aria-selected={meTab === id} className={meTab === id ? 'is-active' : ''} onClick={() => setMeTab(id)}>{label}</button>
                       ))}
                     </div>
-                    <LevelCard events={me.events} own />
-                    {meTab === 'passport'
+                    {meTab !== 'privileges' && <LevelCard events={me.events} own />}
+                    {meTab === 'privileges'
+                      ? <PrivilegeShop cls={cls} code={ssGet(codeKey(cls))} me={me} privileges={data.privileges || []} onChange={(patch) => setMe((m) => ({ ...m, ...patch }))} />
+                      : meTab === 'passport'
                       ? <Passport events={me.events} name={fullName(data.students.find((x) => x.id === me.id) || open.student)} classLabel={data.label || ''} own />
                       : <ReportPanel doc={doc} update={null} ids={open.ids} isClass={false} studentId={mine ? me.id : null} publicView={!mine} />}
                   </>

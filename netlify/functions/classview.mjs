@@ -7,6 +7,7 @@
 import { hasSession, json } from '../lib/security.mjs'
 import { isClass, loadClass, withSchool, loadAvatars, mergeAvatars, loadRegistry } from '../lib/classroomStore.mjs'
 import { cleanXt } from '../lib/studentWork.mjs'
+import { privilegesOf } from '../lib/privileges.mjs'
 
 const dayKey = (d = new Date()) => {
   const z = (n) => String(n).padStart(2, '0')
@@ -109,6 +110,8 @@ export default async (req, context) => {
       directions: doc.directions || [],
       avatarTheme: doc.avatarTheme || 'monsters',
       label: (await loadRegistry()).find((c) => c.id === cls)?.label || cls.toUpperCase(),
+      // a kiváltság-menü (nem személyes adat): név, ár, ikon
+      privileges: privilegesOf(doc),
     }, { Vary: 'Cookie' })
   } catch (err) {
     console.error('classview failed', cls, err?.message)

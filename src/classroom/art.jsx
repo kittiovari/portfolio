@@ -300,6 +300,32 @@ export const ART = {
       <path d="M20 15v8" /><Dot cx="20" cy="28" />
     </>
   ),
+  // ── kiváltságok ──
+  ticket: (
+    <>
+      <path d="M6 12h28v5a3 3 0 0 0 0 6v5H6v-5a3 3 0 0 0 0-6z" fill={C.butter} />
+      <path d="M26 12v16" strokeDasharray="2 2.4" strokeWidth="1.3" />
+      <path d="M12 18h9M12 22.5h6" strokeWidth="1.4" />
+      <path d="M30 18.5l.9 1.8 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z" fill={C.gold} strokeWidth="0.9" />
+    </>
+  ),
+  seat: (
+    <>
+      <path d="M11 6h16a2 2 0 0 1 2 2v12H9V8a2 2 0 0 1 2-2z" fill={C.sky} />
+      <path d="M7 20h26v5H7z" fill={C.blue} />
+      <path d="M10 25l-2 10M30 25l2 10M14 25v6M26 25v6" />
+      <path d="M33 5l1.2 2.4 2.6.4-1.9 1.8.5 2.6-2.4-1.3-2.4 1.3.5-2.6-1.9-1.8 2.6-.4z" fill={C.gold} strokeWidth="1" />
+    </>
+  ),
+  hwpass: (
+    <>
+      <path d="M8 6h18l6 6v22H8z" fill={C.paper} />
+      <path d="M26 6v6h6" />
+      <path d="M12 17h12M12 21.5h9" strokeWidth="1.3" opacity=".5" />
+      <circle cx="26" cy="28" r="7" fill={C.sage} />
+      <path d="M22.8 28.2l2.2 2.2 4-4.4" strokeWidth="1.7" />
+    </>
+  ),
 }
 
 // Ikonválasztóhoz: a választható saját illusztrációk ('art:<név>' formában tárolva)

@@ -1692,3 +1692,46 @@ svg.cr-art.cr-art--toast { width: 64px; height: 64px; }
   .cr-print__foot { margin-top: 18px; text-align: right; font-size: 10pt; color: #6B5A69; }
   @page { size: A4; margin: 14mm; }
 }
+
+/* ── Kiváltság-menü ── */
+.cr-priv { display: flex; flex-direction: column; gap: 0.9rem; padding: 0; }
+.cr-priv__balance { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem 0.7rem; padding: 0.8rem 1rem; border-radius: 16px; background: #FBF4DC; }
+.cr-priv__balance > span { font-size: 1.05rem; }
+.cr-priv__balance b { font-family: var(--font-heading); font-size: 1.5rem; }
+.cr-priv__balance small { flex-basis: 100%; }
+.cr-priv__list { display: flex; flex-direction: column; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+.cr-priv__list li { display: flex; align-items: center; flex-wrap: wrap; gap: 0.7rem; padding: 0.7rem 0.9rem; border: 1px solid rgba(36, 20, 34, 0.1); border-radius: 16px; background: #fff; }
+.cr-priv__list li.is-dim .cr-art { opacity: 0.55; }
+.cr-priv__name { flex: 1; display: flex; flex-direction: column; min-width: 150px; }
+.cr-priv__name small { color: #6B5A69; font-weight: 600; }
+.cr-priv__dj { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+.cr-chan--sm { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.25rem 0.7rem 0.25rem 0.3rem; border: 1.5px solid var(--ch); border-radius: 999px; background: #fff; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+.cr-chan--sm svg { width: 34px; height: 28px; }
+.cr-priv__mine h4 { margin: 0 0 0.4rem; }
+.cr-priv__mine ul { display: flex; flex-direction: column; gap: 0.3rem; margin: 0; padding: 0; list-style: none; }
+.cr-priv__mine li { display: flex; align-items: center; gap: 0.6rem; padding: 0.45rem 0.2rem; border-bottom: 1px solid rgba(36, 20, 34, 0.07); font-size: 0.9rem; }
+.cr-priv__mine li span { flex: 1; display: flex; flex-direction: column; }
+.cr-priv__mine li small { color: #6B5A69; }
+.cr-priv__mine em { font-style: normal; font-weight: 600; font-size: 0.8rem; color: #6B5A69; }
+.cr-priv__mine li.is-approved em { color: #3F7D4E; }
+.cr-privreqs__list { display: flex; flex-direction: column; gap: 0.5rem; margin: 0 0 1rem; padding: 0; list-style: none; }
+.cr-privreq { display: flex; align-items: center; flex-wrap: wrap; gap: 0.7rem; padding: 0.6rem 0.8rem; border: 1px solid rgba(36, 20, 34, 0.1); border-radius: 14px; background: #fff; }
+.cr-privreq .cr-avatar { width: 40px; height: 44px; }
+.cr-privreq__who { flex: 1; display: flex; flex-direction: column; min-width: 160px; }
+.cr-privreq__who small { color: #6B5A69; }
+.cr-privreq__btns { display: inline-flex; gap: 0.4rem; }
+.cr-privreq em { font-style: normal; font-weight: 600; font-size: 0.85rem; color: #6B5A69; }
+.cr-privreq.is-approved em { color: #3F7D4E; }
+.cr-priveditor ul { display: flex; flex-direction: column; gap: 0.45rem; margin: 0 0 0.8rem; padding: 0; list-style: none; }
+.cr-priveditor li { display: flex; align-items: center; flex-wrap: wrap; gap: 0.6rem; }
+.cr-priveditor li > input { flex: 1; min-width: 160px; padding: 0.45rem 0.7rem; border: 1px solid rgba(36, 20, 34, 0.15); border-radius: 10px; font: inherit; }
+.cr-priveditor__cost { display: inline-flex; align-items: center; gap: 0.3rem; }
+.cr-priveditor__cost input { width: 70px; padding: 0.45rem 0.5rem; border: 1px solid rgba(36, 20, 34, 0.15); border-radius: 10px; font: inherit; }
+.cr-priveditor__art { position: relative; }
+.cr-priveditor__art summary { list-style: none; cursor: pointer; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: #FAF8F6; }
+.cr-priveditor__art summary::-webkit-details-marker { display: none; }
+.cr-priveditor__art > span { position: absolute; z-index: 5; top: 48px; left: 0; display: grid; grid-template-columns: repeat(4, 40px); gap: 4px; padding: 6px; border-radius: 12px; background: #fff; box-shadow: 0 10px 30px -10px rgba(36, 20, 34, 0.35); }
+.cr-priveditor__art > span button { display: grid; place-items: center; width: 40px; height: 40px; border: 1.5px solid transparent; border-radius: 10px; background: transparent; cursor: pointer; }
+.cr-priveditor__art > span button.is-active { border-color: #241422; }
+.cr-djnote { display: flex; align-items: center; gap: 0.4rem; margin: 0 0 0.5rem; font-size: 0.9rem; }
+.cr-djnote svg { width: 16px; height: 16px; }

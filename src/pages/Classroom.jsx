@@ -16,6 +16,7 @@ import { classArt } from '../components/AreaIllustrations.jsx'
 import SeasonScene from '../classroom/SeasonScene.jsx'
 import Deskmates from '../classroom/Deskmates.jsx'
 import { useStudentWork, ExtraReview, pendingCount } from '../classroom/extratask.jsx'
+import { PrivilegeRequests, pendingRequests } from '../classroom/privmenu.jsx'
 import { Art } from '../classroom/art.jsx'
 import { ATTENDANCE, dayKey, fullName, pickName, getPlan, stepSkills, withSkeleton, skillByKey, pointsBy, sortStudents, uid } from '../classroom/model.js'
 import '../components/PasswordModal.css'
@@ -174,6 +175,12 @@ export default function Classroom() {
           <button className="cr-iconbtn cr-inboxbtn" onClick={() => { studentWork.reload(); setModal({ kind: 'extra', task: null }) }} aria-label="Extra tasks handed in" title="Extra tasks handed in">
             <Art name="extra_hw" className="cr-art cr-art--sm" />
             {pendingCount(studentWork.work) > 0 && <i className="cr-inboxbtn__n">{pendingCount(studentWork.work)}</i>}
+          </button>
+        )}
+        {doc && (
+          <button className="cr-iconbtn cr-inboxbtn" onClick={() => { studentWork.reload(); setModal({ kind: 'privreq' }) }} aria-label="Privilege requests" title="Privilege requests">
+            <Art name="ticket" className="cr-art cr-art--sm" />
+            {pendingRequests(studentWork.work) > 0 && <i className="cr-inboxbtn__n">{pendingRequests(studentWork.work)}</i>}
           </button>
         )}
         <span className={`cr-status is-${status}`} role="status">
@@ -430,6 +437,9 @@ export default function Classroom() {
         )}
         {modal?.kind === 'extra' && studentWork.work && (
           <ExtraReview key="extra" doc={doc} cls={cls} work={studentWork.work} post={studentWork.post} initialTask={modal.task} onClose={closeModal} />
+        )}
+        {modal?.kind === 'privreq' && studentWork.work && (
+          <PrivilegeRequests key="privreq" doc={doc} work={studentWork.work} post={studentWork.post} points={points} onClose={closeModal} />
         )}
         {modal?.kind === 'add' && <AddStudents key="add" update={update} onClose={closeModal} />}
         {modal?.kind === 'group' && <GroupEditor key="group" doc={doc} group={modal.group} update={update} onClose={closeModal} />}
