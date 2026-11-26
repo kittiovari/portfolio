@@ -358,7 +358,7 @@ export function GroupEditor({ doc, group, update, onClose }) {
         <div className="cr-pickgrid">
           {sortStudents(doc.students).map((s) => (
             <button type="button" key={s.id} className={`cr-pick ${ids.has(s.id) ? 'is-active' : ''}`} onClick={() => toggle(s.id)} aria-pressed={ids.has(s.id)}>
-              <Avatar a={s.avatar} /><span>{pickName(s, doc.students)}</span>
+              <Avatar a={s.avatar} /><span className="cr-name"><small>{s.last || '\u00a0'}</small><b>{s.first}</b></span>
             </button>
           ))}
         </div>
@@ -380,7 +380,7 @@ export function HomeworkWizard({ doc, presentIds, preselect = [], onSave, onClos
   const absentees = sortStudents(doc.students.filter((s) => !presentIds.includes(s.id)))
   const AbsentCards = () => absentees.map((s) => (
     <span key={s.id} className="cr-pick is-absentee" aria-label={`${pickName(s, doc.students)} – absent`}>
-      <Avatar a={s.avatar} /><span>{pickName(s, doc.students)}</span><i className="cr-pick__mark is-abs">absent</i>
+      <Avatar a={s.avatar} /><span className="cr-name"><small>{s.last || '\u00a0'}</small><b>{s.first}</b></span><i className="cr-pick__mark is-abs">absent</i>
     </span>
   ))
   const [step, setStep] = useState(1)
@@ -438,7 +438,7 @@ export function HomeworkWizard({ doc, presentIds, preselect = [], onSave, onClos
           <div className="cr-pickgrid">
             {present.map((s) => (
               <button type="button" key={s.id} className={`cr-pick ${done.has(s.id) ? 'is-active is-yes' : ''}`} onClick={() => toggle(done, setDone, s.id)} aria-pressed={done.has(s.id)}>
-                <Avatar a={s.avatar} /><span>{pickName(s, doc.students)}</span>
+                <Avatar a={s.avatar} /><span className="cr-name"><small>{s.last || '\u00a0'}</small><b>{s.first}</b></span>
                 {done.has(s.id) && <i className="cr-pick__mark is-yes">✓</i>}
               </button>
             ))}
@@ -458,7 +458,7 @@ export function HomeworkWizard({ doc, presentIds, preselect = [], onSave, onClos
               const ex = excused.has(s.id)
               return (
                 <button type="button" key={s.id} className={`cr-pick ${ex ? 'is-excused' : 'is-active is-no'}`} onClick={() => toggle(excused, setExcused, s.id)} aria-pressed={!ex}>
-                  <Avatar a={s.avatar} /><span>{pickName(s, doc.students)}</span>
+                  <Avatar a={s.avatar} /><span className="cr-name"><small>{s.last || '\u00a0'}</small><b>{s.first}</b></span>
                   <i className={`cr-pick__mark ${ex ? 'is-ex' : 'is-no'}`}>{ex ? 'excused' : '✗'}</i>
                 </button>
               )
@@ -523,7 +523,7 @@ export function AttendanceWizard({ doc, date, preselect = null, onSave, onClose 
           <div className="cr-pickgrid">
             {all.map((s) => (
               <button type="button" key={s.id} className={`cr-pick ${here.has(s.id) ? 'is-active is-yes' : ''}`} onClick={() => toggle(setHere, s.id)} aria-pressed={here.has(s.id)}>
-                <Avatar a={s.avatar} /><span>{pickName(s, doc.students)}</span>
+                <Avatar a={s.avatar} /><span className="cr-name"><small>{s.last || '\u00a0'}</small><b>{s.first}</b></span>
                 {here.has(s.id) && <i className="cr-pick__mark is-yes">✓</i>}
               </button>
             ))}
@@ -630,12 +630,12 @@ export function PointsWizard({ doc, skills, stepTitle, presentIds, preselect = [
           <div className={`cr-pickgrid ${units?.length ? 'cr-pickgrid--sub' : ''}`}>
             {present.map((s) => (
               <button type="button" key={s.id} className={`cr-pick ${who.has(s.id) ? `is-active ${skill.value < 0 ? 'is-no' : 'is-yes'}` : ''}`} onClick={() => toggle(s.id)} aria-pressed={who.has(s.id)}>
-                <Avatar a={s.avatar} /><span>{pickName(s, doc.students)}</span>
+                <Avatar a={s.avatar} /><span className="cr-name"><small>{s.last || '\u00a0'}</small><b>{s.first}</b></span>
                 {who.has(s.id) && <i className={`cr-pick__mark ${skill.value < 0 ? 'is-no' : 'is-yes'}`}>{skill.value > 0 ? `+${skill.value}` : skill.value}</i>}
               </button>
             ))}
             {absentees.map((s) => (
-              <span key={s.id} className="cr-pick is-absentee"><Avatar a={s.avatar} /><span>{pickName(s, doc.students)}</span><i className="cr-pick__mark is-abs">absent</i></span>
+              <span key={s.id} className="cr-pick is-absentee"><Avatar a={s.avatar} /><span className="cr-name"><small>{s.last || '\u00a0'}</small><b>{s.first}</b></span><i className="cr-pick__mark is-abs">absent</i></span>
             ))}
           </div>
           <div className="cr-form__actions">

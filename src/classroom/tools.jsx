@@ -222,7 +222,7 @@ function AvoidPairs({ doc, update, color, onBack, onClose }) {
       <div className="cr-pickgrid">
         {sortStudents(doc.students).map((s) => (
           <button type="button" key={s.id} className={`cr-pick ${sel.includes(s.id) ? 'is-active' : ''}`} onClick={() => choose(s.id)}>
-            <Avatar a={s.avatar} /><span>{pickName(s, doc.students)}</span>
+            <Avatar a={s.avatar} /><span className="cr-name"><small>{s.last || '\u00a0'}</small><b>{s.first}</b></span>
           </button>
         ))}
       </div>

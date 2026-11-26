@@ -12,13 +12,17 @@ function useEscape(onClose) {
   }, [onClose])
 }
 
+// Számlálós görgetészár: több egymásra nyíló lapnál is csak az utolsó bezárása
+// oldja fel – így nem ragad be a „nem lehet görgetni” állapot.
+let locks = 0
 function useBodyLock() {
   useEffect(() => {
-    const prev = document.body.style.overflow
     const prevFocus = document.activeElement
+    locks += 1
     document.body.style.overflow = 'hidden'
     return () => {
-      document.body.style.overflow = prev
+      locks = Math.max(0, locks - 1)
+      if (!locks) document.body.style.overflow = ''
       prevFocus?.focus?.({ preventScroll: true })
     }
   }, [])

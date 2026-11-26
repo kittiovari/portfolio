@@ -288,6 +288,19 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings, 
         <button className="cr-btn cr-btn--primary" onClick={addItem}><Icon.plus />Add task</button>
       </div>
       <ol className="cr-prows">{tail.map((it) => row(it))}</ol>
+      {(doc.plans?.[key] || doc.today?.[key]) && (
+        <div className="cr-plan__danger">
+          <button className="cr-btn cr-btn--sm cr-btn--danger" onClick={() => {
+            if (!window.confirm('Delete this whole lesson plan? Its tasks are removed; points already given stay in the reports.')) return
+            update((d) => {
+              const plans = { ...(d.plans || {}) }; delete plans[key]
+              const today = { ...(d.today || {}) }; delete today[key]
+              return { ...d, plans, today }
+            })
+            onClose()
+          }}><Icon.trash />Delete lesson plan</button>
+        </div>
+      )}
     </Sheet>
   )
 }
@@ -434,7 +447,6 @@ function PlanRow({ item, step, start, cls, doc, review, maxMinutes = 45, open, o
 
       {open && role === 'reflection' && (
         <div className="cr-prow__details">
-          <RuleChips doc={doc} item={item} />
         </div>
       )}
 
@@ -442,7 +454,6 @@ function PlanRow({ item, step, start, cls, doc, review, maxMinutes = 45, open, o
         <div className="cr-prow__details">
           {/* Leírás + források egy dobozban: szöveg, alatta az előnézetek, alul a csatolás */}
           {role !== 'homework' && <OrgPicker item={item} onChange={onChange} />}
-          {role !== 'homework' && <RuleChips doc={doc} item={item} />}
           <div className={`cr-compose ${over ? 'is-over' : ''}`}>
             <textarea rows={3} value={item.activity || ''}
               placeholder={role === 'homework' ? 'Homework: exercises, pages, deadline…' : 'Activity: what happens, instructions, pages…'}

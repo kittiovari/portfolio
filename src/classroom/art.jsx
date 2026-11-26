@@ -128,6 +128,16 @@ export const ART = {
     </>
   ),
   // ── óralépések ──
+  warmup: (
+    <>
+      <path d="M7 34C12 28 28 28 33 34Z" fill="#D9CBE6" />
+      <path d="M20 10C26 10 28 16 28 21C28 27 25 30 20 30C15 30 12 27 12 21C12 16 14 10 20 10Z" fill="#FBF4DC" />
+      <path d="M13 24C9 26 8 29 12 31M27 24C31 26 32 29 28 31" />
+      <path d="M17 19q1.5 1.3 3 0M21.5 19q1.5 1.3 3 0" strokeWidth="1.3" />
+      <path d="M18 24q2 1.6 4 0" strokeWidth="1.3" />
+      <path d="M20 3v2.4M9 8l1.6 1.6M31 8l-1.6 1.6M5 17h2.2M33 17h2.2" stroke="#B59CD9" strokeWidth="1.6" />
+    </>
+  ),
   attendance: (
     <>
       <rect x="8" y="7" width="24" height="29" rx="3" fill={C.paper} />
@@ -332,7 +342,7 @@ export function eventArtName(doc, e) {
   return artName(sk || { key: e.auto === 'late' ? 'late' : null, icon: e.i, value: e.v })
 }
 // Egy óralépés illusztrációja: a fix lépés szerepe, különben az első címke
-const STEP_ART = { attendance: 'attendance', warmer: 'energy', hwreview: 'hw_done', homework: 'homework', reflection: 'reflection', reading: 'reading', listening: 'listening', speaking: 'speaking', writing: 'writing', grammar: 'grammar', vocabulary: 'vocabulary', pronunciation: 'pronunciation' }
+const STEP_ART = { attendance: 'attendance', warmer: 'warmup', hwreview: 'hw_done', homework: 'homework', reflection: 'reflection', reading: 'reading', listening: 'listening', speaking: 'speaking', writing: 'writing', grammar: 'grammar', vocabulary: 'vocabulary', pronunciation: 'pronunciation' }
 export function stepArt(it) {
   if (it.role && STEP_ART[it.role]) return STEP_ART[it.role]
   if (it.auto === 'hwreview') return 'hw_done'

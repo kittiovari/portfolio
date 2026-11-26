@@ -19,7 +19,7 @@ export const COLOR = '#6A4BC4'
 // link: alapértelmezett műsorlista (Classroom music – Relax / Active); az appban felülírható
 export const MUSIC_CHANNELS = [
   { id: 'relax', label: 'Relax', color: '#7FA88A', link: 'https://open.spotify.com/playlist/4ltbNjjpM1Z8VXryyIwmCx' },
-  { id: 'active', label: 'Active', color: '#E0915A', link: 'https://open.spotify.com/playlist/6bbuItAD2mIe0hdOfBDi8g' },
+  { id: 'active', label: 'Active', color: '#8A6BBE', link: 'https://open.spotify.com/playlist/6bbuItAD2mIe0hdOfBDi8g' },
 ]
 const linkOf = (doc, id) => doc.music?.[id] || MUSIC_CHANNELS.find((c) => c.id === id)?.link || ''
 export function playlistId(link = '') {

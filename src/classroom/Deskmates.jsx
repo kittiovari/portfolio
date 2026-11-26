@@ -44,7 +44,7 @@ export default function Deskmates({ doc, update, points, onGive }) {
         onDragStart={(e) => { e.dataTransfer.setData('text/plain', id); e.dataTransfer.effectAllowed = 'move' }}
         onClick={(e) => { e.stopPropagation(); setPicked(picked === id ? null : id) }} title="Drag to a desk">
         <Avatar a={s.avatar} />
-        <span>{pickName(s, doc.students)}</span>
+        <span className="cr-name"><small>{s.last || '\u00a0'}</small><b>{s.first}</b></span>
       </div>
     )
   }
