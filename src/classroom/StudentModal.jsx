@@ -3,6 +3,8 @@ import Avatar, { ClassAvatar, useAvatarTheme, themeOf, themeColors, themeBodies,
 import { Sheet, Icon } from './ui.jsx'
 import { Art, SkillArt, ART_CHOICES } from './art.jsx'
 import { ReportPanel } from './report.jsx'
+import { LevelCard, LockMark } from './progress.jsx'
+import { LEVELS, lockLevel } from './levels.js'
 import {
   AVATAR, sortStudents, pickName, POINT_RULES, RULE_LABELS, newCode, ensureCodes, fullName, uid, parseName, randomAvatar, dayKey,
 } from './model.js'
@@ -25,7 +27,7 @@ export function TargetModal({ doc, target, points, onAward, update, onClose, ini
   const tabs = [
     { id: 'report', label: 'Report', icon: <Icon.list /> },
     ...(target.type === 'class' ? [{ id: 'rules', label: 'Point rules', icon: <Icon.pencil /> }, { id: 'members', label: 'Students', icon: <Icon.people /> }] : []),
-    ...(student ? [{ id: 'custom', label: 'Customise', icon: <Icon.pencil /> }] : []),
+    ...(student ? [{ id: 'progress', label: 'Level', icon: <Icon.sun /> }, { id: 'custom', label: 'Customise', icon: <Icon.pencil /> }] : []),
   ]
 
   return (
@@ -49,6 +51,7 @@ export function TargetModal({ doc, target, points, onAward, update, onClose, ini
           {tab === 'rules' && <PointRules doc={doc} update={update} />}
           {tab === 'members' && <ClassMembers doc={doc} update={update} />}
           {tab === 'report' && <ReportPanel doc={doc} update={update} ids={ids} isClass={target.type === 'class'} studentId={student?.id || null} />}
+          {tab === 'progress' && student && <LevelCard events={doc.events.filter((e) => e.s === student.id)} />}
           {tab === 'custom' && student && <Customize student={student} update={update} onClose={onClose} />}
         </div>
       </div>
@@ -248,15 +251,24 @@ const FEATURES = [
   { key: 'h', label: 'Hair & hats', list: HEADWEAR },
 ]
 
-export function AvatarEditor({ value, onChange }) {
+// level: a diák szintje (0–5) – null esetén (tanár) minden elem választható.
+// current: a diák mentett avatarja – a tanártól kapott zárolt elem megtartható.
+export function AvatarEditor({ value, onChange, level = null, current = null }) {
   const set = (k, v) => onChange({ ...value, [k]: v })
+  const lockedOpt = (k, i) => level != null && lockLevel(k, i) > level && current?.[k] !== i
+  // véletlen avatar: a zárolt elemek helyett „semmi”
+  const random = () => {
+    const r = randomAvatar()
+    if (level != null) for (const k of ['h', 'x']) if (lockedOpt(k, r[k])) r[k] = 0
+    onChange(r)
+  }
   const ctx = useAvatarTheme()
   const theme = themeOf(ctx, value)
   return (
     <div className="cr-avedit">
       <div className="cr-avedit__preview">
         <Avatar a={value} />
-        <button type="button" className="cr-btn cr-btn--sm" onClick={() => onChange(randomAvatar())}><Icon.shuffle />Random</button>
+        <button type="button" className="cr-btn cr-btn--sm" onClick={random}><Icon.shuffle />Random</button>
       </div>
       <div className="cr-avedit__opts">
         {ctx === 'mixed' && (
@@ -280,12 +292,19 @@ export function AvatarEditor({ value, onChange }) {
         {FEATURES.map((f) => (f.key === 'b' ? { ...f, list: themeBodies(theme) } : f)).map((f) => (
           <div className="cr-avedit__row" key={f.key} role="radiogroup" aria-label={f.label}>
             <span>{f.label}</span>
-            {f.list.map((_, i) => (
-              <button type="button" key={i} role="radio" aria-checked={value[f.key] === i}
-                className={`cr-avopt ${value[f.key] === i ? 'is-active' : ''}`} onClick={() => set(f.key, i)}>
-                <Avatar a={{ ...value, [f.key]: i }} />
-              </button>
-            ))}
+            {f.list.map((_, i) => {
+              const locked = lockedOpt(f.key, i)
+              const need = LEVELS[lockLevel(f.key, i) - 1]
+              return (
+                <button type="button" key={i} role="radio" aria-checked={value[f.key] === i} disabled={locked}
+                  title={locked ? `Unlocks at level ${need?.name} (${need?.min} points)` : undefined}
+                  aria-label={locked ? `Locked – unlocks at ${need?.name}` : undefined}
+                  className={`cr-avopt ${value[f.key] === i ? 'is-active' : ''} ${locked ? 'is-locked' : ''}`} onClick={() => set(f.key, i)}>
+                  <Avatar a={{ ...value, [f.key]: i }} />
+                  {locked && <LockMark />}
+                </button>
+              )
+            })}
           </div>
         ))}
         {[1, 2, 3, 4, 5].includes(value.h) && (

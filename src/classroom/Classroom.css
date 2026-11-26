@@ -1628,3 +1628,24 @@ svg.cr-art.cr-art--toast { width: 64px; height: 64px; }
   .cr-xtset__list input { flex-basis: calc(100% - 2.5rem); }
   .cr-xtsub__table { font-size: 0.85rem; }
 }
+
+/* ── Szintek ── */
+.cr-level { display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1.2rem; padding: 1rem 1.1rem; border-radius: 18px; background: linear-gradient(160deg, #FBF4DC 0, #FFFDF8 70%); border: 1px solid rgba(224, 179, 58, 0.35); }
+.cr-level__head { display: flex; align-items: center; gap: 0.9rem; }
+.cr-level .cr-level__badge { width: 64px; height: 64px; flex: 0 0 auto; }
+.cr-level__title { display: flex; flex-direction: column; min-width: 0; }
+.cr-level__title small { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: #6B5A69; font-weight: 700; }
+.cr-level__title b { font-family: var(--font-heading); font-size: 1.5rem; line-height: 1.15; }
+.cr-level__next { display: flex; flex-direction: column; gap: 0.35rem; }
+.cr-level__bar { display: block; height: 10px; border-radius: 5px; background: rgba(36, 20, 34, 0.08); overflow: hidden; }
+.cr-level__bar i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #E0B33A, #D9774F); }
+.cr-level__next small { color: #6B5A69; }
+.cr-level__steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.3rem; margin: 0; padding: 0; list-style: none; }
+.cr-level__steps li { display: flex; flex-direction: column; align-items: center; gap: 0.1rem; text-align: center; font-size: 0.75rem; color: #6B5A69; }
+.cr-level__steps li span { font-weight: 700; }
+.cr-level__steps li.is-on { color: #241422; }
+.cr-level .cr-level__steps .cr-art { width: 34px; height: 34px; }
+.cr-avopt { position: relative; }
+.cr-avopt.is-locked { cursor: not-allowed; background: #F1EEEA; }
+.cr-avopt.is-locked .cr-avatar { opacity: 0.35; filter: grayscale(0.6); }
+.cr-lockmark { position: absolute; right: 2px; bottom: 2px; width: 16px; height: 16px; }

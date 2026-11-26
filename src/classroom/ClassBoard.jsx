@@ -8,6 +8,8 @@ import { Art } from './art.jsx'
 import { ReportPanel } from './report.jsx'
 import SeasonScene from './SeasonScene.jsx'
 import { ExtraTaskSheet, taskIdOf, isPastDue } from './extratask.jsx'
+import { LevelCard } from './progress.jsx'
+import { levelIndex, positiveTotal } from './levels.js'
 import './Classroom.css'
 
 /*
@@ -104,6 +106,7 @@ export default function ClassBoard({ cls }) {
         method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: ssGet(codeKey(cls)), id: me.id, avatar: editing }),
       })
+      if (res.status === 403) { setSaveMsg('Some of these items unlock at a higher level.'); return }
       if (!res.ok) throw new Error(res.status)
       const { avatar } = await res.json()
       setData((d) => ({ ...d, students: d.students.map((x) => (x.id === me.id ? { ...x, avatar } : x)) }))
@@ -227,7 +230,8 @@ export default function ClassBoard({ cls }) {
               <div className="cr-target__content">
                 {mine && editing ? (
                   <div className="cr-form">
-                    <AvatarEditor value={editing} onChange={setEditing} />
+                    <AvatarEditor value={editing} onChange={setEditing} level={levelIndex(positiveTotal(me.events))} current={data.students.find((x) => x.id === me.id)?.avatar || null} />
+                    <p className="cr-muted">Some hats and extras unlock as you reach new levels.</p>
                     {saveMsg && <p className="cr-codeform__err" role="alert">{saveMsg}</p>}
                     <div className="cr-form__actions">
                       <button className="cr-btn" onClick={() => { setEditing(null); setSaveMsg('') }}>Cancel</button>
@@ -236,7 +240,10 @@ export default function ClassBoard({ cls }) {
                     </div>
                   </div>
                 ) : (
-                  <ReportPanel doc={doc} update={null} ids={open.ids} isClass={false} studentId={mine ? me.id : null} publicView={!mine} />
+                  <>
+                    <LevelCard events={me.events} own />
+                    <ReportPanel doc={doc} update={null} ids={open.ids} isClass={false} studentId={mine ? me.id : null} publicView={!mine} />
+                  </>
                 )}
               </div>
             </Sheet>
