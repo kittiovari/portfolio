@@ -71,7 +71,7 @@ Szabályok:
 - A Netlify felületén lévő **„Work with an AI agent”** funkció is kreditet fogyaszt, ezért ne használd.
 - A fogyasztás itt követhető: Netlify → Team → Usage & billing → Account usage insights → Credits.
 
-## Osztályterem (tanári felület, /osztalyterem)
+## Osztályterem (tanári felület, /classroom; a régi /osztalyterem címek átirányítanak, a Spotify-visszatérés marad /osztalyterem/spotify)
 - Külön tanári jelszó: `npm run jelszo -- teacher` → a kiírt `PASS_HASH_TEACHER` értéket a Netlify-on is be kell állítani (Production), majd deploy.
 - Az adatok (diáknevek, pontok, jelenlét) osztályonként egy dokumentumban, a Netlify Blobs `classroom` tárolóban, AES-256-GCM-mel titkosítva (CONTENT_KEY). Helyben: `.netlify/classroom-dev/` (gitignore-olt).
 - Csak a `kp_teacher` sütivel olvasható/írható (`/api/classroom/:cls`), a diákok csoportjelszava ehhez NEM ad hozzáférést.

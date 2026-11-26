@@ -158,7 +158,7 @@ export function SpotifyCallback() {
   return (
     <div className="cr cr-callback">
       <p>{msg}</p>
-      <a className="cr-btn" href="/osztalyterem">Back to the Classroom</a>
+      <a className="cr-btn" href="/classroom">Back to the Classroom</a>
     </div>
   )
 }

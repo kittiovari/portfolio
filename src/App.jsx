@@ -88,6 +88,12 @@ function LanguageHub() {
 }
 
 // Bármely nyelvi csoport oldala (az osztálynyilvántartás alapján) – saját jelszóval
+// Régi tanári cím (/osztalyterem/:cls) → /classroom/:cls
+function OldClassroom() {
+  const { cls } = useParams()
+  return <Navigate to={`/classroom/${cls}`} replace />
+}
+
 function ClassRoute() {
   const { id = '' } = useParams()
   if (!/^[a-z0-9]{1,12}$/.test(id)) return <Navigate to="/nyelvoktatas" replace />
@@ -105,11 +111,13 @@ function App() {
         <Route path="/nyelvoktatas/:id" element={<ClassRoute />} />
         <Route path="/muveszetterapia" element={<Gated area="arttherapy" key="arttherapy"><Topic topic="arttherapy" /></Gated>} />
         {/* Tanári Osztályterem (pontozás, jelenlét, órai eszközök) – külön tanári jelszóval */}
-        <Route path="/osztalyterem" element={<Gated area="teacher" key="teacher">{lazyEl(<ClassroomIndex />)}</Gated>} />
+        <Route path="/classroom" element={<Gated area="teacher" key="teacher">{lazyEl(<ClassroomIndex />)}</Gated>} />
         <Route path="/osztalyterem/spotify" element={lazyEl(<SpotifyCallback />)} />
-        <Route path="/osztalyterem/:cls" element={<Gated area="teacher" key="teacher">{lazyEl(<Classroom />)}</Gated>} />
+        <Route path="/classroom/:cls" element={<Gated area="teacher" key="teacher">{lazyEl(<Classroom />)}</Gated>} />
         <Route path="/cv" element={<CV />} />
         {/* Rövid / alternatív címek */}
+        <Route path="/osztalyterem" element={<Navigate to="/classroom" replace />} />
+        <Route path="/osztalyterem/:cls" element={<OldClassroom />} />
         <Route path="/oktatas" element={<Navigate to="/nyelvoktatas" replace />} />
         <Route path="/muveszet" element={<Navigate to="/muveszetterapia" replace />} />
         {/* Ismeretlen cím → nyitóoldal */}

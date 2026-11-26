@@ -72,7 +72,7 @@ async function tokenRequest(body) {
 // 2. lépés: a visszairányítás után a kódot tokenre cseréljük. Visszaadja, hová menjünk tovább.
 export async function finishLogin(search) {
   const q = new URLSearchParams(search)
-  const back = sessionStorage.getItem(RETURN) || '/osztalyterem'
+  const back = sessionStorage.getItem(RETURN) || '/classroom'
   if (q.get('error')) return { ok: false, back, error: q.get('error') }
   if (!q.get('code') || q.get('state') !== sessionStorage.getItem(STATE)) return { ok: false, back, error: 'state' }
   try {

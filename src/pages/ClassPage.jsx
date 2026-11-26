@@ -34,7 +34,7 @@ function ClassPage({ id }) {
           </div>
           <div className="class-header__right">
             {/* Tanári belépés: az Osztályterembe (külön tanári jelszó) */}
-            <Link to={`/osztalyterem/${id}`} className="class-teacher-link" title="Teacher view (Classroom)">
+            <Link to={`/classroom/${id}`} className="class-teacher-link" title="Teacher view (Classroom)">
               {TeacherArt && <span className="class-teacher-link__icon pw-profile__circle--teacher" aria-hidden="true"><TeacherArt /></span>}
               Teacher view
             </Link>

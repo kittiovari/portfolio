@@ -8,7 +8,7 @@ export const AREAS = {
   'language-9d': { path: '/nyelvoktatas/9d' },
   arttherapy: { path: '/muveszetterapia' },
   ux: { path: '/ux' },
-  teacher: { path: '/osztalyterem' },
+  teacher: { path: '/classroom' },
 }
 
 // Egy terület oldala (a nyelvi csoportoké dinamikus: /nyelvoktatas/<id>)

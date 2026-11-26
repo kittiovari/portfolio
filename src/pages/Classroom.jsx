@@ -33,7 +33,7 @@ export function ClassroomIndex() {
   let last = '9b'
   try { last = localStorage.getItem('cr-class') || '9b' } catch { /* */ }
   if (!/^[a-z0-9]{1,12}$/.test(last)) last = '9b'
-  return <Navigate to={`/osztalyterem/${last}`} replace />
+  return <Navigate to={`/classroom/${last}`} replace />
 }
 
 export default function Classroom() {
@@ -42,7 +42,7 @@ export default function Classroom() {
   const { list: classList, refresh: refreshClasses, loaded: classesLoaded } = useClassList()
   const meta = classList.find((c) => c.id === cls)
   // ismeretlen (pl. törölt) osztály → az első
-  useEffect(() => { if (classesLoaded && !meta && classList[0]) navigate(`/osztalyterem/${classList[0].id}`, { replace: true }) }, [classesLoaded, meta]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (classesLoaded && !meta && classList[0]) navigate(`/classroom/${classList[0].id}`, { replace: true }) }, [classesLoaded, meta]) // eslint-disable-line react-hooks/exhaustive-deps
   const { doc, status, update, retry, reload } = useClassroom(meta ? cls : '9b')
   // az archivált tanévek eseményei is a riportokba kerülnek (tanéveken átívelő kép)
   const archives = useArchives(meta ? cls : '9b', doc?.previousYears || [])
@@ -73,7 +73,7 @@ export default function Classroom() {
   }, [toast])
 
   const points = useMemo(() => (doc ? pointsBy(doc.events) : {}), [doc])
-  if (!meta) return <Navigate to="/osztalyterem" replace />
+  if (!meta) return <Navigate to="/classroom" replace />
 
   const today = dayKey()
   const att = doc?.attendance?.[today] || {}
@@ -149,7 +149,7 @@ export default function Classroom() {
             return (
               <button key={c.id} role="tab" aria-selected={c.id === cls}
                 className={`cr-class ${c.id === cls ? 'is-active' : ''}`}
-                onClick={() => navigate(`/osztalyterem/${c.id}`)}>
+                onClick={() => navigate(`/classroom/${c.id}`)}>
                 <span className={`cr-class__badge pw-profile__circle--${c.area}`}>{Art && <Art />}</span>
                 {c.label}
               </button>
@@ -180,7 +180,7 @@ export default function Classroom() {
         {header}
         <main className="cr-main" aria-busy={status === 'loading'}>
           {status === 'locked'
-            ? <p className="cr-hint">Your session has expired. <a href={`/osztalyterem/${cls}`}>Reload the page</a> and enter the password again.</p>
+            ? <p className="cr-hint">Your session has expired. <a href={`/classroom/${cls}`}>Reload the page</a> and enter the password again.</p>
             : status === 'error' ? <p className="cr-hint">Couldn't load the data. <button className="cr-link" onClick={() => window.location.reload()}>Try again</button></p>
             : <div className="cr-skeleton" />}
         </main>
@@ -427,7 +427,7 @@ export default function Classroom() {
         {modal?.kind === 'tool' && modal.id === 'tps' && <TpsTool key="tps" doc={doc} update={update} onClose={closeModal} onBack={backToKit} />}
         {modal?.kind === 'tool' && modal.id === 'today' && <PlanEditor key="today" doc={doc} update={update} cls={cls} initialKey={modal.key} onClose={closeModal} onBack={modal.fromKit ? backToKit : undefined} onOpenSettings={() => setModal({ kind: 'settings' })} />}
         {modal?.kind === 'settings' && <ClassSettings key="settings" doc={doc} update={update} onClose={closeModal} className={meta.label} cls={cls} onReload={reload} meta={meta} onClassesChanged={refreshClasses} />}
-        {modal?.kind === 'addclass' && <AddClassSheet key="addclass" taken={classList.map((c) => c.id)} onClose={closeModal} onAdded={async (id) => { await refreshClasses(); closeModal(); navigate(`/osztalyterem/${id}`) }} />}
+        {modal?.kind === 'addclass' && <AddClassSheet key="addclass" taken={classList.map((c) => c.id)} onClose={closeModal} onAdded={async (id) => { await refreshClasses(); closeModal(); navigate(`/classroom/${id}`) }} />}
       </AnimatePresence>
 
       {/* Időzítő és zene: futás közben teljes képernyő ↔ kompakt */}
