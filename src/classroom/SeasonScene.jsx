@@ -66,11 +66,11 @@ function Winter() {
       <g>
         <path d="M318 130l-22-14M362 130l22-16" />
         <Bean cx={340} base={136} w={46} h={58} fill="#fff" />
-        <path d="M322 106q18 9 36 0l1 7q-19 9-38 0z" fill="#E07A72" />
-        <path d="M352 112l4 16" stroke="#E07A72" strokeWidth="5" />
+        <path d="M321 117q19 9 38 0l1 7q-20 9-40 0z" fill="#E07A72" />
+        <path d="M352 123l4 13" stroke="#E07A72" strokeWidth="5" />
         <path d="M325 83q15-16 30 0z" fill="#6A4BC4" />
         <circle cx="340" cy="68" r="5" fill="#fff" />
-        <path d="M338 95l10 2-10 2z" fill="#F2A283" />
+        <path d="M339 101l8 1.6-8 1.6z" fill="#F2A283" strokeWidth="1.4" />
       </g>
       {/* nyuszi */}
       <g>
