@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { useRef, useState } from 'react'
 import { Icon } from './ui.jsx'
 import { levelMoments, levelInfo } from './levels.js'
 import { LevelBadge } from './progress.jsx'
+import { LEVELS } from './levels.js'
 
 /*
   English passport – minden beadott szorgalmi feladat és minden elért szint egy bélyeg.
@@ -205,16 +205,21 @@ const ROT = [-3, 2, -1.5, 3, -2.5, 1, -1, 2.5]
 
 export function Passport({ events, name, classLabel, own = false }) {
   const stamps = stampsOf(events)
-  const [printing, setPrinting] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const ref = useRef(null)
+  const pdf = async () => {
+    setBusy(true)
+    try { await downloadPassportPdf({ root: ref.current, stamps, events, name, classLabel }) } catch (e) { console.error('passport pdf', e) } finally { setBusy(false) }
+  }
   const slots = Math.max(8, Math.ceil((stamps.length + 1) / 4) * 4)
   return (
-    <section className="cr-passport" aria-label="English passport">
+    <section className="cr-passport" aria-label="English passport" ref={ref}>
       <header className="cr-passport__cover">
         <span className="cr-passport__crest"><PassportCrest /></span>
         <span className="cr-passport__title"><small>English</small><b>Passport</b></span>
         <span className="cr-spacer" />
         <span className="cr-passport__count"><b>{stamps.length}</b> stamp{stamps.length === 1 ? '' : 's'}</span>
-        <button className="cr-btn cr-btn--sm" onClick={() => setPrinting(true)}><Icon.download />Print</button>
+        <button className="cr-btn cr-btn--sm" onClick={pdf} disabled={busy}><Icon.download />{busy ? 'Making PDF…' : 'Download PDF'}</button>
       </header>
       <p className="cr-muted cr-passport__how">{own ? 'You' : 'Students'} get a stamp for every extra task handed in and every new level.</p>
       <ol className="cr-passport__page">
@@ -231,7 +236,11 @@ export function Passport({ events, name, classLabel, own = false }) {
           )
         })}
       </ol>
-      {printing && <PrintPassport stamps={stamps} events={events} name={name} classLabel={classLabel} onDone={() => setPrinting(false)} />}
+      {/* a PDF-hez használt rajzok (rejtve) */}
+      <span className="cr-pdfsrc" hidden>
+        <PassportCrest className="cr-pdfsrc__crest" />
+        {LEVELS.map((l) => <LevelBadge key={l.id} id={l.id} className={`cr-pdfsrc__badge--${l.id}`} />)}
+      </span>
     </section>
   )
 }
@@ -246,40 +255,187 @@ function PassportCrest({ className = 'cr-art' }) {
   )
 }
 
-// Nyomtatható év végi útlevél / oklevél (A4), a lap többi része nyomtatáskor rejtve
-function PrintPassport({ stamps, events, name, classLabel, onDone }) {
-  useEffect(() => {
-    document.body.classList.add('cr-printing')
-    const done = () => { document.body.classList.remove('cr-printing'); onDone() }
-    window.addEventListener('afterprint', done)
-    const id = setTimeout(() => window.print(), 150)
-    return () => { clearTimeout(id); window.removeEventListener('afterprint', done); document.body.classList.remove('cr-printing') }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+// ── Év végi útlevél / oklevél PDF-ben (A4) ──
+// A lapot vászonra rajzoljuk (így a magyar ékezetes nevek is hibátlanok), majd
+// egy kis, saját PDF-íróval JPEG-oldalakként mentjük – külső könyvtár nélkül.
+const PX = 2 // képpont / pont (A4 = 595 × 842 pt → 1190 × 1684 px)
+const A4 = { w: 595.28, h: 841.89 }
+
+function svgToImage(svgEl, w, h) {
+  const clone = svgEl.cloneNode(true)
+  clone.removeAttribute('style')
+  clone.setAttribute('width', String(w)); clone.setAttribute('height', String(h))
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+  const xml = new XMLSerializer().serializeToString(clone).replace(/var\(--stamp-hole,\s*#[0-9A-Fa-f]+\)/g, '#FFFFFF')
+  return new Promise((res, rej) => {
+    const img = new Image()
+    img.onload = () => res(img)
+    img.onerror = rej
+    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(xml)}`
+  })
+}
+function wrap(g, text, maxW) {
+  const words = String(text).split(/\s+/)
+  const lines = []
+  let line = ''
+  for (const w of words) {
+    const t = line ? `${line} ${w}` : w
+    if (g.measureText(t).width > maxW && line) { lines.push(line); line = w } else line = t
+  }
+  if (line) lines.push(line)
+  return lines
+}
+function roundRect(g, x, y, w, h, r) {
+  g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r)
+  g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath()
+}
+// JPEG-oldalakból PDF (minden oldal egy teljes oldalas kép)
+function pdfFromJpegs(pages) {
+  const enc = new TextEncoder()
+  const parts = []
+  let len = 0
+  const offs = []
+  const put = (x) => { const b = typeof x === 'string' ? enc.encode(x) : x; parts.push(b); len += b.length }
+  const obj = (id, ...body) => { offs[id] = len; put(`${id} 0 obj\n`); body.forEach(put); put('\nendobj\n') }
+  put('%PDF-1.4\n')
+  const n = pages.length
+  obj(1, '<< /Type /Catalog /Pages 2 0 R >>')
+  obj(2, `<< /Type /Pages /Kids [${pages.map((_, k) => `${3 + 3 * k} 0 R`).join(' ')}] /Count ${n} >>`)
+  pages.forEach((p, k) => {
+    const pid = 3 + 3 * k
+    obj(pid, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${A4.w} ${A4.h}] /Resources << /XObject << /Im0 ${pid + 2} 0 R >> >> /Contents ${pid + 1} 0 R >>`)
+    const cs = `q ${A4.w} 0 0 ${A4.h} 0 0 cm /Im0 Do Q`
+    obj(pid + 1, `<< /Length ${cs.length} >>\nstream\n${cs}\nendstream`)
+    obj(pid + 2, `<< /Type /XObject /Subtype /Image /Width ${p.w} /Height ${p.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${p.bytes.length} >>\nstream\n`, p.bytes, '\nendstream')
+  })
+  const xref = len
+  const size = 3 + 3 * n
+  put(`xref\n0 ${size}\n0000000000 65535 f \n`)
+  for (let i = 1; i < size; i++) put(`${String(offs[i]).padStart(10, '0')} 00000 n \n`)
+  put(`trailer\n<< /Size ${size} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`)
+  return new Blob(parts, { type: 'application/pdf' })
+}
+
+export async function downloadPassportPdf({ root, stamps, events, name, classLabel }) {
+  const W = Math.round(A4.w * PX), H = Math.round(A4.h * PX)
+  const M = 40 * PX // margó
+  const font = 'system-ui, -apple-system, "Segoe UI", sans-serif'
   const lv = levelInfo(events)
   const now = new Date()
-  const y = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1
-  return createPortal(
-    <div className="cr-print" aria-hidden="true">
-      <div className="cr-print__head">
-        <PassportCrest className="cr-print__crest" />
-        <div>
-          <small>English Passport · School year {y}/{String(y + 1).slice(2)}</small>
-          <h1>{name}</h1>
-          <p>{classLabel ? `Class ${classLabel} · ` : ''}{lv.level ? `Level: ${lv.level.name}` : 'Just starting'} · {stamps.length} stamp{stamps.length === 1 ? '' : 's'}</p>
-        </div>
-        {lv.level && <LevelBadge id={lv.level.id} className="cr-print__badge" />}
-      </div>
-      <p className="cr-print__lead">This passport belongs to <b>{name}</b>, who travelled through the English-speaking world one extra task and one level at a time.</p>
-      <ol className="cr-print__stamps">
-        {stamps.map((s, i) => (
-          <li key={i}>
-            <Stamp place={s.place} date={short(s.t)} kind={s.kind} className="cr-print__stamp" />
-            <span><b>{s.place.city}</b> – {s.label}<small>{s.place.fact}</small></span>
-          </li>
-        ))}
-      </ol>
-      <p className="cr-print__foot">{now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} · Well done!</p>
-    </div>,
-    document.body,
+  const y0 = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1
+  const stampEls = [...root.querySelectorAll('.cr-passport__page svg.cr-stamp')]
+  const crest = await svgToImage(root.querySelector('.cr-pdfsrc__crest'), 64 * PX, 64 * PX)
+  const badgeEl = lv.level ? root.querySelector(`.cr-pdfsrc__badge--${lv.level.id}`) : null
+  const badge = badgeEl ? await svgToImage(badgeEl, 60 * PX, 60 * PX) : null
+  const pages = []
+  let c, g, y
+  const newPage = () => {
+    c = document.createElement('canvas'); c.width = W; c.height = H
+    g = c.getContext('2d'); g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, W, H)
+    g.textBaseline = 'top'
+    y = M
+  }
+  const finish = async () => {
+    g.fillStyle = '#6B5A69'; g.font = `500 ${9 * PX}px ${font}`; g.textAlign = 'right'
+    g.fillText(`${now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} · English Passport · ${name}`, W - M, H - M + 8 * PX)
+    g.textAlign = 'left'
+    const blob = await new Promise((r) => c.toBlob(r, 'image/jpeg', 0.9))
+    pages.push({ bytes: new Uint8Array(await blob.arrayBuffer()), w: W, h: H })
+  }
+
+  newPage()
+  // fejléc
+  const hh = 118 * PX
+  g.fillStyle = '#2F3E66'; roundRect(g, M, y, W - 2 * M, hh, 16 * PX); g.fill()
+  g.drawImage(crest, M + 22 * PX, y + 27 * PX, 64 * PX, 64 * PX)
+  const tx = M + 104 * PX
+  g.fillStyle = '#E0B33A'; g.font = `700 ${9.5 * PX}px ${font}`
+  g.fillText(`ENGLISH PASSPORT · SCHOOL YEAR ${y0}/${String(y0 + 1).slice(2)}`, tx, y + 24 * PX)
+  g.fillStyle = '#FBF4DC'; g.font = `800 ${26 * PX}px ${font}`
+  g.fillText(name, tx, y + 42 * PX, W - 2 * M - 200 * PX)
+  g.font = `500 ${11 * PX}px ${font}`
+  g.fillText(`${classLabel ? `Class ${classLabel} · ` : ''}${lv.level ? `Level: ${lv.level.name}` : 'Just starting'} · ${lv.pts} XP · ${stamps.length} stamp${stamps.length === 1 ? '' : 's'}`, tx, y + 80 * PX)
+  if (badge) {
+    g.fillStyle = '#FFFDF8'; g.beginPath(); g.arc(W - M - 52 * PX, y + hh / 2, 38 * PX, 0, Math.PI * 2); g.fill()
+    g.drawImage(badge, W - M - 82 * PX, y + hh / 2 - 30 * PX, 60 * PX, 60 * PX)
+  }
+  y += hh + 22 * PX
+  g.fillStyle = '#241422'; g.font = `400 ${12 * PX}px ${font}`
+  for (const l of wrap(g, `This passport belongs to ${name}, who travelled through the English-speaking world one extra task and one level at a time.`, W - 2 * M)) { g.fillText(l, M, y); y += 17 * PX }
+  y += 14 * PX
+
+  // bélyegek: két oszlop
+  const colW = (W - 2 * M - 20 * PX) / 2
+  const sw = 74 * PX, sh = sw * 1.2
+  const rowH = sh + 16 * PX
+  for (let i = 0; i < stamps.length; i++) {
+    const col = i % 2
+    if (col === 0 && y + rowH > H - M - 20 * PX) { await finish(); newPage() }
+    const x = M + col * (colW + 20 * PX)
+    const s = stamps[i]
+    if (stampEls[i]) g.drawImage(await svgToImage(stampEls[i], sw, sh), x, y, sw, sh)
+    const tx2 = x + sw + 12 * PX
+    const tw = colW - sw - 12 * PX
+    let ty = y + 8 * PX
+    g.fillStyle = '#241422'; g.font = `800 ${12 * PX}px ${font}`
+    g.fillText(s.place.city, tx2, ty, tw); ty += 17 * PX
+    g.font = `600 ${10 * PX}px ${font}`
+    for (const l of wrap(g, s.label, tw).slice(0, 2)) { g.fillText(l, tx2, ty); ty += 14 * PX }
+    g.fillStyle = '#6B5A69'; g.font = `400 ${9 * PX}px ${font}`
+    g.fillText(new Date(s.t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }), tx2, ty); ty += 13 * PX
+    for (const l of wrap(g, s.place.fact, tw).slice(0, 3)) { g.fillText(l, tx2, ty); ty += 12.5 * PX }
+    if (col === 1 || i === stamps.length - 1) y += rowH
+  }
+  if (!stamps.length) { g.fillStyle = '#6B5A69'; g.font = `500 ${12 * PX}px ${font}`; g.fillText('No stamps yet – the first one is coming!', M, y) }
+  await finish()
+
+  const blob = pdfFromJpegs(pages)
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `English-passport-${name.replace(/[\\/:*?"<>|]+/g, '').trim().replace(/\s+/g, '-')}.pdf`
+  document.body.appendChild(a); a.click(); a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 2000)
+}
+
+// ── Tanári összesítő: minden diák aktuális XP-je, szintje és útlevele ──
+// Csak a tanárnak; ábécérendben (nincs rangsor). Egy sorra kattintva lenyílik a diák teljes útlevele.
+export function ClassPassports({ doc, classLabel = '' }) {
+  const [open, setOpen] = useState(null)
+  const coll = new Intl.Collator('hu', { sensitivity: 'base' })
+  const rows = [...doc.students].sort((a, b) => coll.compare(a.first, b.first) || coll.compare(a.last || '', b.last || '')).map((s) => {
+    const ev = doc.events.filter((e) => e.s === s.id)
+    return { s, ev, lv: levelInfo(ev), stamps: stampsOf(ev) }
+  })
+  return (
+    <div className="cr-classpass">
+      <p className="cr-muted">Current XP (positive points, all years), level and passport for each student – alphabetical, only you can see this overview.</p>
+      <ul>
+        {rows.map(({ s, ev, lv, stamps }) => {
+          const prevMin = lv.level ? lv.level.min : 0
+          const pct = lv.next ? Math.round(((lv.pts - prevMin) / (lv.next.min - prevMin)) * 100) : 100
+          const name = [s.last, s.first].filter(Boolean).join(' ')
+          return (
+            <li key={s.id} className={open === s.id ? 'is-open' : ''}>
+              <button className="cr-classpass__row" onClick={() => setOpen(open === s.id ? null : s.id)} aria-expanded={open === s.id}>
+                <span className="cr-classpass__who"><b>{s.first}</b><small>{s.last}</small></span>
+                <span className="cr-classpass__xp"><b>{lv.pts}</b><small>XP</small></span>
+                <span className="cr-classpass__lv">
+                  <LevelBadge id={lv.level?.id || 'start'} className="cr-art cr-art--sm" />
+                  <span><b>{lv.level?.name || 'Just starting'}</b>
+                    <i className="cr-classpass__bar"><i style={{ width: `${Math.max(4, pct)}%` }} /></i>
+                    <small>{lv.next ? `${lv.toNext} to ${lv.next.name}` : 'Top level'}</small></span>
+                </span>
+                <span className="cr-classpass__stamps" aria-label={`${stamps.length} stamps`}>
+                  {stamps.slice(-5).map((st, i) => <Stamp key={i} place={st.place} className="cr-classpass__stamp" />)}
+                  <small>{stamps.length}</small>
+                </span>
+              </button>
+              {open === s.id && <div className="cr-classpass__detail"><Passport events={ev} name={name} classLabel={classLabel} /></div>}
+            </li>
+          )
+        })}
+      </ul>
+    </div>
   )
 }

@@ -249,7 +249,7 @@ export default function ClassBoard({ cls }) {
                         <button key={id} role="tab" aria-selected={meTab === id} className={meTab === id ? 'is-active' : ''} onClick={() => setMeTab(id)}>{label}</button>
                       ))}
                     </div>
-                    {meTab !== 'privileges' && <LevelCard events={me.events} own />}
+                    {meTab !== 'privileges' && <LevelCard events={me.events} own avatar={data.students.find((x) => x.id === me.id)?.avatar} />}
                     {meTab === 'privileges'
                       ? <PrivilegeShop cls={cls} code={ssGet(codeKey(cls))} me={me} privileges={data.privileges || []} onChange={(patch) => setMe((m) => ({ ...m, ...patch }))} />
                       : meTab === 'passport'

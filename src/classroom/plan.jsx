@@ -842,8 +842,6 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
   const prevHw = key ? previousHomework(doc, key) : null
   const filled = (it) => Boolean((it.aim || '').trim() || (it.activity || '').trim() || it.resources?.length || it.xt?.items?.length)
   const items = plan.items.filter((it) => !(it.role === 'hwreview' && !prevHw) && it.role !== 'extra')
-  // a szorgalmi feladat az idővonalon kívül, külön szekcióban (mint a diákoldalon a Next homework)
-  const extraIt = plan.items.find((it) => it.role === 'extra' && filled(it) && !it.moved)
   const nav = useTrackNav(track)
   const { time } = key ? splitKey(key) : {}
 
@@ -986,32 +984,61 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
       ) : (
         <p className="cr-hint cr-hint--center">{key ? 'This lesson has no plan yet.' : 'Add your timetable in Class settings, then plan your first lesson.'}</p>
       )}
-      {isPlanned && extraIt && (() => {
-        const id = taskIdOf(key, extraIt.id)
-        const subs = Object.values(work || {}).map((w) => w.subs?.[id]).filter(Boolean)
-        const open = subs.filter((s) => !s.checked).length
-        const due = extraIt.xt?.due
-        return (
-          <div className="cr-board__card cr-hwcard cr-extracard cr-lboard__extra">
-            <h3>
-              <Art name="extra_hw" className="cr-art cr-art--lg" />Extra task <small>optional</small>
-              {due && <span className="cr-lboard__due">Deadline: {new Date(`${due}T12:00`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</span>}
-            </h3>
-            <div className="cr-hwcard__item">
-              {extraIt.aim && <b>{extraIt.aim}</b>}
-              {extraIt.activity && <p><Linkify text={extraIt.activity} /></p>}
-              {extraIt.resources?.length > 0 && <div className="cr-tcard__res">{extraIt.resources.map((r) => <Resource key={r.id} r={r} cls={cls} />)}</div>}
-              <div className="cr-extracard__go">
-                <small>{extraIt.xt?.items?.length ? `${extraIt.xt.items.length} answers in the key` : 'No answer key yet'}</small>
-                <button className="cr-btn cr-btn--sm" onClick={() => onEdit(key)}><Icon.pencil />Edit</button>
-                <button className="cr-btn cr-btn--primary cr-btn--sm" onClick={() => onReviewExtra?.(id)}>
-                  Handed in: {subs.length}{open ? ` · ${open} to check` : ''}
-                </button>
-              </div>
-            </div>
-          </div>
-        )
-      })()}
+    </section>
+  )
+}
+
+// ── Szorgalmi feladatok: dedikált hely a tanári nézetben, a diákok (avatarok) alatt ──
+// Az összes kiírt szorgalmi feladat: a még nyitottak elöl, a lezártak (határidő után) összecsukva.
+const todayIso = () => dayKey()
+export function ExtraTasksPanel({ doc, cls, work = null, onEdit, onReviewExtra }) {
+  const [showOld, setShowOld] = useState(false)
+  const has = (it) => Boolean((it.aim || '').trim() || (it.activity || '').trim() || it.resources?.length || it.xt?.items?.length)
+  const tasks = plannedKeys(doc).flatMap((key) => {
+    const it = withSkeleton(getPlan(doc, key)).items.find((x) => x.role === 'extra' && has(x) && !x.moved)
+    return it ? [{ key, it, id: taskIdOf(key, it.id), due: it.xt?.due || '' }] : []
+  }).reverse()
+  const closed = (t) => Boolean(t.due) && todayIso() > t.due
+  const active = tasks.filter((t) => !closed(t))
+  const old = tasks.filter(closed)
+  const card = (t) => {
+    const subs = Object.values(work || {}).map((w) => w.subs?.[t.id]).filter(Boolean)
+    const open = subs.filter((x) => !x.checked).length
+    return (
+      <li key={t.id} className={`cr-xtpanel__task ${closed(t) ? 'is-closed' : ''}`}>
+        <div className="cr-xtpanel__head">
+          <b>{t.it.aim || 'Extra task'}</b>
+          <small>Set on {lessonLabel(t.key, { weekday: 'short', day: 'numeric', month: 'short' }, doc)}{t.due ? ` · ${closed(t) ? 'closed' : 'deadline'} ${new Date(`${t.due}T12:00`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}` : ' · no deadline'}</small>
+        </div>
+        {t.it.activity && <p className="cr-xtpanel__text"><Linkify text={t.it.activity} /></p>}
+        {t.it.resources?.length > 0 && <div className="cr-tcard__res">{t.it.resources.map((r) => <Resource key={r.id} r={r} cls={cls} />)}</div>}
+        <div className="cr-xtpanel__actions">
+          <small>{t.it.xt?.items?.length ? `${t.it.xt.items.length} answers in the key` : 'No answer key yet'}</small>
+          <span className="cr-spacer" />
+          <button className="cr-btn cr-btn--sm" onClick={() => onEdit(t.key)}><Icon.pencil />Edit</button>
+          <button className={`cr-btn cr-btn--sm ${open ? 'cr-btn--primary' : ''}`} onClick={() => onReviewExtra?.(t.id)}>
+            Handed in: {subs.length}{open ? ` · ${open} to check` : ''}
+          </button>
+        </div>
+      </li>
+    )
+  }
+  return (
+    <section className="cr-xtpanel" aria-label="Extra tasks">
+      <h3><Art name="extra_hw" className="cr-art cr-art--lg" />Extra tasks <small>optional homework</small></h3>
+      {!tasks.length ? (
+        <p className="cr-muted">No extra tasks yet – add one in a lesson plan (Edit plan → Extra task).</p>
+      ) : (
+        <>
+          {active.length ? <ul className="cr-xtpanel__list">{active.map(card)}</ul> : <p className="cr-muted">No open extra task right now.</p>}
+          {old.length > 0 && (
+            <>
+              <button className="cr-link cr-xtpanel__more" onClick={() => setShowOld(!showOld)} aria-expanded={showOld}>{showOld ? 'Hide' : 'Show'} closed tasks ({old.length})</button>
+              {showOld && <ul className="cr-xtpanel__list">{old.map(card)}</ul>}
+            </>
+          )}
+        </>
+      )}
     </section>
   )
 }

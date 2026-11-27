@@ -7,7 +7,7 @@ import { TargetModal, AddStudents, GroupEditor, HomeworkWizard, AttendanceWizard
 import {
   Toolkit, RandomTool, GroupMakerTool, DirectionsTool, TpsTool,
 } from '../classroom/tools.jsx'
-import { PlanEditor, ClassSettings, LessonBoard, OrgIcon } from '../classroom/plan.jsx'
+import { PlanEditor, ClassSettings, LessonBoard, OrgIcon, ExtraTasksPanel } from '../classroom/plan.jsx'
 import { SessionSetup, SessionPlayer } from '../classroom/session.jsx'
 import { useClassroom } from '../classroom/useClassroom.js'
 import { SkillArt } from '../classroom/art.jsx'
@@ -348,6 +348,13 @@ export default function Classroom() {
           </div>
         )}
       </main>
+
+      {/* Szorgalmi feladatok: dedikált hely a diákok (avatarok) alatt */}
+      <div className="cr-main">
+        <ExtraTasksPanel doc={doc} cls={cls} work={studentWork.work}
+          onEdit={(k) => setModal({ kind: 'tool', id: 'today', key: k })}
+          onReviewExtra={(task) => { studentWork.reload(); setModal({ kind: 'extra', task }) }} />
+      </div>
 
       {/* Évszakos tájkép a képernyő alján (évszakváltáskor magától cserélődik) */}
       <SeasonScene />

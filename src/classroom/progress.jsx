@@ -1,5 +1,5 @@
 import { LEVELS, levelInfo, AV_LOCKS } from './levels.js'
-import { HEADWEAR } from './Avatar.jsx'
+import Avatar, { HEADWEAR } from './Avatar.jsx'
 import { AVATAR } from './model.js'
 
 /*
@@ -99,8 +99,14 @@ export function unlocksAt(i) {
   ]
 }
 
-// Szintkártya: jelenlegi szint, haladás a következőig, a feloldott avatar-elemek
-export function LevelCard({ events, own = false }) {
+// a szinthez kötött avatar-kiegészítők, szint szerint
+export const REWARDS = [
+  ...Object.entries(AV_LOCKS.h).map(([v, l]) => ({ k: 'h', v: Number(v), level: l, name: HEADWEAR[v] })),
+  ...Object.entries(AV_LOCKS.x).map(([v, l]) => ({ k: 'x', v: Number(v), level: l, name: EXTRA_NAMES[v] || AVATAR.extras[v] })),
+].sort((a, b) => a.level - b.level)
+
+// Szintkártya: jelenlegi szint, haladás a következőig, a (még zárolt) avatar-jutalmak
+export function LevelCard({ events, own = false, avatar = null }) {
   const info = levelInfo(events)
   const cur = info.level
   const prevMin = cur ? cur.min : 0
@@ -112,7 +118,7 @@ export function LevelCard({ events, own = false }) {
         <div className="cr-level__title">
           <small>{own ? 'Your level' : 'Level'}</small>
           <b>{cur ? cur.name : 'Just starting'}</b>
-          <span className="cr-muted">{info.pts} positive point{info.pts === 1 ? '' : 's'} in total · levels never go down</span>
+          <span className="cr-muted">{info.pts} XP (positive points) in total · levels never go down</span>
         </div>
       </div>
       {info.next && (
@@ -130,6 +136,25 @@ export function LevelCard({ events, own = false }) {
           </li>
         ))}
       </ol>
+      <div className="cr-level__rewards">
+        <h4>Avatar rewards</h4>
+        <ul>
+          {REWARDS.map((r) => {
+            const locked = r.level > info.index
+            const lv = LEVELS[r.level - 1]
+            return (
+              <li key={`${r.k}${r.v}`} className={locked ? 'is-locked' : 'is-open'} title={locked ? `Unlocks at ${lv.name} (${lv.min} XP)` : `Unlocked at ${lv.name}`}>
+                <span className="cr-level__rewardart">
+                  <Avatar a={{ ...(avatar || {}), [r.k]: r.v }} />
+                  {locked && <LockMark />}
+                </span>
+                <b>{r.name}</b>
+                <small>{lv.name}</small>
+              </li>
+            )
+          })}
+        </ul>
+      </div>
     </section>
   )
 }

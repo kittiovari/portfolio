@@ -1750,3 +1750,49 @@ svg.cr-art.cr-art--toast { width: 64px; height: 64px; }
 .cr-lboard__due { margin-left: auto; font-family: var(--font-body, inherit); font-size: 0.82rem; font-weight: 600; color: #6B5A69; }
 .cr-plan__extra .cr-prow.is-extra .cr-prow__line { grid-template-columns: 28px minmax(0, 1fr) 96px auto; }
 @media (max-width: 720px) { .cr-plan__extra .cr-prow.is-extra .cr-prow__line { grid-template-columns: 24px minmax(0, 1fr) auto; } }
+.cr-level__rewards h4 { margin: 0 0 0.4rem; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; color: #6B5A69; }
+.cr-level__rewards ul { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+.cr-level__rewards li { display: flex; flex-direction: column; align-items: center; width: 74px; text-align: center; line-height: 1.15; }
+.cr-level__rewards li b { font-size: 0.72rem; }
+.cr-level__rewards li small { font-size: 0.66rem; color: #6B5A69; }
+.cr-level__rewardart { position: relative; display: grid; place-items: center; width: 56px; height: 60px; margin-bottom: 0.2rem; border-radius: 12px; background: #fff; border: 1px solid rgba(36, 20, 34, 0.08); }
+.cr-level__rewardart .cr-avatar { width: 46px; height: 50px; }
+.cr-level__rewards li.is-locked .cr-level__rewardart { background: #F1EEEA; }
+.cr-level__rewards li.is-locked .cr-avatar { opacity: 0.4; filter: grayscale(0.7); }
+.cr-level__rewards li.is-open .cr-level__rewardart { border-color: #E0B33A; }
+
+/* Tanári összesítő: XP, szint, útlevél */
+.cr-classpass ul { display: flex; flex-direction: column; gap: 0.4rem; margin: 0.6rem 0 0; padding: 0; list-style: none; }
+.cr-classpass li { border: 1px solid rgba(36, 20, 34, 0.1); border-radius: 14px; background: #fff; }
+.cr-classpass li.is-open { box-shadow: 0 12px 28px -20px rgba(36, 20, 34, 0.5); }
+.cr-classpass__row { display: grid; grid-template-columns: minmax(90px, 1.1fr) 60px minmax(150px, 1.6fr) minmax(120px, 1.4fr); align-items: center; gap: 0.7rem; width: 100%; padding: 0.5rem 0.8rem; border: none; background: none; text-align: left; cursor: pointer; }
+.cr-classpass__who { display: flex; flex-direction: column; line-height: 1.15; }
+.cr-classpass__who small, .cr-classpass__xp small, .cr-classpass__lv small { color: #6B5A69; font-size: 0.75rem; }
+.cr-classpass__xp { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+.cr-classpass__xp b { font-family: var(--font-heading); font-size: 1.25rem; }
+.cr-classpass__lv { display: flex; align-items: center; gap: 0.5rem; }
+.cr-classpass__lv > span { display: flex; flex-direction: column; flex: 1; min-width: 0; gap: 0.15rem; }
+.cr-classpass__lv b { font-size: 0.88rem; }
+.cr-classpass__bar { display: block; height: 6px; border-radius: 3px; background: rgba(36, 20, 34, 0.08); overflow: hidden; }
+.cr-classpass__bar i { display: block; height: 100%; background: linear-gradient(90deg, #E0B33A, #D9774F); }
+.cr-classpass__stamps { display: flex; align-items: center; justify-content: flex-end; gap: 0.15rem; }
+.cr-classpass__stamp { width: 26px; height: auto; --stamp-hole: #fff; }
+.cr-classpass__stamps small { min-width: 1.6rem; text-align: right; font-weight: 700; color: #241422; }
+.cr-classpass__detail { padding: 0 0.8rem 0.8rem; }
+.cr-classpass__detail .cr-passport { margin-top: 0.2rem; }
+@media (max-width: 640px) { .cr-classpass__row { grid-template-columns: 1fr 50px; } .cr-classpass__lv, .cr-classpass__stamps { grid-column: 1 / -1; justify-content: flex-start; } }
+
+/* Szorgalmi feladatok szekció az avatarok alatt (tanár) */
+.cr-xtpanel { margin-top: 0.4rem; padding: 1.1rem 1.2rem 1.2rem; border: 2px solid #8A6BBE; border-radius: 22px; background: linear-gradient(180deg, #F2ECFA 0, #FAF8FD 100%); box-shadow: 0 14px 30px -22px rgba(138, 107, 190, 0.9); }
+.cr-xtpanel h3 { display: flex; align-items: center; gap: 0.5rem; margin: 0 0 0.8rem; font-family: var(--font-heading); font-size: 1.25rem; }
+.cr-xtpanel h3 small { padding: 0.15rem 0.6rem; border-radius: 999px; background: #8A6BBE; color: #fff; font-family: var(--font-body, inherit); font-weight: 600; font-size: 0.78rem; }
+.cr-xtpanel__list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 0.7rem; margin: 0; padding: 0; list-style: none; }
+.cr-xtpanel__task { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.8rem 0.9rem; border-radius: 16px; background: #fff; border: 1px solid rgba(36, 20, 34, 0.08); }
+.cr-xtpanel__task.is-closed { background: #FBF8F4; }
+.cr-xtpanel__head { display: flex; flex-direction: column; }
+.cr-xtpanel__head b { font-family: var(--font-heading); font-size: 1.05rem; }
+.cr-xtpanel__head small, .cr-xtpanel__actions small { color: #6B5A69; font-size: 0.8rem; }
+.cr-xtpanel__text { margin: 0; white-space: pre-wrap; font-size: 0.92rem; }
+.cr-xtpanel__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: auto; }
+.cr-xtpanel__actions .cr-btn--primary { background: #8A6BBE; border-color: #8A6BBE; }
+.cr-xtpanel__more { margin: 0.8rem 0 0.5rem; }

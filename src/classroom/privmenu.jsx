@@ -127,7 +127,6 @@ export function PrivilegeRequests({ doc, work, post, points, onClose }) {
     <Sheet title="Privilege requests" onClose={onClose} wide className="cr-privreqs">
       {err && <p className="cr-codeform__err" role="alert">{err}</p>}
       {!pending.length ? <p className="cr-hint">No requests waiting.</p> : <ul className="cr-privreqs__list">{pending.map((x) => row(x, true))}</ul>}
-      <p className="cr-muted">Approving deducts the points as a “Privilege” entry – it never lowers the student’s level and isn’t part of the E-Kréta text. Edit the menu in Class settings → Privileges.</p>
       {done.length > 0 && (<><h4>Recent</h4><ul className="cr-privreqs__list">{done.map((x) => row(x, false))}</ul></>)}
     </Sheet>
   )
