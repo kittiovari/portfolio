@@ -1806,3 +1806,6 @@ svg.cr-art.cr-art--toast { width: 64px; height: 64px; }
 .cr-xtpanel__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: auto; }
 .cr-xtpanel__actions .cr-btn--primary { background: #8A6BBE; border-color: #8A6BBE; }
 .cr-xtpanel__more { margin: 0.8rem 0 0.5rem; }
+.cr-avopt.is-above { background: #F4F0EA; }
+.cr-avopt.is-above .cr-avatar { opacity: 0.6; }
+.cr-avopt.is-above.is-active .cr-avatar { opacity: 1; }

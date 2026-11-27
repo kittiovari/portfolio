@@ -5,7 +5,7 @@ import { Art, SkillArt, ART_CHOICES } from './art.jsx'
 import { ReportPanel } from './report.jsx'
 import { LevelCard, LockMark } from './progress.jsx'
 import { Passport, ClassPassports } from './passport.jsx'
-import { LEVELS, lockLevel } from './levels.js'
+import { LEVELS, lockLevel, levelIndex, positiveTotal } from './levels.js'
 import {
   AVATAR, sortStudents, pickName, POINT_RULES, RULE_LABELS, newCode, ensureCodes, fullName, uid, parseName, randomAvatar, dayKey,
 } from './model.js'
@@ -59,7 +59,7 @@ export function TargetModal({ doc, target, points, onAward, update, onClose, ini
               <Passport events={doc.events.filter((e) => e.s === student.id)} name={fullName(student)} classLabel={classLabel} />
             </>
           )}
-          {tab === 'custom' && student && <Customize student={student} update={update} onClose={onClose} />}
+          {tab === 'custom' && student && <Customize student={student} update={update} onClose={onClose} level={levelIndex(positiveTotal(doc.events.filter((e) => e.s === student.id)))} />}
         </div>
       </div>
     </Sheet>
@@ -211,7 +211,7 @@ function GivePoints({ doc, update, onGive, editable = false, rulesOnly = false }
 }
 
 // ── Testreszabás: név, avatar, eltávolítás ──
-function Customize({ student, update, onClose }) {
+function Customize({ student, update, onClose, level = 0 }) {
   const [first, setFirst] = useState(student.first)
   const [last, setLast] = useState(student.last)
   const [avatar, setAvatar] = useState(student.avatar)
@@ -236,7 +236,8 @@ function Customize({ student, update, onClose }) {
 
   return (
     <form className="cr-form" onSubmit={save}>
-      <AvatarEditor value={avatar} onChange={setAvatar} />
+      <AvatarEditor value={avatar} onChange={setAvatar} teacherLevel={level} />
+      <p className="cr-muted">Items with a lock are above {student.first}’s level ({LEVELS[level - 1]?.name || 'no level yet'}) – the student can’t pick them yet, but you can still give them.</p>
       <div className="cr-form__row">
         <label className="cr-field"><span>Surname</span><input value={last} onChange={(e) => setLast(e.target.value)} maxLength={40} /></label>
         <label className="cr-field"><span>First name</span><input value={first} onChange={(e) => setFirst(e.target.value)} maxLength={40} required /></label>
@@ -266,7 +267,8 @@ function Row({ label, children }) {
 
 // level: a diák szintje (0–5) – null esetén (tanár) minden elem választható.
 // current: a diák mentett avatarja – a tanártól kapott zárolt elem megtartható.
-export function AvatarEditor({ value, onChange, level = null, current = null }) {
+// teacherLevel: tanári nézet – a diák szintje fölötti elemek lakatot kapnak, de választhatók maradnak
+export function AvatarEditor({ value, onChange, level = null, current = null, teacherLevel = null }) {
   const set = (k, v) => onChange({ ...value, [k]: v })
   const lockedOpt = (k, i) => level != null && lockLevel(k, i) > level && current?.[k] !== i
   // véletlen avatar: a zárolt elemek helyett „semmi”
@@ -281,15 +283,16 @@ export function AvatarEditor({ value, onChange, level = null, current = null }) 
 
   const opt = (k, i, title) => {
     const locked = lockedOpt(k, i)
+    const above = !locked && teacherLevel != null && lockLevel(k, i) > teacherLevel
     const need = LEVELS[lockLevel(k, i) - 1]
     const on = (value[k] ?? (k === 'h' || k === 'x' ? 0 : undefined)) === i // régi avatarnál nincs h/x → „None”
     return (
       <button type="button" key={`${k}${i}`} role="radio" aria-checked={on} disabled={locked}
-        title={locked ? `${title ? `${title} – ` : ''}unlocks at ${need?.name} (${need?.min} XP)` : title}
+        title={locked || above ? `${title ? `${title} – ` : ''}${above ? 'above the student’s level – ' : ''}unlocks at ${need?.name} (${need?.min} XP)` : title}
         aria-label={locked ? `${title || 'Item'} – locked, unlocks at ${need?.name}` : title}
-        className={`cr-avopt ${on ? 'is-active' : ''} ${locked ? 'is-locked' : ''}`} onClick={() => set(k, i)}>
+        className={`cr-avopt ${on ? 'is-active' : ''} ${locked ? 'is-locked' : ''} ${above ? 'is-above' : ''}`} onClick={() => set(k, i)}>
         <Avatar a={{ ...value, [k]: i }} />
-        {locked && <LockMark />}
+        {(locked || above) && <LockMark />}
       </button>
     )
   }
