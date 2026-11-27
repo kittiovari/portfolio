@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
-import { Sheet, Icon, play } from './ui.jsx'
+import { Sheet, Icon, play, lockBody, unlockBody } from './ui.jsx'
 import { useCountdown } from './tools.jsx'
 import { fmtTime, dayKey } from './model.js'
 import { api, connect, disconnect, finishLogin, getToken, isConfigured, isConnected, loadSdk } from './spotify.js'
@@ -359,11 +359,12 @@ export function SessionPlayer({ session, onMode, onClose }) {
 
   useEffect(() => {
     if (!full) return
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    // közös, számlálós görgetészár – a régi „előző érték visszaállítása” beragadt, ha a lejátszó
+    // épp egy nyitva lévő (szintén záró) beállító lap alatt indult; kompakt módban így feloldódik
+    lockBody()
     const onKey = (e) => { if (e.key === 'Escape') onMode('compact') }
     document.addEventListener('keydown', onKey)
-    return () => { document.body.style.overflow = prev; document.removeEventListener('keydown', onKey) }
+    return () => { unlockBody(); document.removeEventListener('keydown', onKey) }
   }, [full, onMode])
 
   return createPortal(
