@@ -143,7 +143,9 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings, 
   const left = length - total
   const head = plan.items.filter((it) => it.role === 'attendance' || it.role === 'warmer' || it.role === 'hwreview')
   const middle = plan.items.filter((it) => !it.role)
-  const tail = plan.items.filter((it) => it.role === 'homework' || it.role === 'extra' || it.role === 'reflection')
+  const tail = plan.items.filter((it) => it.role === 'homework' || it.role === 'reflection')
+  // a szorgalmi feladat nem része az óra menetének: külön szekció az óraterv alatt
+  const extraItem = plan.items.find((it) => it.role === 'extra')
 
   const idx = timeline.indexOf(key)
   const step = (dir) => {
@@ -208,7 +210,7 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings, 
   let acc = 0
   const startOf = {}
   plan.items.forEach((it) => { startOf[it.id] = addMinutes(start0, acc); acc += mins(it) })
-  const stepNo = Object.fromEntries(plan.items.map((it, i) => [it.id, i + 1]))
+  const stepNo = Object.fromEntries(plan.items.filter((it) => it.role !== 'extra').map((it, i) => [it.id, i + 1]))
 
   const row = (it, extra = {}) => (
     <PlanRow
@@ -265,7 +267,7 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings, 
 
       <div className={`cr-timebar ${left < 0 ? 'is-over' : left === 0 ? 'is-full' : ''}`}>
         <div className="cr-timebar__track" aria-hidden="true">
-          {plan.items.map((it) => (
+          {plan.items.filter((it) => it.role !== 'extra').map((it) => (
             <span key={it.id} style={{ flexGrow: mins(it), background: tagOf(it.tags?.[0])?.color || '#C9B8C6' }} title={`${it.aim || roleLabel(it) || 'Step'} – ${it.minutes} min`} />
           ))}
           {left > 0 && <span className="cr-timebar__free" style={{ flexGrow: left }} />}
@@ -290,6 +292,12 @@ export function PlanEditor({ doc, update, cls, onClose, onBack, onOpenSettings, 
         <button className="cr-btn cr-btn--primary" onClick={addItem}><Icon.plus />Add task</button>
       </div>
       <ol className="cr-prows">{tail.map((it) => row(it))}</ol>
+      {extraItem && (
+        <section className="cr-plan__extra" aria-label="Extra task">
+          <h3><Art name="extra_hw" className="cr-art cr-art--md" />Extra task <small>optional · outside the lesson</small></h3>
+          <ol className="cr-prows">{row(extraItem)}</ol>
+        </section>
+      )}
       {(doc.plans?.[key] || doc.today?.[key]) && (
         <div className="cr-plan__danger">
           <button className="cr-btn cr-btn--sm cr-btn--danger" onClick={() => {
@@ -396,8 +404,8 @@ function PlanRow({ item, step, start, cls, doc, review, maxMinutes = 45, open, o
         {draggable
           ? <button className="cr-pcard__grip" onPointerDown={(e) => controls.start(e)} aria-label="Drag to reorder" title="Drag to reorder">⠿</button>
           : <span className="cr-prow__pin" aria-hidden="true" />}
-        <span className="cr-prow__step">{step}</span>
-        <span className="cr-prow__time">
+        {role !== 'extra' && <span className="cr-prow__step">{step}</span>}
+        {role !== 'extra' && <span className="cr-prow__time">
           <span className="cr-prow__min">
             <input type="number" min="0" max={maxMinutes} value={item.minutes}
               onChange={(e) => onChange({ minutes: Math.max(0, Math.min(maxMinutes, Math.round(Number(e.target.value) || 0))) })}
@@ -405,7 +413,7 @@ function PlanRow({ item, step, start, cls, doc, review, maxMinutes = 45, open, o
             <small>min</small>
           </span>
           {start && <small className="cr-prow__clock">{start}</small>}
-        </span>
+        </span>}
         <span className="cr-prow__aim">
           {shownTags.length > 0 && (
             <span className="cr-prow__tags">
@@ -758,7 +766,7 @@ export function PlanTimeline({ plan, cls, heading, startTime }) {
       <div className="cr-trackwrap">
       <TrackArrows nav={nav} />
       <ol className="cr-timeline__track" ref={ref}>
-        {plan.items.map((it, i) => {
+        {plan.items.filter((it) => it.role !== 'extra').map((it, i) => {
           const start = addMinutes(startTime, acc)
           acc += Number(it.minutes) || 0
           const org = ORG_FORMS.find((o) => o.id === it.org)
@@ -833,7 +841,9 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
   const isPlanned = key && planned.includes(key)
   const prevHw = key ? previousHomework(doc, key) : null
   const filled = (it) => Boolean((it.aim || '').trim() || (it.activity || '').trim() || it.resources?.length || it.xt?.items?.length)
-  const items = plan.items.filter((it) => !(it.role === 'hwreview' && !prevHw) && !(it.role === 'extra' && !filled(it)))
+  const items = plan.items.filter((it) => !(it.role === 'hwreview' && !prevHw) && it.role !== 'extra')
+  // a szorgalmi feladat az idővonalon kívül, külön szekcióban (mint a diákoldalon a Next homework)
+  const extraIt = plan.items.find((it) => it.role === 'extra' && filled(it) && !it.moved)
   const nav = useTrackNav(track)
   const { time } = key ? splitKey(key) : {}
 
@@ -957,17 +967,6 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
                       onGivePoints(step)
                     }}>✓ Give points</button>
                   )}
-                  {/* szorgalmi feladat: a beadások javítása */}
-                  {it.role === 'extra' && !it.moved && (() => {
-                    const id = taskIdOf(key, it.id)
-                    const subs = Object.values(work || {}).map((w) => w.subs?.[id]).filter(Boolean)
-                    const open = subs.filter((s) => !s.checked).length
-                    return (
-                      <button className="cr-btn cr-btn--sm cr-lcard__action cr-lcard__action--light" onClick={() => onReviewExtra?.(id)}>
-                        <Art name="extra_hw" className="cr-art cr-art--xs" />Handed in: {subs.length}{open ? ` · ${open} to check` : ''}
-                      </button>
-                    )
-                  })()}
                   {/* a jelenlét és a házi-ellenőrzés gombja magán a kártyán */}
                   {(it.role === 'attendance' || it.role === 'hwreview') && (
                     <button className="cr-btn cr-btn--primary cr-btn--sm cr-lcard__action" onClick={() => {
@@ -987,6 +986,32 @@ export function LessonBoard({ doc, update, cls, active, onSelect, onEdit, onChec
       ) : (
         <p className="cr-hint cr-hint--center">{key ? 'This lesson has no plan yet.' : 'Add your timetable in Class settings, then plan your first lesson.'}</p>
       )}
+      {isPlanned && extraIt && (() => {
+        const id = taskIdOf(key, extraIt.id)
+        const subs = Object.values(work || {}).map((w) => w.subs?.[id]).filter(Boolean)
+        const open = subs.filter((s) => !s.checked).length
+        const due = extraIt.xt?.due
+        return (
+          <div className="cr-board__card cr-hwcard cr-extracard cr-lboard__extra">
+            <h3>
+              <Art name="extra_hw" className="cr-art cr-art--lg" />Extra task <small>optional</small>
+              {due && <span className="cr-lboard__due">Deadline: {new Date(`${due}T12:00`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</span>}
+            </h3>
+            <div className="cr-hwcard__item">
+              {extraIt.aim && <b>{extraIt.aim}</b>}
+              {extraIt.activity && <p><Linkify text={extraIt.activity} /></p>}
+              {extraIt.resources?.length > 0 && <div className="cr-tcard__res">{extraIt.resources.map((r) => <Resource key={r.id} r={r} cls={cls} />)}</div>}
+              <div className="cr-extracard__go">
+                <small>{extraIt.xt?.items?.length ? `${extraIt.xt.items.length} answers in the key` : 'No answer key yet'}</small>
+                <button className="cr-btn cr-btn--sm" onClick={() => onEdit(key)}><Icon.pencil />Edit</button>
+                <button className="cr-btn cr-btn--primary cr-btn--sm" onClick={() => onReviewExtra?.(id)}>
+                  Handed in: {subs.length}{open ? ` · ${open} to check` : ''}
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
     </section>
   )
 }
