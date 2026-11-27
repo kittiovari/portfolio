@@ -2,6 +2,8 @@ import { useRef, useState } from 'react'
 import { Icon } from './ui.jsx'
 import { levelMoments, levelInfo } from './levels.js'
 import { LevelBadge, BADGE } from './progress.jsx'
+import { sightsOf } from './cities.js'
+import { CityMap } from './citymap.jsx'
 import { LEVELS } from './levels.js'
 
 /*
@@ -185,7 +187,7 @@ export function Stamp({ place, date, kind, className = 'cr-stamp', rot = 0 }) {
         <g transform="rotate(-14 74 30)" opacity=".75">
           <circle cx="74" cy="30" r="15" fill="none" stroke="#4B3479" strokeWidth="1.4" />
           <circle cx="74" cy="30" r="11.5" fill="none" stroke="#4B3479" strokeWidth=".8" />
-          <text x="74" y="28.5" textAnchor="middle" fontSize="5.4" fontWeight="800" fill="#4B3479" fontFamily="system-ui, sans-serif">{kind === 'level' ? 'VISA' : 'EXTRA ×5'}</text>
+          <text x="74" y="28.5" textAnchor="middle" fontSize="5.4" fontWeight="800" fill="#4B3479" fontFamily="system-ui, sans-serif">{kind === 'level' ? 'VISA' : 'VISITED'}</text>
           <text x="74" y="35" textAnchor="middle" fontSize="5" fontWeight="700" fill="#4B3479" fontFamily="system-ui, sans-serif">{date}</text>
         </g>
       )}
@@ -196,7 +198,6 @@ export function Stamp({ place, date, kind, className = 'cr-stamp', rot = 0 }) {
 // ── Bélyegek ──
 // Városbélyeg: minden 5. elfogadott szorgalmi után (a városok sorban követik egymást).
 // Vízum: minden elért szint (a szint jelvényével) – a városok így csak a szorgalmikból jönnek.
-export const PER_STAMP = 5
 const isExtraSub = (e) => e.v >= 0 && (/^xs-/.test(e.id || '') || e.n === 'Extra task submitted')
 const taskTitle = (e) => (e.sn || 'Extra task').replace(/^Extra task:?\s*/, '') || 'Extra task'
 const VISA_COLORS = { explorer: ['#4E9A6A', '#E5F0E8'], traveller: ['#6E9CCB', '#E4EEF8'], storyteller: ['#D9774F', '#FBE6DB'], navigator: ['#8A6BBE', '#F2ECFA'], legend: ['#C9962B', '#FBF1D2'] }
@@ -206,16 +207,27 @@ const visaPlace = (l) => ({
   art: <g transform="translate(-1 -2) scale(1.55)">{BADGE[l.id]}</g>,
 })
 export const extraCount = (events = []) => events.filter(isExtraSub).length
-export function stampsOf(events = []) {
-  const ex = events.filter(isExtraSub).sort((a, b) => a.t - b.t)
-  const cities = []
-  for (let k = PER_STAMP; k <= ex.length; k += PER_STAMP) {
-    const batch = ex.slice(k - PER_STAMP, k)
-    cities.push({ t: batch[batch.length - 1].t, kind: 'extra', place: PLACES[cities.length % PLACES.length], label: `${PER_STAMP} extra tasks`, tasks: batch.map(taskTitle) })
+// Utazás: minden elfogadott szorgalmi a következő nevezetességhez visz; egy város 5–8 állomás.
+// Ha egy város minden állomása megvan → városbélyeg, és jön a következő város.
+export function journey(events = []) {
+  const ex = events.filter(isExtraSub).sort((a, b) => a.t - b.t).map((e) => ({ t: e.t, title: taskTitle(e) }))
+  const done = []
+  let i = 0
+  for (let k = 0; ; k++) {
+    const place = PLACES[k % PLACES.length]
+    const need = Math.max(1, sightsOf(place).length || 5)
+    if (ex.length - i >= need) { done.push({ place, need, visited: ex.slice(i, i + need), t: ex[i + need - 1].t }); i += need }
+    else return { done, current: { place, need, have: ex.length - i, visited: ex.slice(i) } }
   }
+}
+export function stampsOf(events = []) {
+  const cities = journey(events).done.map((c) => ({ t: c.t, kind: 'extra', place: c.place, label: `${c.need} sights`, visited: c.visited }))
   const visas = levelMoments(events).map((l) => ({ t: l.t, kind: 'level', place: visaPlace(l), label: `Level: ${l.name}`, level: l.id }))
   return [...cities, ...visas].sort((a, b) => a.t - b.t).map((s, i) => ({ ...s, n: i + 1 }))
 }
+// haladás a következő városig (a város állomásszáma szerint 5–8 lábnyom)
+export const nextCity = (events = []) => journey(events).current
+
 // lábnyom a haladásjelzőhöz (bal/jobb váltakozva; megtett lépés: kitöltve)
 function Footprint({ on, right }) {
   return (
@@ -230,17 +242,13 @@ function Footprint({ on, right }) {
   )
 }
 
-// haladás a következő városig
-export function nextCity(events = []) {
-  const c = extraCount(events)
-  return { have: c % PER_STAMP, need: PER_STAMP, place: PLACES[Math.floor(c / PER_STAMP) % PLACES.length] }
-}
 const short = (t) => new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }).toUpperCase()
 const ROT = [-3, 2, -1.5, 3, -2.5, 1, -1, 2.5]
 
 export function Passport({ events, name, classLabel, own = false }) {
   const stamps = stampsOf(events)
   const next = nextCity(events)
+  const [map, setMap] = useState(null) // { place, visited, complete }
   const [busy, setBusy] = useState(false)
   const ref = useRef(null)
   const pdf = async () => {
@@ -257,30 +265,33 @@ export function Passport({ events, name, classLabel, own = false }) {
         <span className="cr-passport__count"><b>{stamps.length}</b> stamp{stamps.length === 1 ? '' : 's'}</span>
         <button className="cr-btn cr-btn--sm" onClick={pdf} disabled={busy}><Icon.download />{busy ? 'Making PDF…' : 'Download PDF'}</button>
       </header>
-      <p className="cr-muted cr-passport__how">Every {PER_STAMP} extra tasks handed in = a new city stamp. Every new level = a visa.</p>
+      <p className="cr-muted cr-passport__how">Every extra task handed in takes you to the next sight. Visit all the sights of a city (5–8) to earn its stamp – tap a stamp to see the map. Every new level = a visa.</p>
       <ol className="cr-passport__page">
         {Array.from({ length: slots }, (_, i) => {
           const s = stamps[i]
           return s ? (
             <li key={i} className="cr-passport__slot is-on">
-              <Stamp place={s.place} date={short(s.t)} kind={s.kind} rot={ROT[i % ROT.length]} />
+              {s.kind === 'extra'
+                ? <button className="cr-passport__open" onClick={() => setMap({ place: s.place, visited: s.visited, complete: true })} aria-label={`Open the map of ${s.place.city}`}><Stamp place={s.place} date={short(s.t)} kind={s.kind} rot={ROT[i % ROT.length]} /></button>
+                : <Stamp place={s.place} date={short(s.t)} kind={s.kind} rot={ROT[i % ROT.length]} />}
               <b>{s.kind === 'level' ? s.label : s.place.city}</b>
               <small>{s.kind === 'extra' ? `${s.label} · ` : ''}{s.place.fact}</small>
             </li>
           ) : i === stamps.length ? (
             // a következő város: halvány előnézet + 5 pötty
-            <li key={i} className="cr-passport__slot cr-passport__next" title={`${next.have} / ${next.need} extra tasks to ${next.place.city}`}>
-              <Stamp place={next.place} className="cr-stamp-next" />
+            <li key={i} className="cr-passport__slot cr-passport__next" title={`${next.have} / ${next.need} sights of ${next.place.city}`}>
+              <button className="cr-passport__open" onClick={() => setMap({ place: next.place, visited: next.visited, complete: false })} aria-label={`Open the map of ${next.place.city}`}><Stamp place={next.place} className="cr-stamp-next" /></button>
               <span className="cr-passport__dots" aria-label={`${next.have} of ${next.need} extra tasks`}>
                 {Array.from({ length: next.need }, (_, k) => <Footprint key={k} on={k < next.have} right={k % 2 === 1} />)}
               </span>
-              <small><b>{next.have} / {next.need}</b> extra tasks to {next.place.city}</small>
+              <small><b>{next.have} / {next.need}</b> sights of {next.place.city}</small>
             </li>
           ) : (
             <li key={i} className="cr-passport__slot" />
           )
         })}
       </ol>
+      {map && <CityMap place={map.place} visited={map.visited} complete={map.complete} onClose={() => setMap(null)} />}
       {/* a PDF-hez használt rajzok (rejtve) */}
       <span className="cr-pdfsrc" hidden>
         <PassportCrest className="cr-pdfsrc__crest" />
@@ -473,7 +484,7 @@ export function ClassPassports({ doc, classLabel = '' }) {
                 </span>
                 <span className="cr-classpass__stamps" aria-label={`${stamps.length} stamps`}>
                   {stamps.slice(-5).map((st, i) => <Stamp key={i} place={st.place} className="cr-classpass__stamp" />)}
-                  <small title={`${nextCity(ev).have} / ${PER_STAMP} extra tasks to the next city`}>{stamps.length}<i className="cr-classpass__next">{nextCity(ev).have}/{PER_STAMP}</i></small>
+                  <small title={`${nextCity(ev).have} / ${nextCity(ev).need} sights of ${nextCity(ev).place.city}`}>{stamps.length}<i className="cr-classpass__next">{nextCity(ev).have}/{nextCity(ev).need}</i></small>
                 </span>
               </button>
               {open === s.id && <div className="cr-classpass__detail"><Passport events={ev} name={name} classLabel={classLabel} /></div>}
