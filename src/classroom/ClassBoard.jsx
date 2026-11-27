@@ -234,7 +234,7 @@ export default function ClassBoard({ cls }) {
                 {mine && editing ? (
                   <div className="cr-form">
                     <AvatarEditor value={editing} onChange={setEditing} level={levelIndex(positiveTotal(me.events))} current={data.students.find((x) => x.id === me.id)?.avatar || null} />
-                    <p className="cr-muted">Some hats and extras unlock as you reach new levels.</p>
+                    <p className="cr-muted">Gold star: a reward you have unlocked. Lock: unlocks at a higher level.</p>
                     {saveMsg && <p className="cr-codeform__err" role="alert">{saveMsg}</p>}
                     <div className="cr-form__actions">
                       <button className="cr-btn" onClick={() => { setEditing(null); setSaveMsg('') }}>Cancel</button>

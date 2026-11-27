@@ -90,6 +90,16 @@ export function LockMark({ className = 'cr-lockmark' }) {
   )
 }
 
+// arany csillag a szintlépéssel megszerzett (feloldott) avatar-jutalmakon
+export function RewardMark({ className = 'cr-rewardmark' }) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" aria-hidden="true">
+      <circle cx="8" cy="8" r="7.2" fill="#FBE7A1" stroke="#241422" strokeWidth="1.2" />
+      <path d="M8 3.6l1.3 2.7 3 .4-2.2 2.1.5 2.9L8 10.3l-2.6 1.4.5-2.9-2.2-2.1 3-.4z" fill="#E0B33A" stroke="#241422" strokeWidth="0.8" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 // mit nyit meg az adott szint
 const EXTRA_NAMES = { 1: 'Horns', 2: 'Antenna', 3: 'Ears' }
 export function unlocksAt(i) {
@@ -146,7 +156,7 @@ export function LevelCard({ events, own = false, avatar = null }) {
               <li key={`${r.k}${r.v}`} className={locked ? 'is-locked' : 'is-open'} title={locked ? `Unlocks at ${lv.name} (${lv.min} XP)` : `Unlocked at ${lv.name}`}>
                 <span className="cr-level__rewardart">
                   <Avatar a={{ ...(avatar || {}), [r.k]: r.v }} />
-                  {locked && <LockMark />}
+                  {locked ? <LockMark /> : <RewardMark />}
                 </span>
                 <b>{r.name}</b>
                 <small>{lv.name}</small>

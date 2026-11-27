@@ -3,7 +3,7 @@ import Avatar, { ClassAvatar, useAvatarTheme, themeOf, themeColors, themeBodies,
 import { Sheet, Icon } from './ui.jsx'
 import { Art, SkillArt, ART_CHOICES } from './art.jsx'
 import { ReportPanel } from './report.jsx'
-import { LevelCard, LockMark } from './progress.jsx'
+import { LevelCard, LockMark, RewardMark } from './progress.jsx'
 import { Passport, ClassPassports } from './passport.jsx'
 import { LEVELS, lockLevel, levelIndex, positiveTotal } from './levels.js'
 import {
@@ -237,7 +237,7 @@ function Customize({ student, update, onClose, level = 0 }) {
   return (
     <form className="cr-form" onSubmit={save}>
       <AvatarEditor value={avatar} onChange={setAvatar} teacherLevel={level} />
-      <p className="cr-muted">Items with a lock are above {student.first}’s level ({LEVELS[level - 1]?.name || 'no level yet'}) – the student can’t pick them yet, but you can still give them.</p>
+      <p className="cr-muted">Gold star: a reward {student.first} has unlocked. Lock: above {student.first}’s level ({LEVELS[level - 1]?.name || 'no level yet'}) – the student can’t pick it yet, but you can still give it.</p>
       <div className="cr-form__row">
         <label className="cr-field"><span>Surname</span><input value={last} onChange={(e) => setLast(e.target.value)} maxLength={40} /></label>
         <label className="cr-field"><span>First name</span><input value={first} onChange={(e) => setFirst(e.target.value)} maxLength={40} required /></label>
@@ -285,14 +285,17 @@ export function AvatarEditor({ value, onChange, level = null, current = null, te
     const locked = lockedOpt(k, i)
     const above = !locked && teacherLevel != null && lockLevel(k, i) > teacherLevel
     const need = LEVELS[lockLevel(k, i) - 1]
+    // szintlépéssel megszerzett jutalom: mindig jelölve (arany csillag)
+    const earned = !locked && !above && lockLevel(k, i) > 0
     const on = (value[k] ?? (k === 'h' || k === 'x' ? 0 : undefined)) === i // régi avatarnál nincs h/x → „None”
     return (
       <button type="button" key={`${k}${i}`} role="radio" aria-checked={on} disabled={locked}
-        title={locked || above ? `${title ? `${title} – ` : ''}${above ? 'above the student’s level – ' : ''}unlocks at ${need?.name} (${need?.min} XP)` : title}
+        title={locked || above ? `${title ? `${title} – ` : ''}${above ? 'above the student’s level – ' : ''}unlocks at ${need?.name} (${need?.min} XP)` : earned ? `${title ? `${title} – ` : ''}reward, unlocked at ${need?.name}` : title}
         aria-label={locked ? `${title || 'Item'} – locked, unlocks at ${need?.name}` : title}
-        className={`cr-avopt ${on ? 'is-active' : ''} ${locked ? 'is-locked' : ''} ${above ? 'is-above' : ''}`} onClick={() => set(k, i)}>
+        className={`cr-avopt ${on ? 'is-active' : ''} ${locked ? 'is-locked' : ''} ${above ? 'is-above' : ''} ${earned ? 'is-earned' : ''}`} onClick={() => set(k, i)}>
         <Avatar a={{ ...value, [k]: i }} />
         {(locked || above) && <LockMark />}
+        {earned && <RewardMark />}
       </button>
     )
   }
