@@ -250,13 +250,19 @@ function Customize({ student, update, onClose }) {
   )
 }
 
-const FEATURES = [
-  { key: 'b', label: 'Body', list: AVATAR.bodies },
-  { key: 'e', label: 'Eyes', list: AVATAR.eyes },
-  { key: 'm', label: 'Mouth', list: AVATAR.mouths },
-  { key: 'x', label: 'Extra', list: AVATAR.extras },
-  { key: 'h', label: 'Hair & hats', list: HEADWEAR },
-]
+// Az avatar-szerkesztő sorai három csoportban; a „Hair” és a „Hats” ugyanazt a mezőt (h) állítja:
+// egy avatarnak vagy frizurája, vagy kalapja van.
+const HAIR_IDX = [0, 1, 2, 3, 4, 5]
+const HAT_IDX = [6, 7, 8, 9, 10, 11, 12, 13]
+const EXTRA_NAMES = ['None', 'Horns', 'Antenna', 'Ears']
+function Row({ label, children }) {
+  return (
+    <div className="cr-avedit__row" role="radiogroup" aria-label={label}>
+      <span className="cr-avedit__label">{label}</span>
+      <div className="cr-avedit__items">{children}</div>
+    </div>
+  )
+}
 
 // level: a diák szintje (0–5) – null esetén (tanár) minden elem választható.
 // current: a diák mentett avatarja – a tanártól kapott zárolt elem megtartható.
@@ -271,6 +277,27 @@ export function AvatarEditor({ value, onChange, level = null, current = null }) 
   }
   const ctx = useAvatarTheme()
   const theme = themeOf(ctx, value)
+  const bodies = themeBodies(theme)
+
+  const opt = (k, i, title) => {
+    const locked = lockedOpt(k, i)
+    const need = LEVELS[lockLevel(k, i) - 1]
+    const on = (value[k] ?? (k === 'h' || k === 'x' ? 0 : undefined)) === i // régi avatarnál nincs h/x → „None”
+    return (
+      <button type="button" key={`${k}${i}`} role="radio" aria-checked={on} disabled={locked}
+        title={locked ? `${title ? `${title} – ` : ''}unlocks at ${need?.name} (${need?.min} XP)` : title}
+        aria-label={locked ? `${title || 'Item'} – locked, unlocks at ${need?.name}` : title}
+        className={`cr-avopt ${on ? 'is-active' : ''} ${locked ? 'is-locked' : ''}`} onClick={() => set(k, i)}>
+        <Avatar a={{ ...value, [k]: i }} />
+        {locked && <LockMark />}
+      </button>
+    )
+  }
+  const swatches = (k, colors, cur) => colors.map((c, i) => (
+    <button type="button" key={c} role="radio" aria-checked={cur === i} aria-label={`Colour ${i + 1}`}
+      className={`cr-swatch ${cur === i ? 'is-active' : ''}`} style={{ background: c }} onClick={() => set(k, i)} />
+  ))
+
   return (
     <div className="cr-avedit">
       <div className="cr-avedit__preview">
@@ -278,51 +305,33 @@ export function AvatarEditor({ value, onChange, level = null, current = null }) 
         <button type="button" className="cr-btn cr-btn--sm" onClick={random}><Icon.shuffle />Random</button>
       </div>
       <div className="cr-avedit__opts">
-        {ctx === 'mixed' && (
-          <div className="cr-avedit__row" role="radiogroup" aria-label="Style">
-            <span>Style</span>
-            {AVATAR_THEMES.map((t) => (
-              <button type="button" key={t.id} role="radio" aria-checked={theme === t.id} title={t.label}
-                className={`cr-avopt ${theme === t.id ? 'is-active' : ''}`} onClick={() => set('t', t.id)}>
-                <Avatar a={{ ...value, t: t.id }} theme={t.id} />
-              </button>
-            ))}
-          </div>
-        )}
-        <div className="cr-avedit__row" role="radiogroup" aria-label="Colour">
-          <span>Colour</span>
-          {(themeBodies(theme)[value.b]?.palette || themeColors(theme)).map((c, i) => (
-            <button type="button" key={c} role="radio" aria-checked={value.c === i} aria-label={`Colour ${i + 1}`}
-              className={`cr-swatch ${value.c === i ? 'is-active' : ''}`} style={{ background: c }} onClick={() => set('c', i)} />
-          ))}
-        </div>
-        {FEATURES.map((f) => (f.key === 'b' ? { ...f, list: themeBodies(theme) } : f)).map((f) => (
-          <div className="cr-avedit__row" key={f.key} role="radiogroup" aria-label={f.label}>
-            <span>{f.label}</span>
-            {f.list.map((_, i) => {
-              const locked = lockedOpt(f.key, i)
-              const need = LEVELS[lockLevel(f.key, i) - 1]
-              return (
-                <button type="button" key={i} role="radio" aria-checked={value[f.key] === i} disabled={locked}
-                  title={locked ? `Unlocks at level ${need?.name} (${need?.min} points)` : undefined}
-                  aria-label={locked ? `Locked – unlocks at ${need?.name}` : undefined}
-                  className={`cr-avopt ${value[f.key] === i ? 'is-active' : ''} ${locked ? 'is-locked' : ''}`} onClick={() => set(f.key, i)}>
-                  <Avatar a={{ ...value, [f.key]: i }} />
-                  {locked && <LockMark />}
+        <section className="cr-avedit__group" aria-label="Shape">
+          <h4>Shape</h4>
+          {ctx === 'mixed' && (
+            <Row label="Style">
+              {AVATAR_THEMES.map((t) => (
+                <button type="button" key={t.id} role="radio" aria-checked={theme === t.id} title={t.label}
+                  className={`cr-avopt ${theme === t.id ? 'is-active' : ''}`} onClick={() => set('t', t.id)}>
+                  <Avatar a={{ ...value, t: t.id }} theme={t.id} />
                 </button>
-              )
-            })}
-          </div>
-        ))}
-        {[1, 2, 3, 4, 5].includes(value.h) && (
-          <div className="cr-avedit__row" role="radiogroup" aria-label="Hair colour">
-            <span>Hair colour</span>
-            {HAIR_COLORS.map((c, i) => (
-              <button type="button" key={c} role="radio" aria-checked={(value.hc ?? 0) === i} aria-label={`Hair colour ${i + 1}`}
-                className={`cr-swatch ${(value.hc ?? 0) === i ? 'is-active' : ''}`} style={{ background: c }} onClick={() => set('hc', i)} />
-            ))}
-          </div>
-        )}
+              ))}
+            </Row>
+          )}
+          <Row label="Body">{bodies.map((_, i) => opt('b', i))}</Row>
+          <Row label="Colour">{swatches('c', bodies[value.b]?.palette || themeColors(theme), value.c)}</Row>
+        </section>
+        <section className="cr-avedit__group" aria-label="Face">
+          <h4>Face</h4>
+          <Row label="Eyes">{AVATAR.eyes.map((_, i) => opt('e', i))}</Row>
+          <Row label="Mouth">{AVATAR.mouths.map((_, i) => opt('m', i))}</Row>
+        </section>
+        <section className="cr-avedit__group" aria-label="Accessories">
+          <h4>Hair & accessories</h4>
+          <Row label="Hair">{HAIR_IDX.map((i) => opt('h', i, HEADWEAR[i]))}</Row>
+          {HAIR_IDX.slice(1).includes(value.h) && <Row label="Hair colour">{swatches('hc', HAIR_COLORS, value.hc ?? 0)}</Row>}
+          <Row label="Hats">{HAT_IDX.map((i) => opt('h', i, HEADWEAR[i]))}</Row>
+          <Row label="Extra">{AVATAR.extras.map((_, i) => opt('x', i, EXTRA_NAMES[i]))}</Row>
+        </section>
       </div>
     </div>
   )
