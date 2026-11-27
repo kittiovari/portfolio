@@ -41,7 +41,11 @@ export default async (req, context) => {
           'Cache-Control': 'private, max-age=604800, immutable',
           'X-Content-Type-Options': 'nosniff',
           'X-Robots-Tag': 'noindex, nofollow',
-          'Content-Security-Policy': "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; sandbox",
+          // PDF-nél nincs 'sandbox': a böngészők beépített PDF-nézője sandbox mellett nem mindig nyílik meg
+          // (a megnyitás új lapon történik); minden más típusnál marad a szigorú beállítás
+          'Content-Security-Policy': meta.type === 'application/pdf'
+            ? "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'"
+            : "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; sandbox",
         },
       })
     }
