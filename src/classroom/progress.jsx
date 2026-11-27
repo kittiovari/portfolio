@@ -10,7 +10,7 @@ const INK = '#241422'
 const LEVEL_COLORS = ['#CFE3D3', '#C7DDF0', '#F6D2B5', '#D9CBE6', '#FBE7A1']
 
 // saját jelvény-rajzok (40×40, vonalas, pasztell)
-const BADGE = {
+export const BADGE = {
   start: (
     <>
       <circle cx="20" cy="22" r="11" fill="#FBF4DC" />

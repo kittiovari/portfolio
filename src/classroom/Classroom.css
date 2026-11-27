@@ -1812,3 +1812,15 @@ svg.cr-art.cr-art--toast { width: 64px; height: 64px; }
 .cr-rewardmark { position: absolute; right: 2px; bottom: 2px; width: 17px; height: 17px; }
 .cr-avopt.is-earned { background: #FDF6DE; box-shadow: inset 0 0 0 1px rgba(224, 179, 58, 0.55); }
 .cr-avopt.is-earned.is-active { box-shadow: none; }
+
+/* Útlevél: haladás a következő városig (5 szorgalmi = 1 városbélyeg) */
+.cr-passport__next { justify-content: flex-start !important; gap: 0.35rem; }
+.cr-stamp-next { width: 84px; height: auto; opacity: 0.35; filter: grayscale(0.8); --stamp-hole: #F4EFE7; }
+.cr-passport__dots { display: inline-flex; gap: 4px; }
+.cr-passport__dots i { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid #8A6BBE; background: transparent; }
+.cr-passport__dots i.is-on { background: #8A6BBE; }
+.cr-passport__next small b { color: #241422; }
+.cr-classpass__next { display: block; font-style: normal; font-weight: 600; font-size: 0.68rem; color: #6B5A69; }
+.cr-passport__dots { align-items: flex-end; gap: 3px; }
+.cr-foot { width: 16px; height: 23px; fill: none; stroke: #8A6BBE; stroke-width: 1.1; }
+.cr-foot.is-on { fill: #8A6BBE; }

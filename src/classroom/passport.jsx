@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { Icon } from './ui.jsx'
 import { levelMoments, levelInfo } from './levels.js'
-import { LevelBadge } from './progress.jsx'
+import { LevelBadge, BADGE } from './progress.jsx'
 import { LEVELS } from './levels.js'
 
 /*
@@ -185,7 +185,7 @@ export function Stamp({ place, date, kind, className = 'cr-stamp', rot = 0 }) {
         <g transform="rotate(-14 74 30)" opacity=".75">
           <circle cx="74" cy="30" r="15" fill="none" stroke="#4B3479" strokeWidth="1.4" />
           <circle cx="74" cy="30" r="11.5" fill="none" stroke="#4B3479" strokeWidth=".8" />
-          <text x="74" y="28.5" textAnchor="middle" fontSize="5.4" fontWeight="800" fill="#4B3479" fontFamily="system-ui, sans-serif">{kind === 'level' ? 'LEVEL UP' : 'EXTRA'}</text>
+          <text x="74" y="28.5" textAnchor="middle" fontSize="5.4" fontWeight="800" fill="#4B3479" fontFamily="system-ui, sans-serif">{kind === 'level' ? 'VISA' : 'EXTRA ×5'}</text>
           <text x="74" y="35" textAnchor="middle" fontSize="5" fontWeight="700" fill="#4B3479" fontFamily="system-ui, sans-serif">{date}</text>
         </g>
       )}
@@ -193,18 +193,54 @@ export function Stamp({ place, date, kind, className = 'cr-stamp', rot = 0 }) {
   )
 }
 
-// A bélyegek: beadott szorgalmik + elért szintek, időrendben; a helyek sorban követik egymást
+// ── Bélyegek ──
+// Városbélyeg: minden 5. elfogadott szorgalmi után (a városok sorban követik egymást).
+// Vízum: minden elért szint (a szint jelvényével) – a városok így csak a szorgalmikból jönnek.
+export const PER_STAMP = 5
+const isExtraSub = (e) => e.v >= 0 && (/^xs-/.test(e.id || '') || e.n === 'Extra task submitted')
+const taskTitle = (e) => (e.sn || 'Extra task').replace(/^Extra task:?\s*/, '') || 'Extra task'
+const VISA_COLORS = { explorer: ['#4E9A6A', '#E5F0E8'], traveller: ['#6E9CCB', '#E4EEF8'], storyteller: ['#D9774F', '#FBE6DB'], navigator: ['#8A6BBE', '#F2ECFA'], legend: ['#C9962B', '#FBF1D2'] }
+const visaPlace = (l) => ({
+  id: `visa-${l.id}`, city: l.name, country: 'Level visa', color: VISA_COLORS[l.id]?.[0] || '#6B5A69', bg: VISA_COLORS[l.id]?.[1] || '#F4EFE7',
+  fact: `Reached ${l.min} XP – levels never go down.`,
+  art: <g transform="translate(-1 -2) scale(1.55)">{BADGE[l.id]}</g>,
+})
+export const extraCount = (events = []) => events.filter(isExtraSub).length
 export function stampsOf(events = []) {
-  const extra = events.filter((e) => e.v >= 0 && (/^xs-/.test(e.id || '') || e.n === 'Extra task submitted'))
-    .map((e) => ({ t: e.t, kind: 'extra', label: (e.sn || 'Extra task').replace(/^Extra task:?\s*/, '') || 'Extra task' }))
-  const levels = levelMoments(events).map((l) => ({ t: l.t, kind: 'level', label: `Level: ${l.name}`, level: l.id }))
-  return [...extra, ...levels].sort((a, b) => a.t - b.t).map((s, i) => ({ ...s, place: PLACES[i % PLACES.length], n: i + 1 }))
+  const ex = events.filter(isExtraSub).sort((a, b) => a.t - b.t)
+  const cities = []
+  for (let k = PER_STAMP; k <= ex.length; k += PER_STAMP) {
+    const batch = ex.slice(k - PER_STAMP, k)
+    cities.push({ t: batch[batch.length - 1].t, kind: 'extra', place: PLACES[cities.length % PLACES.length], label: `${PER_STAMP} extra tasks`, tasks: batch.map(taskTitle) })
+  }
+  const visas = levelMoments(events).map((l) => ({ t: l.t, kind: 'level', place: visaPlace(l), label: `Level: ${l.name}`, level: l.id }))
+  return [...cities, ...visas].sort((a, b) => a.t - b.t).map((s, i) => ({ ...s, n: i + 1 }))
+}
+// lábnyom a haladásjelzőhöz (bal/jobb váltakozva; megtett lépés: kitöltve)
+function Footprint({ on, right }) {
+  return (
+    <svg className={`cr-foot ${on ? 'is-on' : ''}`} viewBox="0 0 16 24" aria-hidden="true" style={right ? { transform: 'scaleX(-1) translateY(-3px)' } : undefined}>
+      <path d="M7.6 8.6c2.6-.2 4.3 1.9 4.2 5.2-.1 3.3-1.4 6.4-1.6 8-.2 1.3-1.4 1.9-2.6 1.7-1.4-.2-2.1-1.3-2.2-2.8-.2-2.2-1.6-3.9-1.7-6.4-.1-3.2 1.5-5.5 3.9-5.7z" />
+      <ellipse cx="4.4" cy="6.1" rx="1.25" ry="1.6" />
+      <ellipse cx="6.9" cy="4.4" rx="1.3" ry="1.75" />
+      <ellipse cx="9.6" cy="4.2" rx="1.2" ry="1.6" />
+      <ellipse cx="11.8" cy="5.3" rx="1.05" ry="1.4" />
+      <ellipse cx="13.3" cy="7.2" rx=".9" ry="1.2" />
+    </svg>
+  )
+}
+
+// haladás a következő városig
+export function nextCity(events = []) {
+  const c = extraCount(events)
+  return { have: c % PER_STAMP, need: PER_STAMP, place: PLACES[Math.floor(c / PER_STAMP) % PLACES.length] }
 }
 const short = (t) => new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }).toUpperCase()
 const ROT = [-3, 2, -1.5, 3, -2.5, 1, -1, 2.5]
 
 export function Passport({ events, name, classLabel, own = false }) {
   const stamps = stampsOf(events)
+  const next = nextCity(events)
   const [busy, setBusy] = useState(false)
   const ref = useRef(null)
   const pdf = async () => {
@@ -221,18 +257,27 @@ export function Passport({ events, name, classLabel, own = false }) {
         <span className="cr-passport__count"><b>{stamps.length}</b> stamp{stamps.length === 1 ? '' : 's'}</span>
         <button className="cr-btn cr-btn--sm" onClick={pdf} disabled={busy}><Icon.download />{busy ? 'Making PDF…' : 'Download PDF'}</button>
       </header>
-      <p className="cr-muted cr-passport__how">{own ? 'You' : 'Students'} get a stamp for every extra task handed in and every new level.</p>
+      <p className="cr-muted cr-passport__how">Every {PER_STAMP} extra tasks handed in = a new city stamp. Every new level = a visa.</p>
       <ol className="cr-passport__page">
         {Array.from({ length: slots }, (_, i) => {
           const s = stamps[i]
           return s ? (
             <li key={i} className="cr-passport__slot is-on">
               <Stamp place={s.place} date={short(s.t)} kind={s.kind} rot={ROT[i % ROT.length]} />
-              <b>{s.kind === 'level' ? s.label : s.label}</b>
-              <small>{s.place.fact}</small>
+              <b>{s.kind === 'level' ? s.label : s.place.city}</b>
+              <small>{s.kind === 'extra' ? `${s.label} · ` : ''}{s.place.fact}</small>
+            </li>
+          ) : i === stamps.length ? (
+            // a következő város: halvány előnézet + 5 pötty
+            <li key={i} className="cr-passport__slot cr-passport__next" title={`${next.have} / ${next.need} extra tasks to ${next.place.city}`}>
+              <Stamp place={next.place} className="cr-stamp-next" />
+              <span className="cr-passport__dots" aria-label={`${next.have} of ${next.need} extra tasks`}>
+                {Array.from({ length: next.need }, (_, k) => <Footprint key={k} on={k < next.have} right={k % 2 === 1} />)}
+              </span>
+              <small><b>{next.have} / {next.need}</b> extra tasks to {next.place.city}</small>
             </li>
           ) : (
-            <li key={i} className="cr-passport__slot"><span className="cr-passport__empty">{i === stamps.length ? 'Next stamp' : ''}</span></li>
+            <li key={i} className="cr-passport__slot" />
           )
         })}
       </ol>
@@ -380,7 +425,7 @@ export async function downloadPassportPdf({ root, stamps, events, name, classLab
     g.fillStyle = '#241422'; g.font = `800 ${12 * PX}px ${font}`
     g.fillText(s.place.city, tx2, ty, tw); ty += 17 * PX
     g.font = `600 ${10 * PX}px ${font}`
-    for (const l of wrap(g, s.label, tw).slice(0, 2)) { g.fillText(l, tx2, ty); ty += 14 * PX }
+    for (const l of wrap(g, s.kind === 'level' ? 'Level visa' : s.label, tw).slice(0, 2)) { g.fillText(l, tx2, ty); ty += 14 * PX }
     g.fillStyle = '#6B5A69'; g.font = `400 ${9 * PX}px ${font}`
     g.fillText(new Date(s.t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }), tx2, ty); ty += 13 * PX
     for (const l of wrap(g, s.place.fact, tw).slice(0, 3)) { g.fillText(l, tx2, ty); ty += 12.5 * PX }
@@ -428,7 +473,7 @@ export function ClassPassports({ doc, classLabel = '' }) {
                 </span>
                 <span className="cr-classpass__stamps" aria-label={`${stamps.length} stamps`}>
                   {stamps.slice(-5).map((st, i) => <Stamp key={i} place={st.place} className="cr-classpass__stamp" />)}
-                  <small>{stamps.length}</small>
+                  <small title={`${nextCity(ev).have} / ${PER_STAMP} extra tasks to the next city`}>{stamps.length}<i className="cr-classpass__next">{nextCity(ev).have}/{PER_STAMP}</i></small>
                 </span>
               </button>
               {open === s.id && <div className="cr-classpass__detail"><Passport events={ev} name={name} classLabel={classLabel} /></div>}
