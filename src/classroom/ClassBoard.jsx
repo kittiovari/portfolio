@@ -125,6 +125,17 @@ export default function ClassBoard({ cls }) {
     else setWho(t)
   }
   const signOut = () => { ssSet(codeKey(cls), null); setMe(null) }
+  // a legújabb, még nyitott (határidőn belüli) és be nem adott szorgalmi – az útlevél „Now exploring” kártyájához
+  const nextTask = (() => {
+    for (const l of [...lessons].reverse()) {
+      const it = l.items.find((x) => x.role === 'extra' && x.task)
+      if (!it) continue
+      const id = taskIdOf(l.key, it.id)
+      if (isPastDue(it.task.due) || me?.subs?.[id]) continue
+      return { item: it, taskId: id }
+    }
+    return null
+  })()
 
   return (
     <AvatarThemeContext.Provider value={data.avatarTheme || 'monsters'}>
@@ -253,7 +264,7 @@ export default function ClassBoard({ cls }) {
                     {meTab === 'privileges'
                       ? <PrivilegeShop cls={cls} code={ssGet(codeKey(cls))} me={me} privileges={data.privileges || []} onChange={(patch) => setMe((m) => ({ ...m, ...patch }))} />
                       : meTab === 'passport'
-                      ? <Passport events={me.events} name={fullName(data.students.find((x) => x.id === me.id) || open.student)} classLabel={data.label || ''} own />
+                      ? <Passport events={me.events} name={fullName(data.students.find((x) => x.id === me.id) || open.student)} classLabel={data.label || ''} own nextTask={nextTask && { title: nextTask.item.aim || 'Extra task', onOpen: () => setTask(nextTask) }} />
                       : <ReportPanel doc={doc} update={null} ids={open.ids} isClass={false} studentId={mine ? me.id : null} publicView={!mine} />}
                   </>
                 )}

@@ -1842,3 +1842,8 @@ svg.cr-art.cr-art--toast { width: 64px; height: 64px; }
 .cr-citymap__no { flex: 0 0 auto; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; border: 1.5px dashed #B9A9B6; font-size: 0.75rem; font-weight: 800; color: #9A8A97; }
 .cr-citymap__list li.is-seen .cr-citymap__no { border: none; background: var(--pc); color: #fff; }
 @media (max-width: 760px) { .cr-citymap__layout { grid-template-columns: 1fr; } }
+.cr-passport__now { align-self: center; padding: 0.12rem 0.55rem; border-radius: 999px; background: #8A6BBE; color: #fff; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.cr-passport__done { justify-content: center !important; gap: 0.2rem; border-color: #E0B33A !important; background: #FDF6DE; }
+.cr-passport__go { flex-direction: column; gap: 0; max-width: 100%; margin-top: 0.3rem; padding: 0.35rem 0.8rem; background: #8A6BBE !important; border-color: #8A6BBE !important; line-height: 1.15; }
+.cr-passport__go span { font-weight: 700; }
+.cr-passport__go small { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.72rem; font-weight: 500; color: #F2ECFA; }
