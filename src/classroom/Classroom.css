@@ -1847,3 +1847,13 @@ svg.cr-art.cr-art--toast { width: 64px; height: 64px; }
 .cr-passport__go { flex-direction: column; gap: 0; max-width: 100%; margin-top: 0.3rem; padding: 0.35rem 0.8rem; background: #8A6BBE !important; border-color: #8A6BBE !important; line-height: 1.15; }
 .cr-passport__go span { font-weight: 700; }
 .cr-passport__go small { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.72rem; font-weight: 500; color: #F2ECFA; }
+
+/* Csoportkártyák: az avatarok elférnek, a szerkesztés/törlés ikonok a kártya alján */
+.cr-group .cr-group__faces { padding-right: 0; height: 56px; }
+.cr-group .cr-group__faces .cr-avatar { width: 46px; height: 52px; margin-right: -10px; }
+.cr-group .cr-group__more { margin-left: 16px; }
+.cr-group .cr-group__main { padding-bottom: 2.6rem; height: 100%; }
+.cr-group .cr-group__actions { top: auto; bottom: 8px; right: 10px; }
+.cr-pick__in { max-width: 100%; padding: 0.05rem 0.4rem; border-radius: 999px; background: rgba(36, 20, 34, 0.07); color: #6B5A69; font-size: 0.66rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cr-pick__in.is-moving { background: #FBE7A1; color: #241422; }
+.cr-grid.cr-grid--groups { grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); }

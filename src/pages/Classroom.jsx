@@ -311,8 +311,8 @@ export default function Classroom() {
                 <div key={g.id} className="cr-group">
                   <button className="cr-group__main" onClick={() => members.length && (activeStep ? givePoints(members.map((s) => s.id)) : setModal({ kind: 'target', target: { type: 'multi', ids: members.map((s) => s.id), title: g.name } }))}>
                     <span className="cr-group__faces">
-                      {members.slice(0, 5).map((s) => <Avatar key={s.id} a={s.avatar} />)}
-                      {members.length > 5 && <span className="cr-group__more">+{members.length - 5}</span>}
+                      {members.slice(0, 4).map((s) => <Avatar key={s.id} a={s.avatar} />)}
+                      {members.length > 4 && <span className="cr-group__more">+{members.length - 4}</span>}
                     </span>
                     <span className="cr-group__name">
                       <b>{g.name}</b>
@@ -396,7 +396,7 @@ export default function Classroom() {
       {/* Modálok és eszközök */}
       <AnimatePresence>
         {modal?.kind === 'target' && (
-          <TargetModal key="target" classLabel={meta.label} doc={archives.events.length ? { ...doc, events: [...archives.events, ...doc.events] } : doc} target={modal.target} points={points} update={update} onClose={closeModal}
+          <TargetModal key={`target-${modal.target.type}-${modal.target.id || (modal.target.ids || []).join('.')}`} classLabel={meta.label} doc={archives.events.length ? { ...doc, events: [...archives.events, ...doc.events] } : doc} target={modal.target} points={points} update={update} onClose={closeModal}
             absentIds={doc.students.filter((s) => absent(s.id)).map((s) => s.id)}
             onAward={(ids, sk, label) => award(modal.target.type === 'class' ? presentIds : ids, sk, label)} />
         )}
@@ -449,7 +449,8 @@ export default function Classroom() {
           <PrivilegeRequests key="privreq" doc={doc} work={studentWork.work} post={studentWork.post} points={points} onClose={closeModal} />
         )}
         {modal?.kind === 'add' && <AddStudents key="add" update={update} onClose={closeModal} />}
-        {modal?.kind === 'group' && <GroupEditor key="group" doc={doc} group={modal.group} update={update} onClose={closeModal} />}
+        {/* csoportonként saját kulcs: a bezáródó szerkesztő állapota ne öröklődjön a következőre */}
+        {modal?.kind === 'group' && <GroupEditor key={`group-${modal.group?.id || 'new'}`} doc={doc} group={modal.group} update={update} onClose={closeModal} />}
         {modal?.kind === 'toolkit' && <Toolkit key="kit" onPick={openTool} onClose={closeModal} />}
         {modal?.kind === 'tool' && modal.id === 'session' && (
           <SessionSetup key="session" doc={doc} update={update} onClose={closeModal} onBack={modal.fromKit ? backToKit : undefined}

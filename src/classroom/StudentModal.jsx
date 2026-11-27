@@ -381,9 +381,9 @@ export function GroupEditor({ doc, group, update, onClose }) {
   const save = (e) => {
     e.preventDefault()
     const item = { id: group?.id ?? uid(), name: name.trim() || 'Group', ids: [...ids] }
-    // a csoportok mindig a mai napra szólnak: régi napi beosztásból újat kezdünk
+    // egy diák csak egy csoportban lehet: akit ide teszünk, az a többi csoportból kikerül
     update((d) => {
-      const base = d.groups || []
+      const base = (d.groups || []).map((g) => (g.id === item.id ? g : { ...g, ids: g.ids.filter((x) => !ids.has(x)) }))
       return { ...d, groupsDate: d.groupsDate || dayKey(), groups: group ? base.map((g) => (g.id === group.id ? item : g)) : [...base, item] }
     })
     onClose()
@@ -396,12 +396,18 @@ export function GroupEditor({ doc, group, update, onClose }) {
     <Sheet title={group ? 'Edit group' : 'New group'} onClose={onClose}>
       <form className="cr-form" onSubmit={save}>
         <label className="cr-field"><span>Group name</span><input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} autoFocus /></label>
+        <p className="cr-muted">Each student can be in one group only. Picking someone from another group moves them here.</p>
         <div className="cr-pickgrid">
-          {sortStudents(doc.students).map((s) => (
-            <button type="button" key={s.id} className={`cr-pick ${ids.has(s.id) ? 'is-active' : ''}`} onClick={() => toggle(s.id)} aria-pressed={ids.has(s.id)}>
-              <Avatar a={s.avatar} /><span className="cr-name"><small>{s.last || '\u00a0'}</small><b>{s.first}</b></span>
-            </button>
-          ))}
+          {sortStudents(doc.students).map((s) => {
+            const other = todays.find((g) => g.id !== group?.id && g.ids.includes(s.id))
+            return (
+              <button type="button" key={s.id} className={`cr-pick ${ids.has(s.id) ? 'is-active' : ''}`} onClick={() => toggle(s.id)} aria-pressed={ids.has(s.id)}
+                title={other ? `Now in ${other.name}${ids.has(s.id) ? ' \u2013 will move here' : ''}` : undefined}>
+                <Avatar a={s.avatar} /><span className="cr-name"><small>{s.last || '\u00a0'}</small><b>{s.first}</b></span>
+                {other && <span className={`cr-pick__in ${ids.has(s.id) ? 'is-moving' : ''}`}>{ids.has(s.id) ? `from ${other.name}` : other.name}</span>}
+              </button>
+            )
+          })}
         </div>
         <div className="cr-form__actions">
           {group && <button type="button" className="cr-btn cr-btn--danger" onClick={remove}><Icon.trash />Delete</button>}
